@@ -33,6 +33,8 @@ export interface NewPlayerModel {
   /** Present for computer-controlled players. */
   aiLevel?: AiLevel;
   profileId?: string;
+  /** Discord user id that controls this human seat. Required on authenticated servers. */
+  discordId?: string;
   telegramID?: string;
   /** Conglomerates only: which team this player is on. Players sharing a value are teammates. */
   team?: number;
@@ -82,6 +84,8 @@ export type NewGameConfig = {
   fastModeOption: boolean;
   showOtherPlayersVP: boolean;
   privateHands: boolean;
+  /** When true, every human seat must be bound to a Discord account and players must sign in. */
+  requiresDiscordLogin?: boolean;
   noEloGame: boolean;
   turnBasedGame: boolean;
   botGame: boolean;

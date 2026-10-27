@@ -16,6 +16,7 @@
 import {defineComponent} from 'vue';
 import raw_settings from '@/genfiles/settings.json';
 import {paths} from '@/common/app/paths';
+import {consumeLoginReturnTo} from '@/client/utils/loginRedirect';
 
 type Data = {
   user: string | undefined;
@@ -46,6 +47,10 @@ export default defineComponent({
         }
         try {
           this.user = data._user.userid;
+          const returnTo = consumeLoginReturnTo();
+          if (returnTo !== undefined) {
+            window.location.href = returnTo;
+          }
         } catch (e) {
           console.log('Error processing fetch response: ' + e);
         }

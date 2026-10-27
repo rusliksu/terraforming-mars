@@ -39,6 +39,7 @@ export function projectCreateModel(owner: CreateGameModel): CreateModelView {
     moonStandardProjectVariant1: owner.moonStandardProjectVariant1,
     noEloGame: owner.noEloGame,
     privateHands: owner.privateHands,
+    requiresDiscordLogin: owner.requiresDiscordLogin,
     players: owner.players,
     playersCount: owner.playersCount,
     politicalAgendasExtension: owner.politicalAgendasExtension,

@@ -418,6 +418,14 @@
                                 <span v-i18n>Training game (no ELO)</span>
                             </label>
 
+                            <input type="checkbox" v-model="requiresDiscordLogin" id="requiresDiscordLogin-checkbox" :disabled="!discordLoginConfigured">
+                            <label for="requiresDiscordLogin-checkbox">
+                                <span>Require Discord login</span>
+                            </label>
+                            <div v-if="!discordLoginConfigured" class="form-input-hint">
+                                Discord login is not configured; games are open to anyone with the player link.
+                            </div>
+
                             <input type="checkbox" v-model="turnBasedGame" id="turnBasedGame-checkbox">
                             <label for="turnBasedGame-checkbox">
                                 <span v-i18n>Async game (Telegram)</span>
@@ -742,6 +750,23 @@
                                                     {{ getTelegramIdError(newPlayer.telegramID) }}
                                                   </div>
                                               </div>
+                                              <div v-if="!newPlayer.isBot && newPlayer.aiLevel === undefined && discordLoginConfigured" class="create-game-telegram-row">
+                                                  <label class="form-label create-game-telegram-label" :for="'discordId' + (index + 1)">Discord ID</label>
+                                                  <input
+                                                    :id="'discordId' + (index + 1)"
+                                                    type="text"
+                                                    :class="['form-input', 'form-inline', 'create-game-telegram-input', {'is-error': getDiscordIdError(newPlayer) !== ''}]"
+                                                    inputmode="numeric"
+                                                    autocomplete="off"
+                                                    :placeholder="requiresDiscordLogin ? 'Discord ID' : 'Optional Discord ID'"
+                                                    title="Discord Developer Mode → Copy User ID"
+                                                    v-model="newPlayer.discordId"
+                                                    @blur="normalizeDiscordId(newPlayer)"
+                                                  >
+                                                  <div v-if="getDiscordIdError(newPlayer) !== ''" class="form-input-hint create-game-telegram-error">
+                                                    {{ getDiscordIdError(newPlayer) }}
+                                                  </div>
+                                              </div>
 
                                               <label class="form-radio form-inline" v-if="!randomFirstPlayer">
                                                   <input type="radio" name="firstIndex" :value="index + 1" v-model="firstIndex">
@@ -907,6 +932,9 @@ import {BoardNameType, NewGameConfig, NewPlayerModel, normalizePreludeHandicap} 
 import {vueRoot} from '@/client/components/vueRoot';
 import {CreateGameModel} from './CreateGameModel';
 import {paths} from '@/common/app/paths';
+import raw_settings from '@/genfiles/settings.json';
+import {statusCode} from '@/common/http/statusCode';
+import {redirectToLogin} from '@/client/utils/loginRedirect';
 import {JSONProcessor} from './JSONProcessor';
 import {defaultCreateGameModel} from './defaultCreateGameModel';
 import {CreateGameSettingsStorage} from './CreateGameSettingsStorage';
@@ -1263,6 +1291,9 @@ export default defineComponent({
     hasAiPlayers(): boolean {
       return this.players.slice(0, this.playersCount).some((player) => player.aiLevel !== undefined);
     },
+    discordLoginConfigured(): boolean {
+      return raw_settings.discordClientId !== '';
+    },
     boardPreviewRequest(): BoardPreviewRequest | undefined {
       if (this.creationPresentation === undefined || this.seededGame) {
         return undefined;
@@ -1331,6 +1362,7 @@ export default defineComponent({
         undoOption: this.undoOption,
         undoStepOption: this.undoStepOption,
         privateHands: this.privateHands,
+        requiresDiscordLogin: this.requiresDiscordLogin,
         noEloGame: this.noEloGame || this.hasAiPlayers,
         turnBasedGame: this.turnBasedGame,
         botGame: this.botGame,
@@ -2487,6 +2519,26 @@ export default defineComponent({
       }
       return 'Use digits only. Open @tm_knightbyte_bot and send /start first.';
     },
+    normalizeDiscordId(player: NewPlayerModel) {
+      player.discordId = (player.discordId ?? '').trim();
+    },
+    getDiscordIdError(player: NewPlayerModel): string {
+      if (player.isBot === true || player.aiLevel !== undefined) {
+        return '';
+      }
+      const discordId = (player.discordId ?? '').trim();
+      if (discordId === '') {
+        return this.requiresDiscordLogin ? 'Discord ID is required.' : '';
+      }
+      if (!/^[1-9][0-9]*$/.test(discordId)) {
+        return 'Use digits only.';
+      }
+      const duplicate = this.getPlayers().some((other) => other !== player && (other.discordId ?? '').trim() === discordId);
+      if (duplicate) {
+        return 'This Discord ID is already used by another player.';
+      }
+      return '';
+    },
     conglomeratesTeamCount(): number {
       return Math.max(1, Math.floor(this.playersCount / 2));
     },
@@ -2762,6 +2814,7 @@ export default defineComponent({
       }
 
       players.forEach((player) => {
+        player.discordId = this.discordLoginConfigured ? (player.discordId ?? '').trim() : '';
         player.telegramID = turnBasedGame ? this.normalizeTelegramId(player.telegramID) : '';
         player.preludeHandicap = normalizePreludeHandicap(player.preludeHandicap);
         if (turnBasedGame) {
@@ -2941,15 +2994,26 @@ export default defineComponent({
       // Auto-save current settings as last used
       new CreateGameSettingsStorage().saveSettings(TemplateManager.serializeFormState(this));
 
+      const invalidDiscordPlayer = this.getPlayers().find((player) => this.getDiscordIdError(player) !== '');
+      if (invalidDiscordPlayer !== undefined) {
+        alert(this.getDiscordIdError(invalidDiscordPlayer));
+        return;
+      }
+
       fetch(paths.API_CREATEGAME, {'method': 'POST', 'body': dataToSend, 'headers': {'Content-Type': 'application/json'}})
-        .then((response) => response.text())
-        .then((text) => {
-          try {
-            const json = JSON.parse(text);
-            onSuccess(json);
-          } catch (err) {
-            throw new Error(text);
+        .then((response) => {
+          if (response.status === statusCode.unauthorized || response.status === statusCode.forbidden) {
+            redirectToLogin();
+            return;
           }
+          return response.text().then((text) => {
+            try {
+              const json = JSON.parse(text);
+              onSuccess(json);
+            } catch (err) {
+              throw new Error(text);
+            }
+          });
         })
         .catch((error: Error) => {
           alert(error.message);

@@ -35,6 +35,7 @@ function newGameConfigForTest(): NewGameConfig {
       handicap: 0,
       first: true,
       isBot: false,
+      discordId: '100000000000000001',
     }],
     expansions: {
       ...DEFAULT_EXPANSIONS,
@@ -100,8 +101,14 @@ function newGameConfigForTest(): NewGameConfig {
 }
 
 function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
+  const playersWithDiscordIds = players.map((player, index) => {
+    if (player.isBot === true || player.aiLevel !== undefined || player.discordId !== undefined) {
+      return player;
+    }
+    return {...player, discordId: '1000000000000000' + index};
+  });
   return {
-    players,
+    players: playersWithDiscordIds,
     expansions: {
       ...DEFAULT_EXPANSIONS,
       corpera: true,
@@ -255,6 +262,84 @@ describe('ApiCreateGame', () => {
     expect(game!.gameOptions.undoStepOption).is.true;
     expect(game!.gameOptions.boardSelection).deep.eq(boardOptions(RandomBoardOption.OFFICIAL));
     expect(boardOptions(RandomBoardOption.OFFICIAL)).contains(game!.gameOptions.boardName);
+  });
+
+  async function postNewGameConfig(config: NewGameConfig): Promise<void> {
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitString(JSON.stringify(config));
+      req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+  }
+
+  it('allows guest games without a session', async () => {
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false}]);
+    delete config.players[0].discordId;
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.players[0].user).is.undefined;
+    expect(game!.gameOptions.requiresDiscordLogin).is.false;
+  });
+
+  it('requires a session when the game requires Discord login', async () => {
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false, discordId: '123456789012345678'}]);
+    config.requiresDiscordLogin = true;
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.unauthorized);
+    expect(res.content).eq('Unauthorized');
+  });
+
+  it('creates a protected game and binds seats when logged in', async () => {
+    scaffolding.ctx.user = {id: 'test-user', username: 'test', discriminator: '0000'};
+    const discordId = '123456789012345678';
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false, discordId}]);
+    config.requiresDiscordLogin = true;
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.gameOptions.requiresDiscordLogin).is.true;
+    expect(game!.players[0].user).eq(discordId);
+  });
+
+  it('binds human players to their Discord IDs', async () => {
+    const discordId = '123456789012345678';
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false, discordId}]);
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.players[0].user).eq(discordId);
+  });
+
+  it('rejects a missing Discord ID when the game requires Discord login', async () => {
+    scaffolding.ctx.user = {id: 'test-user', username: 'test', discriminator: '0000'};
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false}]);
+    config.requiresDiscordLogin = true;
+    delete config.players[0].discordId;
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('missing Discord ID for player 1');
+  });
+
+  it('rejects an invalid Discord ID for a human player', async () => {
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false, discordId: 'not-a-snowflake'}]);
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('invalid Discord ID for player 1');
+  });
+
+  it('rejects duplicate Discord IDs', async () => {
+    const config = newGameConfig([
+      {name: 'One', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false, discordId: '123456789012345678'},
+      {name: 'Two', color: 'red', beginner: false, handicap: 0, first: false, isBot: false, discordId: '123456789012345678'},
+    ]);
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('duplicate Discord ID for player 2');
   });
 
   it('does not create bot takeover capabilities', async () => {
@@ -862,7 +947,7 @@ describe('ApiCreateGame', () => {
   it('red rover solo game', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitString(JSON.stringify({players: [{name: 'a player', color: 'red'}]}));
+      scaffolding.req.emitString(JSON.stringify({players: [{name: 'a player', color: 'red', discordId: '100000000000000001'}]}));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -879,7 +964,7 @@ describe('ApiCreateGame', () => {
     await Promise.all(([emit, post]));
   }
 
-  const twoPlayers = [{name: 'a', color: 'red'}, {name: 'b', color: 'blue'}];
+  const twoPlayers = [{name: 'a', color: 'red', discordId: '100000000000000001'}, {name: 'b', color: 'blue', discordId: '100000000000000002'}];
 
   it('rejects a custom corporation list smaller than players × starting corporations', async () => {
     await postConfig({
@@ -976,7 +1061,7 @@ describe('ApiCreateGame', () => {
   function postGame(handler: ApiCreateGame, request: MockRequest, response: MockResponse) {
     const post = handler.post(request, response, scaffolding.ctx);
     const emit = Promise.resolve().then(() => {
-      request.emitString(JSON.stringify({players: [{name: 'a player', color: 'red'}]}));
+      request.emitString(JSON.stringify({players: [{name: 'a player', color: 'red', discordId: '100000000000000001'}]}));
       request.emitter.emit('end');
     });
     return Promise.all([emit, post]);

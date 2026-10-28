@@ -290,20 +290,26 @@ describe('ServeAsset', () => {
 
   it('serves the ELO mirror at the root without redirecting', async () => {
     instance = new ServeAsset(undefined, false, fileApi);
-    scaffolding.url = '/elo-data.json?ts=123';
-    await scaffolding.get(instance, res);
+    for (const url of ['/elo-data.json?ts=123', '/elo-data?ts=123']) {
+      const rootRes = new MockResponse();
+      scaffolding.url = url;
+      await scaffolding.get(instance, rootRes);
 
-    expect(res.statusCode).eq(statusCode.ok);
-    expect(res.content).eq('data: ' + resolveEloAssetPath('elo-data.json'));
+      expect(rootRes.statusCode, url).eq(statusCode.ok);
+      expect(rootRes.content, url).eq('data: ' + resolveEloAssetPath('elo-data.json'));
+    }
   });
 
   it('serves solo records at the root without redirecting', async () => {
     instance = new ServeAsset(undefined, false, fileApi);
-    scaffolding.url = '/solo-records.json';
-    await scaffolding.get(instance, res);
+    for (const url of ['/solo-records.json', '/solo-records']) {
+      const rootRes = new MockResponse();
+      scaffolding.url = url;
+      await scaffolding.get(instance, rootRes);
 
-    expect(res.statusCode).eq(statusCode.ok);
-    expect(res.content).eq('data: ' + resolveEloAssetPath('solo-records.json'));
+      expect(rootRes.statusCode, url).eq(statusCode.ok);
+      expect(rootRes.content, url).eq('data: ' + resolveEloAssetPath('solo-records.json'));
+    }
   });
 
   it('serves /elo/data.json from the elo asset path', async () => {

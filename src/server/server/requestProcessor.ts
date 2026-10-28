@@ -186,6 +186,7 @@ function getHandler(pathname: string): IHandler | undefined {
   // route them explicitly to ServeAsset so /elo/data.json does not fall through
   // to the generic 404 handler.
   if (pathname === 'elo' || pathname === 'solo' || pathname === 'elo-data.json' || pathname === 'solo-records.json' ||
+      pathname === 'elo-data' || pathname === 'solo-records' ||
       pathname.startsWith('elo/') || pathname.startsWith('solo/')) {
     return ServeAsset.INSTANCE;
   }

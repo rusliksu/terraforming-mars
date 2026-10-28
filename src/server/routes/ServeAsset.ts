@@ -65,6 +65,28 @@ export class ServeAsset extends Handler {
 
     // Remove leading slash and query parameters.
     const path = req.url.substring(1).split('?')[0];
+    // The ELO page uses relative data URLs, so it must live under a trailing slash.
+    if (path === 'elo') {
+      res.writeHead(301, {'Location': '/elo/'});
+      res.end();
+      return;
+    }
+    // The ELO page treats these as optional additions. Keep the browser console
+    // clean when the deployment has no solo/stats snapshot yet.
+    if (path === 'elo/solo-records.json' || path === 'elo/stats.json') {
+      const optionalFile = resolveEloAssetPath(path);
+      if (optionalFile !== undefined && !this.fileApi.existsSync(optionalFile)) {
+        const body = path === 'elo/solo-records.json' ? '{"records":[]}' : '{}';
+        res.writeHead(200, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'Content-Length': Buffer.byteLength(body),
+        });
+        res.end(body);
+        return;
+      }
+    }
+
     const dynamicEloAsset = isDynamicEloAssetPath(path);
 
     const supportedEncodings = this.supportedEncodings(req);
@@ -207,6 +229,10 @@ export class ServeAsset extends Handler {
     }
 
     switch (urlPath) {
+    case 'elo/':
+    case 'elo/index.html':
+      return {file: 'elo/index.html'};
+
     case 'assets/index.html':
     case 'assets/Prototype.ttf':
     case 'assets/Prototype-ru.ttf':

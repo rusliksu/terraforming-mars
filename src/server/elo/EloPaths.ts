@@ -12,12 +12,24 @@ export function getEloMirrorPath(): string {
   return path.join(getEloDirectory(), 'elo-data.json');
 }
 
+export function getEloSoloRecordsPath(): string {
+  return path.join(getEloDirectory(), 'solo-records.json');
+}
+
+export function getEloStatsPath(): string {
+  return path.join(getEloDirectory(), 'stats.json');
+}
+
 export function resolveEloAssetPath(urlPath: string): string | undefined {
   switch (urlPath) {
   case 'elo/data.json':
     return getEloPrimaryPath();
   case 'elo/elo-data.json':
     return getEloMirrorPath();
+  case 'elo/solo-records.json':
+    return getEloSoloRecordsPath();
+  case 'elo/stats.json':
+    return getEloStatsPath();
   default:
     return undefined;
   }

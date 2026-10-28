@@ -75,7 +75,8 @@ export class ServeAsset extends Handler {
       return;
     }
     if ((path === 'elo' || path === 'solo' || path.startsWith('solo/')) &&
-        path !== 'solo/elo-data/' && path !== 'solo/solo-records/') {
+        path !== 'solo/elo-data' && path !== 'solo/elo-data/' &&
+        path !== 'solo/solo-records' && path !== 'solo/solo-records/') {
       res.statusCode = 301;
       res.setHeader('Location', '/elo/');
       res.end();
@@ -84,10 +85,11 @@ export class ServeAsset extends Handler {
     // The ELO page treats these as optional additions. Keep the browser console
     // clean when the deployment has no solo/stats snapshot yet.
     if (path === 'elo/solo-records.json' || path === 'solo-records.json' || path === 'solo-records' ||
-        path === 'solo/solo-records/' || path === 'elo/stats.json') {
+        path === 'solo/solo-records' || path === 'solo/solo-records/' || path === 'elo/stats.json') {
       const optionalFile = resolveEloAssetPath(path);
       if (optionalFile !== undefined && !this.fileApi.existsSync(optionalFile)) {
-        const body = path.endsWith('solo-records.json') || path === 'solo-records' || path === 'solo/solo-records/' ? '{"records":[]}' : '{}';
+        const body = path.endsWith('solo-records.json') || path === 'solo-records' ||
+          path === 'solo/solo-records' || path === 'solo/solo-records/' ? '{"records":[]}' : '{}';
         res.writeHead(200, {
           'Content-Type': 'application/json; charset=utf-8',
           'Cache-Control': 'no-store',

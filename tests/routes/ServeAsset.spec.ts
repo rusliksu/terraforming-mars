@@ -290,7 +290,12 @@ describe('ServeAsset', () => {
 
   it('serves solo-prefixed data aliases without redirecting', async () => {
     instance = new ServeAsset(undefined, false, fileApi);
-    for (const [url, path] of [['/solo/elo-data/', 'solo/elo-data/'], ['/solo/solo-records/', 'solo/solo-records/']]) {
+    for (const [url, path] of [
+      ['/solo/elo-data', 'solo/elo-data'],
+      ['/solo/elo-data/', 'solo/elo-data/'],
+      ['/solo/solo-records', 'solo/solo-records'],
+      ['/solo/solo-records/', 'solo/solo-records/'],
+    ]) {
       const aliasRes = new MockResponse();
       scaffolding.url = url;
       await scaffolding.get(instance, aliasRes);

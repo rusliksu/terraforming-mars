@@ -27,11 +27,13 @@ export function resolveEloAssetPath(urlPath: string): string | undefined {
   case 'elo/elo-data.json':
   case 'elo-data.json':
   case 'elo-data':
+  case 'solo/elo-data':
   case 'solo/elo-data/':
     return getEloMirrorPath();
   case 'elo/solo-records.json':
   case 'solo-records.json':
   case 'solo-records':
+  case 'solo/solo-records':
   case 'solo/solo-records/':
     return getEloSoloRecordsPath();
   case 'elo/stats.json':

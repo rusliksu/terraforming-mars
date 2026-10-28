@@ -312,6 +312,18 @@ describe('ServeAsset', () => {
     }
   });
 
+  it('redirects trailing-slash data aliases to their canonical URLs', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    for (const [url, location] of [['/elo-data/', '/elo-data'], ['/solo-records/', '/solo-records']]) {
+      const aliasRes = new MockResponse();
+      scaffolding.url = url;
+      await scaffolding.get(instance, aliasRes);
+
+      expect(aliasRes.statusCode, url).eq(statusCode.movedPermanently);
+      expect(aliasRes.headers.get('Location'), url).eq(location);
+    }
+  });
+
   it('serves /elo/data.json from the elo asset path', async () => {
     instance = new ServeAsset(undefined, false, fileApi);
     scaffolding.url = '/elo/data.json?ts=123';

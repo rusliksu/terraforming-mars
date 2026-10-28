@@ -68,6 +68,12 @@ export class ServeAsset extends Handler {
     // The ELO page uses relative data URLs, so it must live under a trailing slash.
     // /solo has never had its own page; the public rating table is the closest useful
     // destination, and this keeps old bookmarks from ending on a 404.
+    if (path === 'elo-data/' || path === 'solo-records/') {
+      res.statusCode = 301;
+      res.setHeader('Location', path === 'elo-data/' ? '/elo-data' : '/solo-records');
+      res.end();
+      return;
+    }
     if (path === 'elo' || path === 'solo' || path.startsWith('solo/')) {
       res.statusCode = 301;
       res.setHeader('Location', '/elo/');

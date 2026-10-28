@@ -66,8 +66,11 @@ export class ServeAsset extends Handler {
     // Remove leading slash and query parameters.
     const path = req.url.substring(1).split('?')[0];
     // The ELO page uses relative data URLs, so it must live under a trailing slash.
-    if (path === 'elo') {
-      res.writeHead(301, {'Location': '/elo/'});
+    // /solo has never had its own page; the public rating table is the closest useful
+    // destination, and this keeps old bookmarks from ending on a 404.
+    if (path === 'elo' || path === 'solo') {
+      res.statusCode = 301;
+      res.setHeader('Location', '/elo/');
       res.end();
       return;
     }

@@ -276,6 +276,15 @@ describe('ServeAsset', () => {
     expect(res.statusCode).eq(statusCode.notFound);
   });
 
+  it('redirects /solo to the ELO ratings page', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    scaffolding.url = '/solo';
+    await scaffolding.get(instance, res);
+
+    expect(res.statusCode).eq(statusCode.movedPermanently);
+    expect(res.headers.get('Location')).eq('/elo/');
+  });
+
   it('serves /elo/data.json from the elo asset path', async () => {
     instance = new ServeAsset(undefined, false, fileApi);
     scaffolding.url = '/elo/data.json?ts=123';

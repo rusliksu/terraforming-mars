@@ -43,22 +43,29 @@ export function normalizeTelegramId(telegramID: string | undefined): string {
  * create-game handler would read 'boards.length' off undefined and fail with a 500.
  */
 export function normalizeLegacyBoardSelection(gameReq: NewGameConfig): void {
+  let selection: Array<BoardName | RandomBoardOption>;
   if (Array.isArray(gameReq.boards) && gameReq.boards.length > 0) {
-    return;
+    selection = gameReq.boards;
+  } else if (gameReq.board === undefined || gameReq.board === null) {
+    selection = [BoardName.THARSIS];
+  } else {
+    selection = [gameReq.board];
   }
-  const legacy = gameReq.board;
-  if (legacy === undefined || legacy === null) {
-    gameReq.boards = [BoardName.THARSIS];
-    return;
+
+  const boards = new Set<BoardName>();
+  for (const choice of selection) {
+    if (choice === RandomBoardOption.OFFICIAL || choice === RandomBoardOption.ALL) {
+      for (const board of boardOptions(choice)) {
+        boards.add(board);
+      }
+      continue;
+    }
+    if (!Object.values(BoardName).includes(choice as BoardName)) {
+      throw RouteError.badRequest('Invalid board: ' + String(choice));
+    }
+    boards.add(choice as BoardName);
   }
-  if (legacy === RandomBoardOption.OFFICIAL || legacy === RandomBoardOption.ALL) {
-    gameReq.boards = boardOptions(legacy);
-    return;
-  }
-  if (!Object.values(BoardName).includes(legacy)) {
-    throw RouteError.badRequest('Invalid board: ' + String(legacy));
-  }
-  gameReq.boards = [legacy];
+  gameReq.boards = [...boards];
 }
 
 export function isTelegramIdValid(telegramID: string | undefined): boolean {
@@ -215,7 +222,7 @@ export class ApiCreateGame extends Handler {
           normalizePreludeHandicap(p.preludeHandicap),
         );
         player.aiLevel = aiLevel;
-        if (aiLevel === undefined && p.isBot !== true && p.discordId !== undefined) {
+        if (aiLevel === undefined && p.isBot !== true && p.discordId !== undefined && p.discordId !== '') {
           player.user = p.discordId;
         }
         return player;

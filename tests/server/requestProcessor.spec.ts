@@ -76,6 +76,33 @@ describe('requestProcessor', () => {
     }
   });
 
+  it('routes public ELO snapshots to the asset handler', async () => {
+    const originalGetInstance = GameLoader.getInstance;
+    const originalProcessRequest = ServeAsset.INSTANCE.processRequest;
+    let handledUrl: string | undefined;
+    (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = (() => {
+      return {} as ReturnType<typeof GameLoader.getInstance>;
+    }) as typeof GameLoader.getInstance;
+    ServeAsset.INSTANCE.processRequest = (async (req, res) => {
+      handledUrl = req.url;
+      res.statusCode = statusCode.ok;
+      res.end();
+    }) as typeof ServeAsset.INSTANCE.processRequest;
+
+    const req = new MockRequest();
+    const res = new MockResponse();
+    req.url = '/elo/data.json';
+    req.headers.host = 'tm.knightbyte.win';
+
+    try {
+      await processRequest(req, res);
+      expect(handledUrl).eq('/elo/data.json');
+    } finally {
+      ServeAsset.INSTANCE.processRequest = originalProcessRequest;
+      (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = originalGetInstance;
+    }
+  });
+
   it('does not capture expected application or input errors', async () => {
     const originalGetInstance = GameLoader.getInstance;
     const originalProcessRequest = ServeAsset.INSTANCE.processRequest.bind(ServeAsset.INSTANCE);

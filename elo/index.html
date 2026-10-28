@@ -19,6 +19,8 @@ h2 { font-size: 1.3em; margin-top: 40px; }
 .tab.active { background: #ff6b35; color: #fff; border-color: #ff6b35; }
 .tab:hover:not(.active) { border-color: #ff6b35; color: #ccc; }
 table { border-collapse: collapse; width: 100%; max-width: 700px; margin: 0 auto; }
+.table-scroll { width: 100%; max-width: 700px; margin: 0 auto; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-scroll > table { margin: 0; }
 th { background: #16213e; color: #c4a35a; padding: 10px; text-align: left; border-bottom: 2px solid #333; }
 td { padding: 8px 10px; border-bottom: 1px solid #333; }
 tr:hover { background: #16213e; }
@@ -312,10 +314,12 @@ a:hover { text-decoration: underline; }
   <span class="tab" data-mode="solo">Solo Records</span>
   <span class="tab" data-mode="stats">Stats</span>
 </div>
+<div class="table-scroll rating-only">
 <table class="rating-only">
 <thead><tr><th class="rank">#</th><th>Player</th><th>ELO</th><th>Avg place</th><th>Games</th><th>Avg VP</th><th>Avg gen</th><th>VP Margin</th></tr></thead>
 <tbody id="tbody"></tbody>
 </table>
+</div>
 
 <h2 class="solo-only">Solo Records</h2>
 <div class="solo-section solo-only">

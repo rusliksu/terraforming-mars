@@ -46,6 +46,18 @@ describe('Wrybit board with our track and space data', () => {
     }
   });
 
+  it('uses the large-map positions for Amazonis Planitia', () => {
+    const wrapper = mount(Board, {...globalConfig, props: {
+      spaces: [space('03')], expansions: DEFAULT_EXPANSIONS, boardName: BoardName.AMAZONIS_PLANITIA, venusScaleLevel: 0,
+    }});
+    try {
+      expect(wrapper.classes()).contains('board-cont--large');
+      expect(wrapper.get('#main_board').classes()).contains('board--large');
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
   it('renders board player markers as fixed isometric cubes, not randomly turned tops', () => {
     const marked: SpaceModel = {...space('100'), color: 'blue'};
     const wrapper = mount(Board, {...globalConfig, props: {

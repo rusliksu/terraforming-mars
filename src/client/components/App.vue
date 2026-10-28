@@ -15,11 +15,10 @@
     <aside v-if="!wrybitMode && screen !== 'cards'" class="classic-mode-switch">
       <button type="button" class="btn" data-test="wrybit-layout" @click="useWrybitInterface" v-i18n>Wrybit layout</button>
     </aside>
-    <div class="main-container">
+    <div class="main-container" :class="{'wrybit-booting': wrybitMode && !wrybitReady}">
       <div v-if="wrybitMode && !wrybitReady" class="wrybit-boot" role="status" aria-live="polite">
         <div class="wrybit-boot__spinner"></div>
       </div>
-      <template v-else>
       <component :is="wrybitMode && wrybitReady && wrybitViews.startScreen ? wrybitViews.startScreen : 'StartScreen'" v-if="screen === 'start-screen'"/>
       <CreateGameForm
         v-else-if="screen === 'create-game-form'"
@@ -55,7 +54,6 @@
       <component :is="wrybitMode && wrybitReady && wrybitViews.loginHome ? wrybitViews.loginHome : 'LoginHome'" v-else-if="screen === 'login-home'"/>
       <component :is="wrybitMode && wrybitReady && wrybitViews.help ? wrybitViews.help : 'Help'" v-else-if="screen === 'help'"/>
       <component :is="wrybitViews.stats ?? 'StartScreen'" v-else-if="screen === 'stats'"/>
-      </template>
     </div>
     <InputPortal v-if="screen === 'player-home' && playerView !== undefined && playerView.game.phase !== 'end'"
       :target="inputHosts.target.value">
@@ -524,8 +522,12 @@ export default defineComponent({
 .topmost-replay > .main-container { margin: 0; }
 .topmost-replay > .notice { position: static; margin: 24px; }
 
-/* While the optional Wrybit chunk loads, keep the classic page out of the way.
-   Otherwise the classic layout flashes for a moment before the new one replaces it. */
+/* While the optional Wrybit chunk loads, keep the classic page mounted but out of
+   the way; otherwise it flashes before the new layout replaces it. */
+.main-container.wrybit-booting > :not(.wrybit-boot) {
+  visibility: hidden;
+  pointer-events: none;
+}
 .wrybit-boot {
   display: grid;
   min-height: 70vh;

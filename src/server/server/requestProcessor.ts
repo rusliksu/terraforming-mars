@@ -185,7 +185,8 @@ function getHandler(pathname: string): IHandler | undefined {
   // Dynamic ELO snapshots are public assets, but they are not under /assets/:
   // route them explicitly to ServeAsset so /elo/data.json does not fall through
   // to the generic 404 handler.
-  if (pathname === 'elo' || pathname === 'solo' || pathname.startsWith('elo/') || pathname.startsWith('solo/')) {
+  if (pathname === 'elo' || pathname === 'solo' || pathname === 'elo-data.json' || pathname === 'solo-records.json' ||
+      pathname.startsWith('elo/') || pathname.startsWith('solo/')) {
     return ServeAsset.INSTANCE;
   }
   return undefined;

@@ -288,6 +288,24 @@ describe('ServeAsset', () => {
     }
   });
 
+  it('serves the ELO mirror at the root without redirecting', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    scaffolding.url = '/elo-data.json?ts=123';
+    await scaffolding.get(instance, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(res.content).eq('data: ' + resolveEloAssetPath('elo-data.json'));
+  });
+
+  it('serves solo records at the root without redirecting', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    scaffolding.url = '/solo-records.json';
+    await scaffolding.get(instance, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(res.content).eq('data: ' + resolveEloAssetPath('solo-records.json'));
+  });
+
   it('serves /elo/data.json from the elo asset path', async () => {
     instance = new ServeAsset(undefined, false, fileApi);
     scaffolding.url = '/elo/data.json?ts=123';

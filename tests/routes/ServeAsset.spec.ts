@@ -276,13 +276,16 @@ describe('ServeAsset', () => {
     expect(res.statusCode).eq(statusCode.notFound);
   });
 
-  it('redirects /solo to the ELO ratings page', async () => {
+  it('redirects solo URLs to the ELO ratings page', async () => {
     instance = new ServeAsset(undefined, false, fileApi);
-    scaffolding.url = '/solo';
-    await scaffolding.get(instance, res);
+    for (const url of ['/solo', '/solo/', '/solo/stats']) {
+      const soloRes = new MockResponse();
+      scaffolding.url = url;
+      await scaffolding.get(instance, soloRes);
 
-    expect(res.statusCode).eq(statusCode.movedPermanently);
-    expect(res.headers.get('Location')).eq('/elo/');
+      expect(soloRes.statusCode, url).eq(statusCode.movedPermanently);
+      expect(soloRes.headers.get('Location'), url).eq('/elo/');
+    }
   });
 
   it('serves /elo/data.json from the elo asset path', async () => {

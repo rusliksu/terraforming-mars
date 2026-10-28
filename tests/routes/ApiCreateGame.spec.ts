@@ -284,6 +284,26 @@ describe('ApiCreateGame', () => {
     expect(game!.gameOptions.requiresDiscordLogin).is.false;
   });
 
+  it('treats an empty discord ID as a guest seat', async () => {
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false}]);
+    config.players[0].discordId = '';
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.players[0].user).is.undefined;
+  });
+
+  it('expands a random board option instead of failing on an unknown board', async () => {
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false}]);
+    config.boards = [RandomBoardOption.OFFICIAL] as unknown as BoardName[];
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(boardOptions(RandomBoardOption.OFFICIAL)).includes(game!.gameOptions.boardName);
+  });
+
   it('requires a session when the game requires Discord login', async () => {
     const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false, discordId: '123456789012345678'}]);
     config.requiresDiscordLogin = true;

@@ -288,6 +288,18 @@ describe('ServeAsset', () => {
     }
   });
 
+  it('serves solo-prefixed data aliases without redirecting', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    for (const [url, path] of [['/solo/elo-data/', 'solo/elo-data/'], ['/solo/solo-records/', 'solo/solo-records/']]) {
+      const aliasRes = new MockResponse();
+      scaffolding.url = url;
+      await scaffolding.get(instance, aliasRes);
+
+      expect(aliasRes.statusCode, url).eq(statusCode.ok);
+      expect(aliasRes.content, url).eq('data: ' + resolveEloAssetPath(path));
+    }
+  });
+
   it('serves the ELO mirror at the root without redirecting', async () => {
     instance = new ServeAsset(undefined, false, fileApi);
     for (const url of ['/elo-data.json?ts=123', '/elo-data?ts=123']) {

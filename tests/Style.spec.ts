@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {readFileSync} from 'fs';
+import {existsSync, readFileSync} from 'fs';
 import {DEFAULT_PLAYER_COLORS, PLAYER_COLORS, RESERVED_PLAYER_COLORS} from '../src/common/Color';
 
 function read(path: string): string {
@@ -611,6 +611,33 @@ describe('Styles', () => {
     expect(elo).to.contain('function isHiddenEloPlayer(name, displayName)');
     expect(elo).to.contain('if (isHiddenEloPlayer(name, p.displayName)) continue;');
     expect(elo).to.contain('return visibleGameResults(g).some(function(r) { return r.name === _filterPlayer; });');
+  });
+
+  it('uses the actual Commercial District tile asset in Wrybit', () => {
+    const board = read('src/styles/wrybit/board.less');
+    const cards = read('src/styles/wrybit/cards/render-and-tiles.less');
+
+    expect(board).not.to.contain('commerical_district');
+    expect(cards).not.to.contain('commerical_district');
+    expect(board).to.contain('commercial_district.png');
+    expect(cards).to.contain('commercial_district.png');
+    expect(existsSync('assets/tiles/special_tile_icons/commercial_district.png')).is.true;
+  });
+
+  it('has art for Conglomerates milestone variants whose base art was retired', () => {
+    const playerHome = read('src/styles/player_home.less');
+    expect(playerHome).to.contain('colonizer6 colonizer6 32 21');
+    expect(playerHome).to.contain('spacefarer9 spacefarer9 25 22');
+    expect(existsSync('assets/ma/colonizer6.png')).is.true;
+    expect(existsSync('assets/ma/spacefarer9.png')).is.true;
+  });
+
+  it('scrolls the ELO ratings table instead of overflowing the mobile viewport', () => {
+    const elo = read('elo/index.html');
+
+    expect(elo).to.contain('<div class="table-scroll rating-only">');
+    expect(elo).to.contain('.table-scroll { width: 100%; max-width: 700px; margin: 0 auto; overflow-x: auto;');
+    expect(elo).to.contain('.tm-stats-section { width: 100%; max-width: 1500px;');
   });
 
   it('shows finish time and duration in recent ELO games', () => {

@@ -54,6 +54,28 @@ GitHub Actions in this repo are CI-only. Live deploys for `tm.knightbyte.win` us
 - Verify and promote the tested artifact to prod: `pwsh -File scripts/release_tm_prod.ps1`
 - Emergency direct prod deploy remains blocked by default in `deploy_tm_server.ps1`
 
+## Verify Production After Deploy
+
+Run these commands from the clean release checkout after a promotion:
+
+```powershell
+git status --short
+git rev-parse HEAD
+Invoke-WebRequest https://tm.knightbyte.win/ | Select-Object StatusCode
+Invoke-RestMethod https://tm.knightbyte.win/release.json | Select-Object environment,gitSha,artifactSha256,sourceTreeClean
+npx mocha --import=tsx --require tests/testing/setup.ts "tests/Style.spec.ts"
+```
+
+Expected values:
+
+- `git status --short` prints nothing.
+- local `HEAD` equals `release.json.gitSha`.
+- `release.json.environment` is `prod` and `sourceTreeClean` is `true`.
+- the home page returns HTTP `200`.
+- the Style test suite reports `32 passing`.
+
+The packaged production runtime does not contain `tests/` or `src/`; run the test command from the source checkout whose `HEAD` matches the production `gitSha`.
+
 ## Upstream
 
 Based on the [open-source TM project](https://github.com/terraforming-mars/terraforming-mars) by Brian Folts and contributors. Regularly synced with upstream.

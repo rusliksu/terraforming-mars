@@ -626,6 +626,7 @@ describe('Styles', () => {
 
     expect(elo).to.contain('<div class="table-scroll rating-only">');
     expect(elo).to.contain('.table-scroll { width: 100%; max-width: 700px; margin: 0 auto; overflow-x: auto;');
+    expect(elo).to.contain('.tm-stats-section { width: 100%; max-width: 1500px;');
   });
 
   it('shows finish time and duration in recent ELO games', () => {

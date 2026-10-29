@@ -198,7 +198,7 @@ a:hover { text-decoration: underline; }
 
 /* Statistics */
 .stats-only { display: none; }
-.tm-stats-section { width: min(1500px, calc(100vw - 24px)); margin: 0 auto 32px; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
+.tm-stats-section { width: 100%; max-width: 1500px; margin: 0 auto 32px; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
 .tm-stats-overview { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 10px; margin: 0 auto 18px; }
 .tm-stats-card { background: #16213e; border: 1px solid #333; border-radius: 8px; padding: 12px; text-align: center; }
 .tm-stats-card .label { color: #888; font-size: 0.78em; text-transform: uppercase; }
@@ -274,7 +274,7 @@ a:hover { text-decoration: underline; }
   .matchups-table .matchups-opponent { height: 96px; }
   .matchups-table .matchups-opponent span { max-height: 88px; }
   .matchups-pair-metrics { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
-  .tm-stats-section { width: calc(100vw - 16px); }
+  .tm-stats-section { width: 100%; }
   .tm-stats-overview { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
   .tm-stats-profile-list { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
   .tm-stats-profile-columns { grid-template-columns: 1fr; }

@@ -11,6 +11,10 @@ All notable changes to the custom Terraforming Mars server are recorded here.
 - Contained the ELO ratings table and Stats section within the mobile viewport; wide tables now scroll inside their own container.
 - Prevented the ELO page from producing page-level horizontal overflow on narrow screens.
 
+### Changed
+
+- Production artifacts now include README.md and CHANGELOG.md alongside the runtime files.
+
 ### Verified
 
 - Production release: 87d94cb7fbbb11d5505a2f8c4ff1d9d728cfb61f

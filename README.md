@@ -74,7 +74,7 @@ Expected values:
 - the home page returns HTTP `200`.
 - the Style test suite reports `32 passing`.
 
-The packaged production runtime does not contain `tests/` or `src/`; run the test command from the source checkout whose `HEAD` matches the production `gitSha`.
+The packaged production runtime includes `README.md` and `CHANGELOG.md`, but not `tests/` or `src/`; run the test command from the source checkout whose `HEAD` matches the production `gitSha`.
 
 ## Upstream
 

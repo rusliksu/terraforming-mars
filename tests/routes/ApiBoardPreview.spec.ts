@@ -36,7 +36,7 @@ describe('ApiBoardPreview', () => {
     const mars = model.spaces.filter((space) => space.spaceType !== SpaceType.COLONY);
     expect(mars).has.length(61);
     expect(mars.filter((space) => space.spaceType === SpaceType.OCEAN)).has.length(12);
-    expect(mars[0]).deep.eq({id: '03', x: 4, y: 0, spaceType: SpaceType.LAND, bonus: [SpaceBonus.STEEL, SpaceBonus.STEEL]});
+    expect(mars[0]).deep.eq({id: '03', x: 4, y: 0, a9: 'A1', spaceType: SpaceType.LAND, bonus: [SpaceBonus.STEEL, SpaceBonus.STEEL]});
     expect(mars.find((space) => space.highlight === 'noctis')?.id).eq('31');
     expect(model.randomExample).is.false;
     expect(Object.keys(model)).deep.eq(['boardName', 'spaces', 'randomExample']);

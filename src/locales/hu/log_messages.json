@@ -176,6 +176,7 @@
   "${0} converted plants into a greenery": "${0} palántákat váltott növényzetlapkává.",
   "${0} traded with ${1}": "${0} kereskedett ${1} gyarmattal",
   "${0} used ${1} standard project": "${0} használta a(z) ${1} általános projektet.",
+  "${0} used ${1} standard project [ ${2} ]": "${0} használta a(z) ${1} általános projektet. [ ${2} ]",
   "${0} built a colony on ${1}": "${0} gyarmatot épített ${1}-on.",
   "${0} bought ${1} card(s)": "${0} ${1} kártyát vásárolt.",
   "${0} acted as World Government and increased Venus scale": "${0} a Világkormányzat nyomására növelte a Vénusz szintet.",

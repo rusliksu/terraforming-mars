@@ -11,6 +11,7 @@ import {TileType} from '../../../../src/common/TileType';
 import {testGame} from '../../../TestGame';
 import {assertPlaceTile} from '../../../assertions';
 import {Payment} from '../../../../src/common/inputs/Payment';
+import {LogMessageDataType} from '../../../../src/common/logs/LogMessageDataType';
 
 describe('GreeneryStandardProject', () => {
   let card: GreeneryStandardProject;
@@ -41,6 +42,15 @@ describe('GreeneryStandardProject', () => {
     expect(player.megaCredits).eq(0);
     expect(player.terraformRating).eq(21);
     expect(game.getOxygenLevel()).eq(1);
+  });
+
+  it('logs the resources spent', () => {
+    player.megaCredits = card.cost;
+    card.payAndExecute(player, Payment.of({megacredits: card.cost}));
+
+    const log = game.gameLog[game.gameLog.length - 1];
+    expect(log.message).eq('${0} used ${1} standard project [ ${2} ]');
+    expect(log.data[2]).deep.eq({type: LogMessageDataType.STRING, value: '-23:r:mc:'});
   });
 
   it('can act when maximized', () => {

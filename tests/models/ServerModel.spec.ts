@@ -24,6 +24,7 @@ import {AdhaiHighOrbitConstructions} from '../../src/server/cards/pathfinders/Ad
 import {Birds} from '../../src/server/cards/base/Birds';
 import {Asteroid} from '../../src/server/cards/base/Asteroid';
 import {ICard} from '../../src/server/cards/ICard';
+import {SpaceType} from '../../src/common/boards/SpaceType';
 
 describe('ServerModel', () => {
   it('projects conditional discounts from canonical methods without changing payable prices or pending input', () => {
@@ -361,6 +362,14 @@ describe('ServerModel', () => {
       drawPile: game.turmoil!.globalEventDealer.deck.length,
       discardPile: game.turmoil!.globalEventDealer.discards.length,
     });
+  });
+
+  it('labels Mars spaces with their printed coordinates', () => {
+    const [, player] = testGame(2);
+    const spaces = Server.getPlayerModel(player).game.spaces;
+
+    expect(spaces.find((space) => space.id === '03')?.a9).eq('A1');
+    expect(spaces.filter((space) => space.spaceType === SpaceType.COLONY).every((space) => space.a9 === undefined)).is.true;
   });
 
   it('highlights Venus Phase 2\'s Stratopolis/Maxwell Base reserved spots before their tile is placed', () => {

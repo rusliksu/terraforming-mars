@@ -3,12 +3,12 @@
 //   Name | Resources (stock large, production small) | Tags | Score | played cards
 // PlayersTable sets the column grid as --wrybit-players-table-columns (playersTableLayout.ts).
 
-@players-table-row-height: 48px;
-@players-table-own-row-height: 56px;
+@players-table-row-height: 58px;
+@players-table-own-row-height: 66px;
 // Escape Velocity: third line (clock) under name and corporation
 @players-table-escape-velocity-row-height: 66px;
 @players-table-escape-velocity-own-row-height: 74px;
-@players-table-head-height: 34px;
+@players-table-head-height: 42px;
 @players-table-row-gap: 4px;
 // Own row set slightly apart from the others
 @players-table-own-row-offset: 5px;
@@ -75,15 +75,30 @@
 
   // Icons scaled down (zoom, because the icons use different background sizes)
   .resource_icon {
-    zoom: 0.75;
+    zoom: 0.9;
   }
 
   .tag-count {
-    zoom: 0.6;
+    zoom: 0.75;
   }
 
   .tag-type-main {
-    zoom: 0.55;
+    zoom: 0.7;
+  }
+}
+
+// Rows: the icons are the information players scan first, so keep them close to their natural size.
+.players-table-row {
+  .resource_icon {
+    zoom: 1;
+  }
+
+  .tag-count {
+    zoom: 0.85;
+  }
+
+  .tag-type-main {
+    zoom: 0.8;
   }
 }
 
@@ -445,7 +460,7 @@ each(@players, {
   width: calc(100% - 8px);
   min-width: max-content;
   max-width: 78px;
-  height: 34px;
+  height: 44px;
   padding: 0 6px 0 9px;
   border-radius: 5px;
   background: rgba(0, 0, 0, 0.3);
@@ -453,19 +468,19 @@ each(@players, {
 }
 
 .players-table-row--me .players-table-goods {
-  height: 40px;
+  height: 50px;
 }
 
 .players-table-goods-stock {
   display: inline-flex; // Room for the shield before the number (protected stock)
   align-items: center;
   gap: 3px;
-  font-size: 20px;
+  font-size: 24px;
   color: #fff;
 }
 
 .players-table-row--me .players-table-goods-stock {
-  font-size: 23px;
+  font-size: 27px;
 }
 
 .players-table-goods--empty .players-table-goods-stock {

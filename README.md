@@ -17,6 +17,10 @@ Fork of [terraforming-mars/terraforming-mars](https://github.com/terraforming-ma
 
 **[tm.knightbyte.win](https://tm.knightbyte.win/)** — live server, all expansions enabled.
 
+## Interface guide
+
+[Wrybit interface guide](docs/wrybit-ui-guide.md) — один экран без прокрутки, клавиатура, мобильный режим и скриншоты без адвайзера. В игре: **Player help → Interface & Controls** или клавиша **?**.
+
 ## What's different from upstream
 
 - **SmartBot** — improved AI opponent with VP/MC optimization, better card evaluation, adaptive strategy

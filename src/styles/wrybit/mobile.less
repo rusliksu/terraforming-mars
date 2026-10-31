@@ -26,6 +26,13 @@
   @mb-task-head-height: 61px;
 
   html.tm-mobile & {
+    // The App-level legal notice is a footer for the start screen; on the player screen it was
+    // rendered over the mobile header. The same notice is available in the game menu/help.
+    // The wrapper itself carries .wrybit-ui, hence &.topmost-player-home.
+    &.topmost-player-home > .notice {
+      display: none;
+    }
+
     .main-container {
       margin-left: 0;
     }

@@ -49,7 +49,7 @@
     <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs" />
     <HotkeyHelpDialog :open="keyboardShortcutOpened" :expansions="hotkeyExpansions" @close="keyboardShortcutOpened = false" />
   </div>
-  <div v-else id="player-home" :class="{'with-turmoil': game.turmoil, 'player-home--acting': isPlayerActing}">
+  <div v-else id="player-home" :class="{'with-turmoil': game.turmoil, 'player-home--acting': isPlayerActing, 'player-home--fixed': usesFixedLayout}">
     <TopBar :playerView="playerView" />
     <div id="wrybit-players-table" class="player-home-table-slot"></div>
     <div v-if="game.phase === 'end'" class="player_home_block">
@@ -215,6 +215,9 @@ export default defineComponent({
     isPlayerActing(): boolean {
       // Solo games have one player but still wait for the own mandatory input.
       return this.playerView.waitingFor !== undefined && !this.playerView.waitingFor.optional;
+    },
+    usesFixedLayout(): boolean {
+      return this.game.phase !== 'end';
     },
     cardsInHandCount(): number {
       return this.playerView.cardsInHand.length + this.playerView.preludeCardsInHand.length + this.playerView.ceoCardsInHand.length;

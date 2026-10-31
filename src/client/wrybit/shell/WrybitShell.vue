@@ -82,6 +82,25 @@ const hasBackground = computed(() => [
   right: 8px;
   z-index: 201;
 }
+
+/* On a phone the fixed switch covers the mobile header and its menu button.
+   The classic layout stays reachable from the game menu on wide screens only. */
+@media (max-width: 1399px) {
+  .wrybit-mode-switch {
+    display: none;
+  }
+}
+</style>
+
+<style>
+/* The outer Wrybit wrapper also carries .wrybit-ui. Clipping it in fixed mode guarantees that
+   a stray card overlay cannot create page scrolling. This belongs to the shell, not to the
+   scoped LESS partial (which is nested under .wrybit-ui). */
+.topmost-player-home.wrybit-ui:has(#player-home.player-home--fixed),
+.topmost-player-home.wrybit-ui:has(#spectator-home.player-home--fixed) {
+  height: 100vh;
+  overflow: hidden;
+}
 </style>
 
 <style lang="less" src="./background.less"></style>

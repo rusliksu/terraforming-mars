@@ -10,11 +10,12 @@ import HelpSoloRules from '@/client/components/help/HelpSoloRules.vue';
 import HelpStandardProjects from '@/client/components/help/HelpStandardProjects.vue';
 import HelpTurmoilParties from '@/client/components/help/HelpTurmoilParties.vue';
 import HelpKeyboardShortcuts from './HelpKeyboardShortcuts.vue';
+import HelpInterface from './HelpInterface.vue';
 import {HelpOutlineEntry, plainText} from './helpOutline';
 import {HelpSearchConfig} from './helpSearch';
 
 // Same keys as the upstream help page, so links like /help#rulebooks keep working
-export const HELP_TAB_KEYS = ['iconology', 'standard-projects', 'phases', 'turmoil-parties', 'solo-rules', 'rulebooks', 'hotkeys'] as const;
+export const HELP_TAB_KEYS = ['iconology', 'standard-projects', 'phases', 'turmoil-parties', 'solo-rules', 'rulebooks', 'interface', 'hotkeys'] as const;
 export type HelpTabKey = typeof HELP_TAB_KEYS[number];
 
 export type HelpOverlayTab = {
@@ -128,6 +129,16 @@ export const HELP_OVERLAY_TABS: ReadonlyArray<HelpOverlayTab> = [
     search: {
       items: (root) => all(root, '.help-rulebook-row'),
       scopes: (root) => all(root, '.help-rulebooks-section'),
+    },
+  },
+  {
+    key: 'interface',
+    label: 'Interface & Controls',
+    component: HelpInterface,
+    outline: (root) => all(root, '.help-overlay-section').map((section) => ({element: section, label: plainText(section.querySelector('.help-overlay-section-title'))})),
+    search: {
+      items: (root) => all(root, '.help-interface-card'),
+      scopes: (root) => all(root, '.help-overlay-section'),
     },
   },
   {

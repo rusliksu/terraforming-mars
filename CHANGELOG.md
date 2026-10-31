@@ -2,6 +2,19 @@
 
 All notable changes to the custom Terraforming Mars server are recorded here.
 
+## [Unreleased] - Wrybit interface pass
+
+### Added
+
+- In-game **Player help → Interface & Controls** tab with layout, keyboard and mobile guidance.
+- [Wrybit interface guide](docs/wrybit-ui-guide.md) with desktop/mobile screenshots taken without the advisor extension.
+
+### Changed
+
+- Player view now keeps the board, players and action panel in one viewport at desktop widths; no page scrolling, panels scroll inside.
+- Player table rows and resource/tag icons are larger and easier to scan.
+- Mobile player header no longer shows the legal footer over the menu, and the desktop layout switch is hidden on phones.
+
 ## [2026-10-29] - Production UI release
 
 ### Fixed

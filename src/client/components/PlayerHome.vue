@@ -197,6 +197,7 @@ import ExperimentalPlayerNavigation, {PlayerLayoutPanel} from '@/client/componen
 import {PlayerInputModel} from '@/common/models/PlayerInputModel';
 import {KeyboardNavigation} from '@/client/components/KeyboardNavigation';
 import {SpaceId} from '@/common/Types';
+import {enforceClassicViewport, releaseDeviceViewport, requestDeviceViewport} from '@/client/utils/viewport';
 
 type PlayerHomeModel = {
   showHand: boolean;
@@ -207,7 +208,6 @@ type PlayerHomeModel = {
   handSortOrder: SortOrder | undefined;
   layoutPanel: PlayerLayoutPanel;
   layoutWidth: number;
-  previousViewport: string | undefined;
 }
 
 type ToggleableCardType = 'HAND' | 'ACTIVE' | 'AUTOMATED' | 'EVENT';
@@ -218,6 +218,8 @@ const typeToDataModel: Record<ToggleableCardType, {key: 'showHand' | 'showActive
   AUTOMATED: {key: 'showAutomatedCards', preference: 'hide_automated_cards'},
   EVENT: {key: 'showEventCards', preference: 'hide_event_cards'},
 } as const;
+
+const EXPERIMENTAL_LAYOUT_VIEWPORT_OWNER = 'classic-experimental-layout';
 
 function hasSpaceInput(input: PlayerInputModel | undefined): boolean {
   return input !== undefined && (input.type === 'space' ||
@@ -237,7 +239,6 @@ export default defineComponent({
       handSortOrder: undefined,
       layoutPanel: this.playerView.waitingFor === undefined || hasSpaceInput(this.playerView.waitingFor) ? 'board' : 'actions',
       layoutWidth: window.innerWidth,
-      previousViewport: undefined,
     };
   },
   watch: {
@@ -367,16 +368,13 @@ export default defineComponent({
       this.layoutWidth = window.innerWidth;
     },
     updateLayoutViewport(enabled: boolean) {
-      const viewport = document.querySelector('meta[name="viewport"]');
-      if (viewport === null) {
-        return;
-      }
       if (enabled) {
-        this.previousViewport ??= viewport.getAttribute('content') ?? '';
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1, viewport-fit=cover');
-      } else if (this.previousViewport !== undefined) {
-        viewport.setAttribute('content', this.previousViewport);
-        this.previousViewport = undefined;
+        requestDeviceViewport(EXPERIMENTAL_LAYOUT_VIEWPORT_OWNER);
+      } else {
+        releaseDeviceViewport(EXPERIMENTAL_LAYOUT_VIEWPORT_OWNER);
+        // A classic page always lays out for the classic canvas, even if a Wrybit or
+        // experimental surface left the tag at the device width.
+        enforceClassicViewport();
       }
       this.updateLayoutWidth();
     },

@@ -97,6 +97,20 @@ describe('PlayerHome', () => {
     }
   });
 
+  it('keeps the classic canvas when a responsive page left the device viewport behind', () => {
+    const viewport = document.createElement('meta');
+    viewport.name = 'viewport';
+    viewport.content = 'width=device-width, initial-scale=1, viewport-fit=cover';
+    document.head.append(viewport);
+    const wrapper = mountPlayerHome();
+    try {
+      expect(viewport.content).eq('width=1260, user-scalable=1');
+    } finally {
+      wrapper.unmount();
+      viewport.remove();
+    }
+  });
+
   it('does not render standalone surrender or bot takeover controls', () => {
     const wrapper = mountPlayerHome();
     expect(wrapper.find('[data-test="bot-takeover-control"]').exists()).is.false;

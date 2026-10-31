@@ -58,6 +58,7 @@ import {ParticipantId} from '@/common/Types';
 import {Color} from '@/common/Color';
 import {playerSymbol} from '@/client/utils/playerSymbol';
 import {setDocumentTitle} from '../utils/documentTitle';
+import {releaseDeviceViewport, requestDeviceViewport} from '@/client/utils/viewport';
 
 // taken from https://stackoverflow.com/a/46215202/83336
 // The solution to copying to the clipboard in this case is
@@ -75,6 +76,7 @@ function copyToClipboard(text: string): void {
   document.body.removeChild(input);
 }
 const DEFAULT_COPIED_PLAYER_ID = '-1';
+const CREATE_GAME_VIEWPORT_OWNER = 'classic-create-game-form';
 
 export default defineComponent({
   name: 'GameHome',
@@ -95,7 +97,6 @@ export default defineComponent({
     return {
       // Variable to keep the state for the current copied player id. Used to display message of which button and which player playable link is currently in the clipboard
       urlCopiedPlayerId: DEFAULT_COPIED_PLAYER_ID,
-      previousViewport: '',
     };
   },
   computed: {
@@ -152,23 +153,12 @@ export default defineComponent({
     // Reset the copied player id after 3 seconds to hide the "copied" message
     setInterval(this.setCopiedIdToDefault, 3000);
     setDocumentTitle(this.game.name);
-    // Set the viewport width to width=device-width on the create game form so mobile browsers use their actual CSS viewport width.
-    // The current global viewport is width=1260, which prevents the create game form from using the device width on phones.
-    // This is a temporary solution in order to make this edit scoped to the create game form.
-    // TODO: Once responsiveness covers the whole project, this code should be removed and the tag in index.html should be updated directly.
-    const viewport = document.querySelector('meta[name="viewport"]');
-    if (viewport !== null) {
-      this.previousViewport = viewport.getAttribute('content') ?? '';
-      viewport.setAttribute(
-        'content',
-        'width=device-width, initial-scale=1, viewport-fit=cover',
-      );
-    }
+    // The create game form lays out at the device width so phones get their real CSS viewport.
+    // The shared controller restores the classic 1260px viewport when this screen unmounts.
+    requestDeviceViewport(CREATE_GAME_VIEWPORT_OWNER);
   },
   beforeUnmount() {
-    document
-      .querySelector('meta[name="viewport"]')
-      ?.setAttribute('content', this.previousViewport);
+    releaseDeviceViewport(CREATE_GAME_VIEWPORT_OWNER);
   },
 });
 

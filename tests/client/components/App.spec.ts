@@ -52,6 +52,24 @@ describe('App', () => {
     expect(wrapper.find('[data-test="map-library"]').exists()).to.be.true;
   });
 
+  it('returns the classic viewport to classic screens after a responsive page', async () => {
+    const viewport = document.createElement('meta');
+    viewport.setAttribute('name', 'viewport');
+    viewport.setAttribute('content', 'width=device-width, initial-scale=1, viewport-fit=cover');
+    document.head.append(viewport);
+    history.pushState({}, '', '/map-library');
+    const wrapper = shallowMount(App, appConfig);
+    try {
+      await flushPromises();
+      await wrapper.vm.$nextTick();
+      await wrapper.vm.$nextTick();
+      expect(viewport.getAttribute('content')).eq('width=1260, user-scalable=1');
+    } finally {
+      wrapper.unmount();
+      viewport.remove();
+    }
+  });
+
   it('restarts the visible timer when a refreshed player view starts the next turn', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-09-12T12:00:00Z'));

@@ -114,6 +114,7 @@ import {createInputBridge, INPUT_BRIDGE} from '@/client/wrybit/shell/inputBridge
 
 import dialogPolyfill from 'dialog-polyfill';
 import {setDocumentTitle} from '../utils/documentTitle';
+import {enforceClassicViewport} from '@/client/utils/viewport';
 
 type Screen = 'admin' |
             'create-game-form' |
@@ -256,6 +257,15 @@ export default defineComponent({
     },
   },
   watch: {
+    screen() {
+      // Classic screens always lay out for the classic canvas: a device-width viewport
+      // left behind by a Wrybit or experimental surface must not follow them here.
+      this.$nextTick(() => {
+        if (!this.wrybitMode) {
+          enforceClassicViewport();
+        }
+      });
+    },
     playerkey() {
       if (this.screen !== 'spectator-home' &&
           (this.screen !== 'player-home' || getPreferences().experimental_layout)) {

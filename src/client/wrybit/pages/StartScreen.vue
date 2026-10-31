@@ -55,13 +55,14 @@ import PageToolbar from '@/client/wrybit/visuals/PageToolbar.vue';
 import MobileGlyph from '@/client/wrybit/visuals/common/MobileGlyph.vue';
 import {prefersReducedMotion} from '@/client/wrybit/visuals/common/motion';
 import {serverName as readServerName} from './startScreen/serverIdentity';
+import {releaseDeviceViewport, requestDeviceViewport} from '@/client/utils/viewport';
 
 // Name under the title, from the server's .env (SERVER_NAME); fixed for the page's lifetime
 const serverName = readServerName();
 
 const links = SITE_LINKS;
 
-const previousViewport = ref('');
+const VIEWPORT_OWNER = 'wrybit-start-screen';
 
 // Rotating planets: as soon as the renderer is ready, the planet surface replaces the image planets.jpg
 const globeReady = ref(false);
@@ -250,24 +251,9 @@ onBeforeUnmount(() => {
   resizeObserver?.disconnect();
 });
 
-// Set the viewport width to width=device-width on the start screen so mobile browsers use their actual CSS viewport width.
-// The current global viewport is width=1260, which prevents the home page from using the device width on phones.
-// This is a temporary solution in order to make this edit scoped to the start screen.
-// TODO: Once responsiveness covers the whole project, this code should be removed and the tag in index.html should be updated directly.
-onMounted(() => {
-  const viewport = document.querySelector('meta[name="viewport"]');
-  if (viewport !== null) {
-    previousViewport.value = viewport.getAttribute('content') ?? '';
-    viewport.setAttribute(
-      'content',
-      'width=device-width, initial-scale=1, viewport-fit=cover',
-    );
-  }
-});
+// The start screen lays out at the device width so phones get their real CSS viewport.
+// The shared controller restores the classic 1260px viewport when this screen unmounts.
+onMounted(() => requestDeviceViewport(VIEWPORT_OWNER));
 
-onBeforeUnmount(() => {
-  document
-    .querySelector('meta[name="viewport"]')
-    ?.setAttribute('content', previousViewport.value);
-});
+onBeforeUnmount(() => releaseDeviceViewport(VIEWPORT_OWNER));
 </script>

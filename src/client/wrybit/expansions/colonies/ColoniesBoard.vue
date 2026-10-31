@@ -48,8 +48,8 @@
         </span>
       </span>
       <span class="colonies-board__berths">
-        <span v-for="berth in berths" :key="berth.key" :class="['colonies-board__berth', {'colonies-board__berth--away': berth.away !== undefined, 'colonies-board__berth--me': berth.color === viewer?.color}]">
-          <TradeShip :color="berth.color" :size="28" />{{ berth.name }}<small v-if="berth.away !== undefined">→ {{ $t(berth.away) }}</small>
+        <span v-for="berth in berths" :key="berth.key" :class="['colonies-board__berth', {'colonies-board__berth--me': berth.color === viewer?.color}]">
+          <TradeShip :color="berth.color" :size="28" />{{ berth.name }}
         </span>
       </span>
     </div>
@@ -77,9 +77,12 @@ const fees = computed(() => props.viewer?.colonyTradeContext?.payments ?? [
   {resource: 'titanium' as const, amount: TITANIUM_TRADE_COST, available: true},
 ]);
 const berths = computed(() => props.players.flatMap((player) => {
-  const away = props.colonies.filter((colony) => colony.visitor === player.color).map((colony) => colony.name);
-  return Array.from({length: Math.max(player.fleetSize, away.length)}, (_, index) => ({key: player.color + index,
-    color: player.color, name: player.name, away: away[index]}));
+  // Only ships still in the hangar belong here. A ship at a colony is already drawn on that
+  // colony tile; repeating it at the bottom looked like a second, available fleet.
+  const away = props.colonies.filter((colony) => colony.visitor === player.color).length;
+  const available = Math.max(0, player.fleetSize - away);
+  return Array.from({length: available}, (_, index) => ({key: player.color + index,
+    color: player.color, name: player.name}));
 }));
 function playerName(color: Color): string {
   return props.players.find((player) => player.color === color)?.name ?? color;

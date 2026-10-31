@@ -139,7 +139,8 @@ each(@players, {
 
 // When the tag columns are auto-hidden, the same row grows a compact strip of tag icons.
 // The strip is a grid item spanning all columns, so the fixed-height row becomes auto-sized.
-.players-table-row:has(> .players-table-tag-strip) {
+.players-table-row:has(> .players-table-tag-strip),
+.players-table-row:has(> .players-table-goods-strip) {
   height: auto;
   min-height: @players-table-row-height;
   padding-bottom: 5px;
@@ -182,8 +183,50 @@ each(@players, {
   color: rgba(255, 255, 255, 0.35);
 }
 
+.players-table-goods-strip {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 9px;
+  min-height: 24px;
+  padding: 3px 8px 0 26px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.players-table-goods-strip-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 36px;
+  color: #fff;
+
+  .resource_icon {
+    zoom: 0.55;
+    flex: none;
+  }
+
+  b {
+    font-family: Prototype, sans-serif;
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  small {
+    margin-left: 1px;
+    padding: 1px 3px;
+    border-radius: 2px;
+    background: rgba(75, 47, 28, 0.9);
+    color: #ffd9a8;
+    font-family: Prototype, sans-serif;
+    font-size: 10px;
+    line-height: 1.2;
+  }
+}
+
 @media only screen and (max-width: 1399px) {
-  .players-table-tag-strip {
+  .players-table-tag-strip,
+  .players-table-goods-strip {
     display: none;
   }
 }
@@ -422,10 +465,8 @@ each(@players, {
   text-overflow: ellipsis;
 }
 
-// Too narrow: the time goes first (only next to a visible label such as "passed"; the acting player shows only the time)
-.players-table-identity--compact:not(.players-table-identity--acting) .player-action-status:not(.visibility-hidden) ~ .player-status-timer {
-  display: none;
-}
+// Compact rows truncate the name, but keep the timer: a passed player still needs the clock
+// to understand how long the turn is taking. The old rule hid the timer next to "passed".
 
 .players-table-name-marker {
   flex: none;

@@ -8,7 +8,7 @@
         :class="['players-table-toggle', {'players-table-toggle--squeezed': autoHidden.includes(section.key)}]"
         :aria-pressed="visibility[section.key] ? 'true' : 'false'"
         :aria-label="$t(section.label)"
-        v-glass-tooltip="autoHidden.includes(section.key) ? $t(section.label) + ': ' + $t('Not enough space') : $t(section.label)"
+        v-glass-tooltip="$t(section.label)"
         :data-test="'toggle-' + section.key"
         @click="$emit('toggle', section.key)">
         <span :class="['players-table-toggle-icon', 'players-table-toggle-icon--' + section.icon]"></span>

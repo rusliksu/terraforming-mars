@@ -52,6 +52,14 @@
         <span :class="['players-table-tag-strip-count', {'players-table-tag-strip-count--zero': tagDetail(tag).count === 0}]">{{ tagDetail(tag).count }}</span>
       </span>
     </div>
+
+    <div v-if="!visibility.goods" class="players-table-goods-strip" data-test="goods-strip">
+      <span v-for="good in goods" :key="good.type" class="players-table-goods-strip-item" :title="$t(good.type)">
+        <span :class="['resource_icon', 'resource_icon--' + good.type]"></span>
+        <b>{{ good.count }}</b>
+        <small v-if="good.production !== 0 || good.value > 0">{{ good.production }}<template v-if="good.value > 0">×{{ good.value }}</template></small>
+      </span>
+    </div>
   </div>
 </template>
 

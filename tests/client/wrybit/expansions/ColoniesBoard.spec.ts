@@ -1,6 +1,7 @@
-import {shallowMount} from '@vue/test-utils';
+import {mount, shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
 import GameBoardView from '@/client/wrybit/visuals/GameBoardView.vue';
+import TradeShip from '@/client/wrybit/expansions/colonies/TradeShip.vue';
 import {ColonyName} from '@/common/colonies/ColonyName';
 import type {ColonyModel} from '@/common/models/ColonyModel';
 import {globalConfig} from '@tests/client/components/getLocalVue';
@@ -38,7 +39,9 @@ describe('source colonies board with our live metadata', () => {
       expect(mercuryTile.get('.colonies-board__docked').text()).contains('Visitor');
       expect(wrapper.get('[data-test="colony-fee-megacredits"]').text()).eq('8');
       expect(wrapper.get('[data-test="colony-fee-energy"]').classes()).contains('colonies-board__fee--off');
-      expect(wrapper.findAll('.colonies-board__berth')).has.length(3);
+      // Only ships still in the hangar: the visitor already sits on Mercury and is not repeated below.
+      expect(wrapper.findAll('.colonies-board__berth')).has.length(2);
+      expect(wrapper.findAll('.colonies-board__berth').map((berth) => berth.text())).deep.eq(['Owner', 'Owner']);
 
       await wrapper.setProps({game: fakeGameModel({colonies: [{...luna, trackPosition: 6, colonies: ['pearl', 'red']},
         {...mercury, trackPosition: 3, visitor: undefined}]})});
@@ -47,6 +50,16 @@ describe('source colonies board with our live metadata', () => {
       expect(mercuryTile.get('.colonies-board__big img').attributes('src')).eq('assets/resources/steel.png');
       expect(mercuryTile.find('.colonies-board__docked').exists()).is.false;
       expect(wrapper.emitted('toggleTileView')).eq(undefined);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  it('keeps a reserved identity fleet in a coloured hull', () => {
+    const wrapper = mount(TradeShip, {...globalConfig, props: {color: 'turquoise', size: 28}});
+    try {
+      expect(wrapper.get('img').attributes('src')).eq('assets/wrybit/ships/shuttle-blue.png');
+      expect(wrapper.find('.trade-ship__identity').exists()).is.true;
     } finally {
       wrapper.unmount();
     }

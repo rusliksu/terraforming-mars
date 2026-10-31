@@ -472,11 +472,25 @@
   background: color-mix(in srgb, var(--create-game-player-color) 24%, #11131a);
 }
 
+// The card body sits on the dark tinted surface, so its labels stay light. The header keeps the text tone
+// that the translucent background class sets on the card (dark on light player colors such as pearl).
+.create-game-player > :not(.create-game-profile-picker) {
+  color: @text_main;
+}
+
 // Player color as a variable: header, outline and glow all derive from it
 each(@players, {
   @c: ~"player_@{value}";
   .create-game-player--@{value} {
     --create-game-player-color: @@c;
+  }
+});
+
+// Reserved identities (custom colors) carry their color on the card exactly like the default ones
+each(@reserved-players, {
+  @reserved-c: ~"player_@{value}";
+  .create-game-player--@{value} {
+    --create-game-player-color: @@reserved-c;
   }
 });
 

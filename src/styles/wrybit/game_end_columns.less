@@ -449,7 +449,18 @@ body:has(#game-end) {
   background-color: @game-end-total-accent;
   font-size: @game-end-winner-total-font-size;
   font-weight: 900;
-  text-shadow: @game-end-winner-total-glow;
+  // Reserved identities have no entry in the standard @players loop below. Without this dark
+  // fallback their total would stay @game-end-total-accent (gold on gold) and become unreadable.
+  color: #2a1a00;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+// The Rigatone persona surface has bright diagonal streaks; across a dense results table they
+// cut through the score digits. Keep the row colour but drop its decorative pattern here.
+.game_end_table tr.player_translucent_bg_color_rigatone,
+.game_end_table tr.player_translucent_bg_color_rigatone2 {
+  background-image: none;
+  background-color: rgba(82, 12, 8, 0.92);
 }
 
 // Text color = visible row color (70 % player color over the box) under the 38 % darkening of @game-end-total-background

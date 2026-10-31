@@ -217,6 +217,30 @@
   }
 }
 
+// A newly appended spectator line arrives without a full-pane repaint; the short rise makes the
+// update readable instead of a hard jump. Existing lines are not re-animated because they keep their DOM node.
+@keyframes wrybit-log-line-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.log-panel .log-generation:last-child > li:last-child {
+  animation: wrybit-log-line-in 160ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .log-panel .log-generation:last-child > li:last-child {
+    animation: none;
+  }
+}
+
 // Highlight the hovered line – shows which line the card preview belongs to
 @media (hover: hover) {
   .log-panel li:hover {

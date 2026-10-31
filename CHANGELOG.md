@@ -13,6 +13,7 @@ All notable changes to the custom Terraforming Mars server are recorded here.
 
 - Player view now keeps the board, players and action panel in one viewport at desktop widths; no page scrolling, panels scroll inside.
 - Player table rows and resource/tag icons are larger and easier to scan.
+- Narrow player table keeps VP/TR/cards/actions and adds a compact strip of played tag icons instead of showing only resource numbers.
 - Basic ocean, city and greenery tiles use the classic Terraforming Mars tile art instead of tiny sprite glyphs.
 - Spectator log updates no longer remount the game view on every poll; new lines fade in in place, preserving scroll and selection.
 - Mobile player header no longer shows the legal footer over the menu, and the desktop layout switch is hidden on phones.

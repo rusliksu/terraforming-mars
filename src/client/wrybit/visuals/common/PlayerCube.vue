@@ -64,7 +64,10 @@ const cubeStyle = computed(() => {
 </script>
 
 <style scoped>
-.wrybit-player-persona {
+/* The persona is a token inside the cube scene, not a marker on a board tile: the .board-cube class would
+   otherwise keep the tile offsets (absolute position, 21px, 25px/15px margins) and push the token into the
+   bottom-right corner. The doubled class outranks .wrybit-ui .board-cube, which comes later in the bundle. */
+.board-cube.wrybit-player-persona {
   position: relative;
   display: block;
   width: var(--wrybit-cube-size);
@@ -73,7 +76,7 @@ const cubeStyle = computed(() => {
   background-size: 100% 100%;
 }
 
-.wrybit-player-persona::before {
+.board-cube.wrybit-player-persona::before {
   left: 15%;
   top: 15%;
   width: 70%;

@@ -69,6 +69,15 @@ each(@players, {
   }
 });
 
+// Reserved identities (custom colors) show a persona token instead of the acrylic body, but the glow under it
+// is still tinted by the player's own color
+each(@reserved-players, {
+  @reserved-c: ~"player_@{value}";
+  .player-cube--@{value} {
+    --wrybit-cube-color: @@reserved-c;
+  }
+});
+
 // Neutral markers (e.g. the solo opponent) share the bronze look, as the old board sprite did
 .player-cube--bronze,
 .player-cube--neutral {

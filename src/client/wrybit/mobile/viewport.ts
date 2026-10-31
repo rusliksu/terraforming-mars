@@ -1,17 +1,16 @@
 import {onBeforeUnmount, onMounted} from 'vue';
 import {mobileLandscape, mobileLayout} from '@/client/wrybit/visuals/common/mobileLayout';
+import {releaseDeviceViewport, requestDeviceViewport} from '@/client/utils/viewport';
 import {observeMobileFit} from './mobileFit';
 
 const QUERIES = ['(pointer: coarse)', '(max-width: 1399px)', '(min-width: 900px) and (orientation: landscape)'];
-const DEVICE_VIEWPORT = 'width=device-width, initial-scale=1, viewport-fit=cover';
+const VIEWPORT_OWNER = 'wrybit-shell';
 
 /** Source breakpoints, owned by the optional shell rather than application startup. */
 export function useMobileViewport(): void {
   let stop: (() => void) | undefined;
   onMounted(() => {
     const media = QUERIES.map((query) => window.matchMedia?.(query));
-    const meta = document.querySelector('meta[name="viewport"]');
-    const originalViewport = meta?.getAttribute('content');
     const hadClass = document.documentElement.classList.contains('tm-mobile');
     let stopFit: (() => void) | undefined;
     const update = () => {
@@ -20,14 +19,12 @@ export function useMobileViewport(): void {
       mobileLayout.value = active;
       mobileLandscape.value = media[2]?.matches === true;
       document.documentElement.classList.toggle('tm-mobile', active || hadClass);
-      if (meta !== null) {
-        if (active) {
-          meta.setAttribute('content', DEVICE_VIEWPORT);
-        } else if (originalViewport !== null && originalViewport !== undefined) {
-          meta.setAttribute('content', originalViewport);
-        } else {
-          meta.removeAttribute('content');
-        }
+      if (active) {
+        requestDeviceViewport(VIEWPORT_OWNER);
+      } else {
+        // Releasing here hands the classic viewport back instead of leaving the tag
+        // at the device width for whatever renders next.
+        releaseDeviceViewport(VIEWPORT_OWNER);
       }
       if (active && stopFit === undefined) {
         stopFit = observeMobileFit(document.body);
@@ -46,13 +43,7 @@ export function useMobileViewport(): void {
       mobileLayout.value = false;
       mobileLandscape.value = false;
       document.documentElement.classList.toggle('tm-mobile', hadClass);
-      if (meta?.getAttribute('content') === DEVICE_VIEWPORT) {
-        if (originalViewport !== null && originalViewport !== undefined) {
-          meta.setAttribute('content', originalViewport);
-        } else {
-          meta.removeAttribute('content');
-        }
-      }
+      releaseDeviceViewport(VIEWPORT_OWNER);
     };
   });
   onBeforeUnmount(() => stop?.());

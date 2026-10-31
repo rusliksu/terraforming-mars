@@ -41,33 +41,19 @@
 
 <script setup lang="ts">
 import {DISCORD_INVITE} from '@/common/constants';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted } from 'vue';
 import LanguageSwitcher from '@/client/components/LanguageSwitcher.vue';
 import LanguageIcon from '@/client/components/LanguageIcon.vue';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
+import {releaseDeviceViewport, requestDeviceViewport} from '@/client/utils/viewport';
 
 import raw_settings from '@/genfiles/settings.json';
 
-const previousViewport = ref('');
+// The start screen lays out at the device width so phones get their real CSS viewport.
+// The shared controller restores the classic 1260px viewport when this screen unmounts.
+const VIEWPORT_OWNER = 'classic-start-screen';
 
-// Set the viewport width to width=device-width on the start screen so mobile browsers use their actual CSS viewport width.
-// The current global viewport is width=1260, which prevents the home page from using the device width on phones.
-// This is a temporary solution in order to make this edit scoped to the start screen.
-// TODO: Once responsiveness covers the whole project, this code should be removed and the tag in index.html should be updated directly.
-onMounted(() => {
-  const viewport = document.querySelector('meta[name="viewport"]');
-  if (viewport !== null) {
-    previousViewport.value = viewport.getAttribute('content') ?? '';
-    viewport.setAttribute(
-      'content',
-      'width=device-width, initial-scale=1, viewport-fit=cover',
-    );
-  }
-});
+onMounted(() => requestDeviceViewport(VIEWPORT_OWNER));
 
-onBeforeUnmount(() => {
-  document
-    .querySelector('meta[name="viewport"]')
-    ?.setAttribute('content', previousViewport.value);
-});
+onBeforeUnmount(() => releaseDeviceViewport(VIEWPORT_OWNER));
 </script>

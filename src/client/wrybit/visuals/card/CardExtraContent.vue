@@ -11,7 +11,7 @@
     <div v-if="isMiningTileOnTitanium()" class="mined-metal mined-titanium"></div>
     <div v-if="inSpireResources.length > 0" class="in-spire-resources">
       <span class="in-spire-resources-label">Stored:</span>
-      <CardRenderItemComponent v-for="(item, index) in inSpireResources" :key="index" :item="item"/>
+      <CardRenderItemComponent v-for="(item, index) in inSpireResources" :key="index" :item="item" />
     </div>
   </div>
 </template>

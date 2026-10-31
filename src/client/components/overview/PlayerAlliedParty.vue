@@ -1,9 +1,9 @@
 <template>
-    <div class="player-allied-party">
-        <div v-if="player.alliedParty" class='allied-policy-block'>
-            <TurmoilAgenda :id="player.alliedParty.agenda.policyId" :show-party-badge="true" :morePartiesExpansion="morePartiesExpansion"/>
-        </div>
+  <div class="player-allied-party">
+    <div v-if="player.alliedParty" class="allied-policy-block">
+      <TurmoilAgenda :id="player.alliedParty.agenda.policyId" :show-party-badge="true" :morePartiesExpansion="morePartiesExpansion" />
     </div>
+  </div>
 </template>
 
 <script lang="ts">

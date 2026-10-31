@@ -31,13 +31,24 @@ export class CityStandardProject extends StandardProjectCard {
     }
   }
 
-  public override canAct(player: IPlayer): boolean {
+  protected override bespokeCanAct(player: IPlayer): boolean {
     // This is pricey because it forces calling canPlayOptions twice.
     if (player.game.board.getAvailableSpacesForCity(player, this.canPlayOptions(player)).length === 0) {
       return false;
     }
+    return true;
+  }
+
+  /**
+   * Affordability is handled here rather than in `bespokeCanAct` because a Blockhouse
+   * player's steel is temporarily re-valued while checking whether they can pay.
+   */
+  public override canAct(player: IPlayer): boolean {
+    if (this.bespokeCanAct(player) === false) {
+      return false;
+    }
     if (!player.tableau.has(CardName.BLOCKHOUSE)) {
-      return super.canAct(player);
+      return player.canAfford(this.canPlayOptions(player));
     }
     // Blockhouse: steel is worth 2 M€ extra when paying for this standard project, but
     // the generic canAfford()/payingAmount() machinery has no notion of a payment-specific
@@ -48,7 +59,7 @@ export class CityStandardProject extends StandardProjectCard {
     player.increaseSteelValue();
     player.increaseSteelValue();
     try {
-      return super.canAct(player);
+      return player.canAfford(this.canPlayOptions(player));
     } finally {
       player.decreaseSteelValue();
       player.decreaseSteelValue();

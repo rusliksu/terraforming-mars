@@ -178,6 +178,7 @@ export class Server {
       runId: runId,
       pickedCorporationCard: player.pickedCorporationCard ? cardsToModel(player, [player.pickedCorporationCard]) : [],
       preludeCardsInHand: cardsToModel(player, player.preludeCardsInHand),
+      requestId: player.requestId,
       thisPlayer: thisPlayer,
       waitingFor: player.aiLevel !== undefined ? undefined : this.getWaitingFor(player, waitingFor),
       waitingForId: player.aiLevel !== undefined ? undefined : this.getWaitingForId(waitingFor),

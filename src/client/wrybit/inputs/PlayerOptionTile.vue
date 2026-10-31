@@ -1,7 +1,7 @@
 <template>
   <label :class="['player-option', 'player_translucent_bg_color_' + color, {'player-option--selected': selected}]" :title="caption === undefined ? undefined : $t(caption)">
     <input type="radio" :name="groupName" :value="color" :checked="selected" class="player-option-input" @change="$emit('select', color)">
-    <SelectPlayerRow class="player-option-name" :player="player"/>
+    <SelectPlayerRow class="player-option-name" :player="player" />
     <div v-if="preview !== undefined" class="player-option-resource">
       <i :class="'resource_icon player-option-icon resource_icon--' + preview.resource"></i>
       <div class="player-option-values">

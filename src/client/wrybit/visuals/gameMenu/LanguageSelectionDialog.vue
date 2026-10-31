@@ -1,5 +1,5 @@
 <template>
-  <SettingsLanguageDialog :preferencesManager="preferencesManager" @close="$emit('close')"/>
+  <SettingsLanguageDialog :preferencesManager="preferencesManager" @close="$emit('close')" />
 </template>
 <script setup lang="ts">
 import SettingsLanguageDialog from '@/client/wrybit/pages/settings/LanguageSelectionDialog.vue';

@@ -4,13 +4,13 @@
     <BoardTrackRow v-for="row in rows" :key="row.key" :name="row.name" :cells="cells(row.position)" :bonuses="{}"
       :class="['delta-board__row', 'player_translucent_bg_color_' + row.player.color, {'delta-board__row--self': row.player.color === viewerColor}]"
       :data-test="'delta-row-' + row.key">
-      <template #image><span class="board-track-row__picture"><PlayerCube :color="row.player.color" view="slight" :size="22"/></span></template>
+      <template #image><span class="board-track-row__picture"><PlayerCube :color="row.player.color" view="slight" :size="22" /></span></template>
       <template #value><span>{{ row.position }}</span></template>
       <template #sub><span>{{ $t('Position') }}</span></template>
       <template #bonuses>
         <div class="delta-rewards">
           <span></span>
-          <DeltaRewards v-for="(step, index) in steps" :key="index" :step="step" :done="index + 1 <= row.position"/>
+          <DeltaRewards v-for="(step, index) in steps" :key="index" :step="step" :done="index + 1 <= row.position" />
         </div>
       </template>
     </BoardTrackRow>

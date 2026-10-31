@@ -25,7 +25,7 @@
       <div id="logpanel-scrollable" class="panel-body" @scroll="handleScroll">
         <p v-if="searchQuery.trim() && filteredMessages.length === 0" role="status" v-i18n>No matching logs in this view.</p>
         <ul v-if="messages">
-          <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @aiRate="rateAi(message, $event)" @spaceClicked="$emit('spaceClicked', $event)"/>
+          <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @aiRate="rateAi(message, $event)" @spaceClicked="$emit('spaceClicked', $event)" />
         </ul>
       </div>
       <button
@@ -38,10 +38,10 @@
         @click="showLatestLogs"
       >
         <svg class="log-latest-button-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
-          <path d="M12 5v14M19 12l-7 7-7-7"/>
+          <path d="M12 5v14M19 12l-7 7-7-7" />
         </svg>
       </button>
-      <div class='debugid'>(debugid {{step}})</div>
+      <div class="debugid">(debugid {{ step }})</div>
     </div>
     <div class="log-player-filters">
       <template v-if="players.length > 1">
@@ -66,9 +66,9 @@
         >{{ player.name }}</button>
       </template>
     </div>
-    <LogMessageInspector ref="messageInspector" :viewModel="viewModel"/>
-    <AiDecisionDialog/>
-    <AiAnalysisWelcome :player-view="viewModel"/>
+    <LogMessageInspector ref="messageInspector" :viewModel="viewModel" />
+    <AiDecisionDialog />
+    <AiAnalysisWelcome :player-view="viewModel" />
   </div>
 </template>
 

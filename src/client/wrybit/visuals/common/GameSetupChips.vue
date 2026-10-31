@@ -2,7 +2,7 @@
   <div class="create-game-summary" :class="{'create-game-summary--compact': compact}">
     <component :is="chip.statsHref !== undefined ? 'a' : 'span'" v-for="chip in chips" :key="chip.key"
       class="create-game-summary-chip" :href="chip.statsHref" :data-stats-link="chip.statsHref !== undefined ? '' : undefined">
-      <SeatIcon v-if="chip.seatIcon !== undefined" :kind="chip.seatIcon"/>
+      <SeatIcon v-if="chip.seatIcon !== undefined" :kind="chip.seatIcon" />
       <span v-if="chip.iconClass !== undefined" :class="chip.iconClass"></span>
       <span :class="{capitalized: chip.capitalized}">{{ chip.label }}</span>
     </component>

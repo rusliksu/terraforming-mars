@@ -11,7 +11,7 @@ import {SelectCard} from '../../src/server/inputs/SelectCard';
 import {IProjectCard} from '../../src/server/cards/IProjectCard';
 import {isIStandardProjectCard} from '../../src/server/cards/IStandardProjectCard';
 import {MAX_COLONY_TRACK_POSITION} from '../../src/common/constants';
-import {formatMessage, runAllActions, runNextAction, setRulingParty} from '../TestingUtils';
+import {formatMessage, runAllActions, setRulingParty} from '../TestingUtils';
 import {TestPlayer} from '../TestPlayer';
 import {CardName} from '../../src/common/cards/CardName';
 import {Pallas} from '../../src/server/cards/community/Pallas';
@@ -310,7 +310,7 @@ describe('Colony', () => {
     while (game.deferredActions.pop() !== undefined) { /* empty */ }
 
     venus.trade(player);
-    const input = runNextAction(game);
+    const input = game.deferredActions.pop()?.execute();
 
     expect(input).is.undefined;
     expect(venusianAnimals.resourceCount).eq(0);

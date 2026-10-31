@@ -1,7 +1,7 @@
 <template>
-<div data-hotkey-group class="actions-tab-sections">
+  <div data-hotkey-group class="actions-tab-sections">
     <CardFilterBar :cards="cards" :filter="playedCardFilter" :context="filterContext">
-      <template #sort="{compact}"><CardSortMenu v-model="playedCardsSortOrder" :compact="compact"/></template>
+      <template #sort="{compact}"><CardSortMenu v-model="playedCardsSortOrder" :compact="compact" /></template>
     </CardFilterBar>
     <section v-for="section in sections" :key="section.index" class="hand-cards-panel__section">
       <h3 v-if="sections.length > 1" class="hand-cards-panel__title">{{ $t(section.title) }} <small>{{ section.cards.length }}</small></h3>
@@ -10,14 +10,14 @@
           <input type="radio" :name="binding.radioElementName + '-actions'" :value="card.name" :data-action-card="card.name"
             :checked="binding.selectedIdx === section.index && binding.selectedChoice?.type === 'card' && binding.selectedChoice.name === card.name"
             :disabled="card.isDisabled === true" @change="binding.selectChoice(binding.displayedOptions[section.index], {type: 'card', name: card.name})">
-          <Card :card="card"/>
+          <Card :card="card" />
         </label>
       </div>
     </section>
     <CardListSection v-if="inactive.used.length > 0" data-inactive-section="Actions already used" title="Actions already used" :cards="inactive.used"
-      :unavailable="true" :actionUsed="true" :cubeColor="binding.playerView.thisPlayer.color" :visibility="visibility"/>
+      :unavailable="true" :actionUsed="true" :cubeColor="binding.playerView.thisPlayer.color" :visibility="visibility" />
     <CardListSection v-if="inactive.unavailable.length > 0" data-inactive-section="Actions not usable" title="Actions not usable" :cards="inactive.unavailable"
-      :unavailable="true" :visibility="visibility"/>
+      :unavailable="true" :visibility="visibility" />
   </div>
 </template>
 

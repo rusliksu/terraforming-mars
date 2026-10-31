@@ -1,14 +1,14 @@
 <template>
-<div data-hotkey-group class="payments_cont choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection), {'choice-block--sections': unplayableCards.length > 0}]" :style="choiceBlockStyle(allCards.length)" @tm-carousel-unselect="binding.clearSelection()">
+  <div data-hotkey-group class="payments_cont choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection), {'choice-block--sections': unplayableCards.length > 0}]" :style="choiceBlockStyle(allCards.length)" @tm-carousel-unselect="binding.clearSelection()">
     <CardFilterBar v-if="isHandSelection" :cards="allCards" :filter="handCardFilter" :context="filterContext">
-      <template #sort="{compact}"><HandSortControl :playerView="binding.playerView" :compact="compact" :allowManual="true"/></template>
+      <template #sort="{compact}"><HandSortControl :playerView="binding.playerView" :compact="compact" :allowManual="true" /></template>
     </CardFilterBar>
-    <CardZoomBar v-else/>
-    <TabPanelIntroSlot v-if="showIntro"><InputIntro :input="binding.playerinput" :playerView="binding.playerView" belowHeader/></TabPanelIntroSlot>
-    <CardFilterEmptyHint v-if="nothingShown" @reset="resetCardFilter(handCardFilter)"/>
+    <CardZoomBar v-else />
+    <TabPanelIntroSlot v-if="showIntro"><InputIntro :input="binding.playerinput" :playerView="binding.playerView" belowHeader /></TabPanelIntroSlot>
+    <CardFilterEmptyHint v-if="nothingShown" @reset="resetCardFilter(handCardFilter)" />
     <label v-for="card in offeredCards" class="payments_cards" :class="visibilityClass(card)" :key="card.name">
       <input v-if="!card.isDisabled" class="hidden" type="radio" :checked="binding.cardName === card.name" :value="card.name" @change="binding.select(card.name)">
-      <Card class="cardbox" :card="card"/>
+      <Card class="cardbox" :card="card" />
       <div v-if="card.additionalProjectCosts?.conglomeratesCost !== undefined" class="card-warning"
         v-i18n="[card.additionalProjectCosts.conglomeratesCost]" data-test="conglomerates-cost">
         This currently costs ${0} Coordination
@@ -27,14 +27,14 @@
         Playing ${0} will cost ${1} M€ more because ${2} are in power
       </div>
     </template>
-    <WarningsComponent v-if="binding.card !== undefined" :warnings="binding.card.warnings"/>
+    <WarningsComponent v-if="binding.card !== undefined" :warnings="binding.card.warnings" />
     <template v-if="unplayableCards.length > 0">
       <h3 class="hand-cards-panel__title choice-section-title choice-section-title--separated">{{ $t('Not playable') }} <small>{{ unplayableCards.length }}</small></h3>
       <label v-for="card in unplayableCards" :key="card.name" class="payments_cards payments_cards--unplayable" :class="visibilityClass(card)">
-        <Card class="cardbox" :card="{...card, isDisabled: true}"/>
+        <Card class="cardbox" :card="{...card, isDisabled: true}" />
       </label>
     </template>
-    <PresentationHost :hosts="binding.paymentHost"/>
+    <PresentationHost :hosts="binding.paymentHost" />
   </div>
 </template>
 

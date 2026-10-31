@@ -1,16 +1,16 @@
 <template>
-  <TradeOffers v-if="trading" :binding="binding"/>
-<div data-hotkey-group v-else class="wf-component wf-component--select-card choice-block" :style="choiceBlockStyle(binding.colonies.length)">
-    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
+  <TradeOffers v-if="trading" :binding="binding" />
+  <div data-hotkey-group v-else class="wf-component wf-component--select-card choice-block" :style="choiceBlockStyle(binding.colonies.length)">
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView" />
     <label v-for="colony in binding.colonies" :key="colony.model.name"
       :class="['choice-option', 'colony-choice', {'choice-option--selected': binding.selected === colony.model.name}]"
       :data-test="'colony-choice-' + colony.model.name">
       <input type="radio" class="choice-option-input" :checked="binding.selected === colony.model.name" :value="colony.model.name" @change="binding.select(colony.model.name)">
-      <ColonyPlanet class="colony-choice__planet" :name="colony.model.name"/>
+      <ColonyPlanet class="colony-choice__planet" :name="colony.model.name" />
       <b class="colony-choice__name">{{ $t(colony.model.name) }}</b>
       <span class="colony-choice__slots">
         <template v-for="slot in 3" :key="slot">
-          <PlayerCube v-if="colony.model.colonies[slot - 1] !== undefined" :color="colony.model.colonies[slot - 1]" view="slight" :size="11"/>
+          <PlayerCube v-if="colony.model.colonies[slot - 1] !== undefined" :color="colony.model.colonies[slot - 1]" view="slight" :size="11" />
           <i v-else class="colony-choice__slot"></i>
         </template>
       </span>
@@ -20,7 +20,7 @@
     </label>
     <TabPanelFooterSlot>
       <div v-if="binding.showsave" class="nofloat">
-        <AppButton hotkey="confirm" @click="binding.save()" :title="binding.playerinput.buttonLabel" type="submit" size="normal" :disabled="!binding.canSave"/>
+        <AppButton hotkey="confirm" @click="binding.save()" :title="binding.playerinput.buttonLabel" type="submit" size="normal" :disabled="!binding.canSave" />
       </div>
     </TabPanelFooterSlot>
   </div>

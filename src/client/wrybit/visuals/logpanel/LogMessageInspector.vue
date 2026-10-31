@@ -7,7 +7,7 @@
     :modal="modal"
     ref="cardPanel"
     :style="previewStyle"
-    @hide="hide"/>
+    @hide="hide" />
 </template>
 
 <script setup lang="ts">

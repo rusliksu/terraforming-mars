@@ -4,39 +4,39 @@
   <BoardTabs :game="game" :players="players" :tileView="tileView" :reservedMarsHeight="reservedMarsHeight" @toggleTileView="$emit('toggleTileView')">
     <template #mars>
       <Teleport :to="boardZoomTarget ?? 'body'" :disabled="boardZoomTarget === undefined || zoomBoard !== 'mars'">
-      <Board ref="columnMars" class="board-cont--zoomable" @click="onBoardClick($event, 'mars')" :spaces="game.spaces" :expansions="game.gameOptions.expansions" :venusScaleLevel="game.venusScaleLevel"
-        :boardName="game.gameOptions.boardName" :globalParameters="game.gameOptions.globalParameters"
-        :customBoardRows="game.gameOptions.customBoardRows" :oceans_count="game.oceans" :oxygen_level="game.oxygenLevel"
-        :temperature="game.temperature" :altVenusBoard="game.gameOptions.altVenusBoard" :aresData="game.aresData"
-        :tileView="tileView" @toggleTileView="$emit('toggleTileView')" id="shortkey-board"/>
+        <Board ref="columnMars" class="board-cont--zoomable" @click="onBoardClick($event, 'mars')" :spaces="game.spaces" :expansions="game.gameOptions.expansions" :venusScaleLevel="game.venusScaleLevel"
+          :boardName="game.gameOptions.boardName" :globalParameters="game.gameOptions.globalParameters"
+          :customBoardRows="game.gameOptions.customBoardRows" :oceans_count="game.oceans" :oxygen_level="game.oxygenLevel"
+          :temperature="game.temperature" :altVenusBoard="game.gameOptions.altVenusBoard" :aresData="game.aresData"
+          :tileView="tileView" @toggleTileView="$emit('toggleTileView')" id="shortkey-board" />
       </Teleport>
     </template>
     <template #marsAside><slot name="marsAside"></slot></template>
     <template #moon><Teleport :to="boardZoomTarget ?? 'body'" :disabled="boardZoomTarget === undefined || zoomBoard !== 'moon'">
-      <MoonBoard v-if="game.moon" ref="columnMoon" class="board-cont--zoomable" @click="onBoardClick($event, 'moon')" :model="game.moon" :tileView="tileView" id="shortkey-moonBoard"/>
+      <MoonBoard v-if="game.moon" ref="columnMoon" class="board-cont--zoomable" @click="onBoardClick($event, 'moon')" :model="game.moon" :tileView="tileView" id="shortkey-moonBoard" />
     </Teleport></template>
     <template #colonies>
-      <ColoniesBoard :colonies="game.colonies" :players="players" :viewer="viewer"/>
+      <ColoniesBoard :colonies="game.colonies" :players="players" :viewer="viewer" />
     </template>
-    <template #turmoil><TurmoilBoard v-if="game.turmoil" :turmoil="game.turmoil" :viewer="viewer" :generation="game.generation" :moreParties="game.gameOptions.expansions.moreParties"/></template>
-    <template #paths><PlanetsBoard v-if="game.pathfinders" :model="game.pathfinders" :gameOptions="game.gameOptions"/></template>
-    <template #delta><DeltaBoard :players="players" :viewerColor="viewer?.color"/></template>
+    <template #turmoil><TurmoilBoard v-if="game.turmoil" :turmoil="game.turmoil" :viewer="viewer" :generation="game.generation" :moreParties="game.gameOptions.expansions.moreParties" /></template>
+    <template #paths><PlanetsBoard v-if="game.pathfinders" :model="game.pathfinders" :gameOptions="game.gameOptions" /></template>
+    <template #delta><DeltaBoard :players="players" :viewerColor="viewer?.color" /></template>
     <template #venus><Teleport :to="boardZoomTarget ?? 'body'" :disabled="boardZoomTarget === undefined || zoomBoard !== 'venus'">
       <VenusSurfaceBoard v-if="game.venusPhase2" ref="columnVenus" class="board-cont--zoomable" @click="onBoardClick($event, 'venus')" :model="game.venusPhase2" :tileView="tileView"
-      :venusScaleLevel="game.venusScaleLevel" :altVenusBoard="game.gameOptions.altVenusBoard"
-      :venusScaleMax="game.gameOptions.globalParameters?.venus.max" id="shortkey-venusBoard"/>
+        :venusScaleLevel="game.venusScaleLevel" :altVenusBoard="game.gameOptions.altVenusBoard"
+        :venusScaleMax="game.gameOptions.globalParameters?.venus.max" id="shortkey-venusBoard" />
     </Teleport></template>
-    <template #orbit><HighOrbitMarket v-if="game.highOrbitMarket" :market="game.highOrbitMarket"/></template>
-    <template #teams><ConglomeratesTeams v-if="game.conglomerates" :model="game.conglomerates"/></template>
+    <template #orbit><HighOrbitMarket v-if="game.highOrbitMarket" :market="game.highOrbitMarket" /></template>
+    <template #teams><ConglomeratesTeams v-if="game.conglomerates" :model="game.conglomerates" /></template>
   </BoardTabs>
   <BoardZoomModal :open="boardZoomOpen" :origin="zoomOrigin" :frame="zoomBoard === 'mars' && game.gameOptions.boardName !== BoardName.CUSTOM ? marsFrame : undefined"
     @target="boardZoomTarget = $event" @rendered="zoomGeometry.revision.value++" @hidden="onZoomHidden" @close="closeBoardZoom">
-    <template #banner><PlacementBanner v-if="placementInput !== undefined" :description="nativePlacementDescription(placementInput)"/></template>
+    <template #banner><PlacementBanner v-if="placementInput !== undefined" :description="nativePlacementDescription(placementInput)" /></template>
   </BoardZoomModal>
   <div v-if="players.length > 1" class="player_home_block--milestones-and-awards">
     <a class="hotkey-target"></a>
-    <Milestones :milestones="game.milestones" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates"/>
-    <Awards :awards="game.awards" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates"/>
+    <Milestones :milestones="game.milestones" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates" />
+    <Awards :awards="game.awards" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates" />
   </div>
 </template>
 
@@ -69,6 +69,7 @@ import {BoardName} from '@/common/boards/BoardName';
 export default defineComponent({
   name: 'GameBoardView',
   extends: CanonicalGameBoardView,
+  emits: ['toggleTileView'],
   components: {BoardTabs, Board, ColoniesBoard, TurmoilBoard, MoonBoard, PlanetsBoard, DeltaBoard, Milestones, Awards, BoardZoomModal, PlacementBanner},
   props: {
     viewer: {type: Object as PropType<PublicPlayerModel>, default: undefined},

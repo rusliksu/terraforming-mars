@@ -3,20 +3,20 @@
        Teleported into body so the column overflow and the right column's zoom don't clip it. -->
   <Teleport to="body">
     <div class="wrybit-ui wrybit-overlay-root">
-    <div v-if="anchor !== undefined" ref="popover" role="dialog" aria-modal="false"
-      :class="['space-confirm', 'space-confirm--' + placement.side]"
-      :style="{left: placement.left + 'px', top: placement.top + 'px'}">
-      <div class="space-confirm-message" v-i18n>Place your tile here?</div>
-      <div class="space-confirm-actions">
-        <!-- Yes green, no red (colors from button_tones.less) -->
-        <button type="button" class="space-confirm-button space-confirm-button--yes" :disabled="busy" @click="$emit('accept')" v-i18n>Yes</button>
-        <button type="button" class="space-confirm-button space-confirm-button--no" :disabled="busy" @click="$emit('dismiss')" v-i18n>No</button>
+      <div v-if="anchor !== undefined" ref="popover" role="dialog" aria-modal="false"
+        :class="['space-confirm', 'space-confirm--' + placement.side]"
+        :style="{left: placement.left + 'px', top: placement.top + 'px'}">
+        <div class="space-confirm-message" v-i18n>Place your tile here?</div>
+        <div class="space-confirm-actions">
+          <!-- Yes green, no red (colors from button_tones.less) -->
+          <button type="button" class="space-confirm-button space-confirm-button--yes" :disabled="busy" @click="$emit('accept')" v-i18n>Yes</button>
+          <button type="button" class="space-confirm-button space-confirm-button--no" :disabled="busy" @click="$emit('dismiss')" v-i18n>No</button>
+        </div>
+        <label class="space-confirm-skip">
+          <input type="checkbox" :checked="false" @change="$emit('hide', ($event.target as HTMLInputElement).checked)">
+          <span v-i18n>Don't ask again</span>
+        </label>
       </div>
-      <label class="space-confirm-skip">
-        <input type="checkbox" :checked="false" @change="$emit('hide', ($event.target as HTMLInputElement).checked)">
-        <span v-i18n>Don't ask again</span>
-      </label>
-    </div>
     </div>
   </Teleport>
 </template>

@@ -1,36 +1,36 @@
 <template>
-        <div class="players-overview" v-if="hasPlayers"><OverviewSettings/>
-            <!-- Played cards of all players, including your own (via "show" in the player bar) -->
-            <div class="other_player">
-                <div v-for="(otherPlayer, index) in playersInOrder" :key="otherPlayer.color">
-                    <OtherPlayer :player="otherPlayer" :playerIndex="index"/>
-                </div>
-                <div v-if="thisPlayer !== undefined">
-                    <OtherPlayer :player="thisPlayer" :playerIndex="ownPlayerIndex(playerView)"/>
-                </div>
-            </div>
-            <PlayerInfo v-for="(p, index) in playersInOrder"
-              :player="p"
-              :key="p.color"
-              :readOnly="readOnly" :playerView="playerView"
-              :firstForGen="getIsFirstForGen(p)"
-              :actionLabel="getActionLabel(p)" :eloDelta="getEloDelta(p)"
-              :playerIndex="index"/>
-            <PlayerInfo
-              v-if="thisPlayer !== undefined"
-              :player="thisPlayer"
-              :key="thisPlayer.color"
-              :readOnly="readOnly" :playerView="playerView"
-              :firstForGen="getIsFirstForGen(thisPlayer)"
-              :actionLabel="getActionLabel(thisPlayer)" :eloDelta="getEloDelta(thisPlayer)"
-              :playerIndex="ownPlayerIndex(playerView)"/>
-            <!-- The same players as a table; visible only in the two-column layout (players_table.less).
+  <div class="players-overview" v-if="hasPlayers"><OverviewSettings />
+    <!-- Played cards of all players, including your own (via "show" in the player bar) -->
+    <div class="other_player">
+      <div v-for="(otherPlayer, index) in playersInOrder" :key="otherPlayer.color">
+        <OtherPlayer :player="otherPlayer" :playerIndex="index" />
+      </div>
+      <div v-if="thisPlayer !== undefined">
+        <OtherPlayer :player="thisPlayer" :playerIndex="ownPlayerIndex(playerView)" />
+      </div>
+    </div>
+    <PlayerInfo v-for="(p, index) in playersInOrder"
+      :player="p"
+      :key="p.color"
+      :readOnly="readOnly" :playerView="playerView"
+      :firstForGen="getIsFirstForGen(p)"
+      :actionLabel="getActionLabel(p)" :eloDelta="getEloDelta(p)"
+      :playerIndex="index" />
+    <PlayerInfo
+      v-if="thisPlayer !== undefined"
+      :player="thisPlayer"
+      :key="thisPlayer.color"
+      :readOnly="readOnly" :playerView="playerView"
+      :firstForGen="getIsFirstForGen(thisPlayer)"
+      :actionLabel="getActionLabel(thisPlayer)" :eloDelta="getEloDelta(thisPlayer)"
+      :playerIndex="ownPlayerIndex(playerView)" />
+    <!-- The same players as a table; visible only in the two-column layout (players_table.less).
                  In the wide player view it is teleported above the columns so it can use the full page width. -->
-            <Teleport v-if="tableTarget !== undefined" defer :to="tableTarget">
-              <PlayersTable :readOnly="readOnly" :playerView="playerView" :rows="tableRows"/>
-            </Teleport>
-            <PlayersTable v-else :readOnly="readOnly" :playerView="playerView" :rows="tableRows"/>
-        </div>
+    <Teleport v-if="tableTarget !== undefined" defer :to="tableTarget">
+      <PlayersTable :readOnly="readOnly" :playerView="playerView" :rows="tableRows" />
+    </Teleport>
+    <PlayersTable v-else :readOnly="readOnly" :playerView="playerView" :rows="tableRows" />
+  </div>
 </template>
 
 <script lang="ts">

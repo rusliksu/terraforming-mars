@@ -5,40 +5,40 @@
       :count="player.megacredits"
       :production="player.megacreditProduction"
       :resourceProtection="player.protectedResources.megacredits"
-      :productionProtection="player.protectedProduction.megacredits"/>
+      :productionProtection="player.protectedProduction.megacredits" />
     <PlayerResource
       :type="Resource.STEEL"
       :count="player.steel"
       :production="player.steelProduction"
       :value="player.steelValue"
       :resourceProtection="player.protectedResources.steel"
-      :productionProtection="player.protectedProduction.steel"/>
+      :productionProtection="player.protectedProduction.steel" />
     <PlayerResource
       :type="Resource.TITANIUM"
       :count="player.titanium"
       :production="player.titaniumProduction"
       :value="player.titaniumValue"
       :resourceProtection="player.protectedResources.titanium"
-      :productionProtection="player.protectedProduction.titanium"/>
+      :productionProtection="player.protectedProduction.titanium" />
     <PlayerResource
       :type="Resource.PLANTS"
       :count="player.plants"
       :production="player.plantProduction"
       :resourceProtection="player.protectedResources.plants"
-      :productionProtection="player.protectedProduction.plants"/>
+      :productionProtection="player.protectedProduction.plants" />
     <PlayerResource
       :type="Resource.ENERGY"
       :count="player.energy"
       :production="player.energyProduction"
       :resourceProtection="player.protectedResources.energy"
-      :productionProtection="player.protectedProduction.energy"/>
+      :productionProtection="player.protectedProduction.energy" />
     <PlayerResource
       :type="Resource.HEAT"
       :count="player.heat"
       :production="player.heatProduction"
       :value="canUseHeatAsMegaCredits ? 1 : 0"
       :resourceProtection="player.protectedResources.heat"
-      :productionProtection="player.protectedProduction.heat"/>
+      :productionProtection="player.protectedProduction.heat" />
     <div v-if="conglomeratesExpansion" class="resource_item resource_item--coordination" data-test="coordination-resource">
       <div class="resource_item_stock">
         <i class="resource_icon resource_icon--coordination tooltip tooltip-bottom" :data-tooltip="$t('Coordination')">

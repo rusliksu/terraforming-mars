@@ -1,10 +1,10 @@
 <template>
   <div class="select_space_cont">
     <SpaceConfirmPopover :anchor="binding.automatic ? undefined : binding.anchor" :geometryRevision="zoomSurface?.revision.value" :busy="accepting"
-      @accept="accept" @dismiss="binding.dismiss()" @hide="binding.hide($event)"/>
+      @accept="accept" @dismiss="binding.dismiss()" @hide="binding.hide($event)" />
     <div v-if="binding.showtitle" class="source-select-space-intro">
-      <InputIntro :input="binding.playerinput" :playerView="binding.playerView"/>
-      <GoToMap v-if="zoomBoard === undefined" :playerinput="binding.playerinput"/>
+      <InputIntro :input="binding.playerinput" :playerView="binding.playerView" />
+      <GoToMap v-if="zoomBoard === undefined" :playerinput="binding.playerinput" />
     </div>
     <div v-if="zoomBoard !== undefined" class="select-space-zoom">
       <button type="button" class="btn btn-submit btn-rounded select-space-zoom-button" @click="enlarge">
@@ -14,7 +14,7 @@
     </div>
     <div v-if="binding.warning" class="nes-container is-rounded">
       <span class="nes-text is-warning" v-i18n>{{ binding.warning }}</span>
-      <GoToMap :playerinput="binding.playerinput"/>
+      <GoToMap :playerinput="binding.playerinput" />
     </div>
   </div>
 </template>

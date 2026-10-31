@@ -1,11 +1,11 @@
 <template>
   <div class="ma-block">
     <div class="ma-player" v-if="milestone.playerName">
-      <BoardCube v-if="milestone.color !== undefined" :title="milestone.playerName" class="board-cube" :color="milestone.color" view="slight"/>
+      <BoardCube v-if="milestone.color !== undefined" :title="milestone.playerName" class="board-cube" :color="milestone.color" view="slight" />
     </div>
     <div class="ma-name--milestones" :class="nameCss">
       <div v-if="conglomeratesNumberPatch !== undefined" class="ma-number-patch">{{ conglomeratesNumberPatch }}</div>
-      <span ref="name" v-i18n>{{name}}</span>
+      <span ref="name" v-i18n>{{ name }}</span>
       <div v-if="milestone.teamScores !== undefined" class="ma-team-scores">
         <span
           v-for="(team, idx) in milestone.teamScores"
@@ -29,8 +29,8 @@
             v-text="score.score"
             data-test="player-score"
           ></p>
-      </template>
-    </div>
+        </template>
+      </div>
     </div>
 
     <div v-if="showDescription" class="ma-description">

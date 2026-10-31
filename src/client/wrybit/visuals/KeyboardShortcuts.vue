@@ -23,5 +23,5 @@ import {defineComponent} from 'vue';
 import Canonical from '@/client/components/KeyboardShortcuts.vue';
 import PopupPanel from '@/client/wrybit/visuals/common/PopupPanel.vue';
 
-export default defineComponent({name: 'KeyboardShortcuts', extends: Canonical, components: {PopupPanel}});
+export default defineComponent({name: 'KeyboardShortcuts', emits: ['close'], extends: Canonical, components: {PopupPanel}});
 </script>

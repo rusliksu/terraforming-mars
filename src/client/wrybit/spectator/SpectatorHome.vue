@@ -1,5 +1,5 @@
 <template>
-  <MobileSpectatorHome v-if="mobileLayout" :spectator="spectator"/>
+  <MobileSpectatorHome v-if="mobileLayout" :spectator="spectator" />
   <div v-else id="spectator-home" :class="{'with-turmoil': game.turmoil, 'player-home--fixed': usesFixedLayout}">
     <!-- Built like the Wrybit player view, just without own hand and input. -->
     <Sidebar
@@ -20,13 +20,13 @@
       :discardPileSize="game.discardPileSize"
       :otherDeckSizes="game.otherDeckSizes"
       :spectatorId="game.spectatorId"
-      :expectedPurgeTimeMs="game.expectedPurgeTimeMs"/>
+      :expectedPurgeTimeMs="game.expectedPurgeTimeMs" />
 
     <HomeColumns>
       <template #board>
         <div class="player_home_block player-home-columns__mars">
           <GameBoardView ref="gameBoardView" :game="game" :tileView="tileView" :players="spectator.players"
-            @toggleTileView="cycleTileView()"/>
+            @toggleTileView="cycleTileView()" />
           <div v-if="game.phase === 'end'" class="player_home_block">
             <a :href="'the-end?id=' + spectator.id" v-i18n>Go to game results</a>
           </div>
@@ -36,17 +36,17 @@
       <template #main>
         <a class="hotkey-target"></a>
         <PlayersOverview class="player_home_block player_home_block--players nofloat" :playerView="spectator"
-          v-trim-whitespace id="shortkey-playersoverview"/>
-        <RowResizeHandle kind="players"/>
+          id="shortkey-playersoverview" />
+        <RowResizeHandle kind="players" />
         <a class="hotkey-target"></a>
         <div class="player_home_block nofloat player-home-columns__log player_home_block--spectator-log">
-          <LogPanel :viewModel="spectator" :milestonesAwards="true" @space-clicked="onSpaceClicked"/>
+          <LogPanel :viewModel="spectator" :milestonesAwards="true" @space-clicked="onSpaceClicked" />
         </div>
       </template>
     </HomeColumns>
 
-    <WaitingFor v-show="false" v-if="game.phase !== 'end'" :player-view="spectator" :waitingfor="undefined"/>
-    <KeyboardShortcuts v-show="keyboardShortcutOpened" @close="keyboardShortcutOpened = false"/>
+    <WaitingFor v-show="false" v-if="game.phase !== 'end'" :player-view="spectator" :waitingfor="undefined" />
+    <KeyboardShortcuts v-show="keyboardShortcutOpened" @close="keyboardShortcutOpened = false" />
   </div>
 </template>
 

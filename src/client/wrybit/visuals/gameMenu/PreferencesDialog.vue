@@ -1,5 +1,5 @@
 <template>
-  <SettingsPreferencesDialog :preferencesManager="preferencesManager" @okButtonClicked="$emit('okButtonClicked')"/>
+  <SettingsPreferencesDialog :preferencesManager="preferencesManager" @okButtonClicked="$emit('okButtonClicked')" />
 </template>
 <script setup lang="ts">
 import SettingsPreferencesDialog from '@/client/wrybit/pages/settings/PreferencesDialog.vue';

@@ -1,12 +1,12 @@
 <template>
   <div class="cardbox" v-for="name in logMessageCards(message)" :key="name">
-    <Card :card="logCardModel(name, players)"/>
+    <Card :card="logCardModel(name, players)" />
   </div>
   <div class="cardbox" v-for="name in logMessageGlobalEvents(message)" :key="name">
-    <GlobalEvent :globalEventName="name" type="prior" :showIcons="false"/>
+    <GlobalEvent :globalEventName="name" type="prior" :showIcons="false" />
   </div>
   <div class="cardbox" v-for="name in logMessageColonies(message)" :key="name">
-    <Colony :colony="simpleColonyModel(name)"/>
+    <Colony :colony="simpleColonyModel(name)" />
   </div>
 </template>
 <script setup lang="ts">

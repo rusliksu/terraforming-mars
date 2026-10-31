@@ -8,6 +8,7 @@ import {AgendaStyle} from '../turmoil/Types';
 import {GameId} from '../Types';
 import {Expansion} from '../cards/GameModule';
 import {AiLevel} from '../ai/AiLevel';
+import {CustomMA} from '../ma/CustomMA';
 
 export type BoardNameType = BoardName | RandomBoardOption;
 
@@ -124,4 +125,5 @@ export type NewGameConfig = {
   customCeos: ReadonlyArray<CardName>;
   startingCeos: number;
   startingPreludes: number;
+  customMA?: CustomMA;
 }

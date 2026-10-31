@@ -66,36 +66,36 @@
           <h3 v-i18n>Latest event in view</h3>
           <ul>
             <ActionLogRow v-if="latestEntry.kind === 'action'" :entry="latestEntry" :viewModel="state.frame.view"
-              @messageClicked="messageClicked" @spaceClicked="spaceClicked"/>
+              @messageClicked="messageClicked" @spaceClicked="spaceClicked" />
             <LogMessageComponent v-else :message="latestEntry.message" :viewModel="state.frame.view"
-              @click="messageClicked(latestEntry.message)" @spaceClicked="spaceClicked"/>
+              @click="messageClicked(latestEntry.message)" @spaceClicked="spaceClicked" />
           </ul>
         </div>
         <ul class="replay-log-history">
           <template v-for="(entry, index) in earlierEntries" :key="entry.kind === 'action' ? entry.id : entry.message.timestamp + '-' + index">
             <ActionLogRow v-if="entry.kind === 'action'" :entry="entry" :viewModel="state.frame.view"
-              @messageClicked="messageClicked" @spaceClicked="spaceClicked"/>
+              @messageClicked="messageClicked" @spaceClicked="spaceClicked" />
             <LogMessageComponent v-else :message="entry.message" :viewModel="state.frame.view"
-              @click="messageClicked(entry.message)" @spaceClicked="spaceClicked"/>
+              @click="messageClicked(entry.message)" @spaceClicked="spaceClicked" />
           </template>
         </ul>
         <p v-if="filteredMessages.length === 0" v-i18n>No public messages in this save.</p>
       </section>
       <div v-if="selectedMessage" class="replay-card-overlay" @click.self="selectedMessage = undefined">
-        <CardPanel :message="selectedMessage" :players="state.frame.view.players" @hide="selectedMessage = undefined"/>
+        <CardPanel :message="selectedMessage" :players="state.frame.view.players" @hide="selectedMessage = undefined" />
       </div>
       <div class="replay-players">
-        <PlayersOverview :playerView="state.frame.view" :readOnly="true"/>
+        <PlayersOverview :playerView="state.frame.view" :readOnly="true" />
       </div>
       <div class="replay-board">
         <div class="replay-board-inner" data-test="replay-board-inner">
           <GameBoardView ref="gameBoardView" :game="state.frame.view.game" :players="state.frame.view.players" :tileView="tileView"
-            @toggleTileView="tileView = nextTileView(tileView)"/>
+            @toggleTileView="tileView = nextTileView(tileView)" />
         </div>
       </div>
       <section v-if="state.frame.view.game.colonies.length > 0" class="replay-colonies">
         <h2 v-i18n>Colonies</h2>
-        <Colony v-for="colony in state.frame.view.game.colonies" :key="colony.name" :colony="colony" :active="colony.isActive"/>
+        <Colony v-for="colony in state.frame.view.game.colonies" :key="colony.name" :colony="colony" :active="colony.isActive" />
       </section>
     </div>
   </main>

@@ -2,13 +2,13 @@
   <!-- Attach to body: inside the log (own stacking context) the modal would otherwise sit below header and footer bars -->
   <Teleport to="body">
     <div class="wrybit-ui wrybit-overlay-root">
-    <MobileCardZoom :count="items.length" v-model:index="index" @close="$emit('close')">
-      <template #slide="{index: slide}">
-        <Card v-if="items[slide].kind === 'card'" :card="cardModel(items[slide].name as CardName)"/>
-        <GlobalEvent v-else-if="items[slide].kind === 'globalEvent'" :globalEventName="items[slide].name as GlobalEventName" type="prior" :showIcons="false"/>
-        <Colony v-else :colony="simpleColonyModel(items[slide].name as ColonyName)"/>
-      </template>
-    </MobileCardZoom>
+      <MobileCardZoom :count="items.length" v-model:index="index" @close="$emit('close')">
+        <template #slide="{index: slide}">
+          <Card v-if="items[slide].kind === 'card'" :card="cardModel(items[slide].name as CardName)" />
+          <GlobalEvent v-else-if="items[slide].kind === 'globalEvent'" :globalEventName="items[slide].name as GlobalEventName" type="prior" :showIcons="false" />
+          <Colony v-else :colony="simpleColonyModel(items[slide].name as ColonyName)" />
+        </template>
+      </MobileCardZoom>
     </div>
   </Teleport>
 </template>

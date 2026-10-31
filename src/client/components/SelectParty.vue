@@ -1,17 +1,17 @@
 <template>
-    <component v-if="partyPresentation !== undefined" :is="partyPresentation" :binding="presentationBinding" />
-    <div v-else class="wf-component wf-component--select-party">
-        <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
-        <div class="wf-component--list-party" v-if="turmoil !== undefined">
-          <label v-for="party in turmoil.parties" :key="party.name">
-              <input type="radio" v-model="selectedParty" :value="party.name" v-if="partyAvailableToSelect(party.name)">
-              <Party :party="party" :isDominant="isDominant(party.name)" :isAvailable="partyAvailableToSelect(party.name)"/>
-          </label>
-        </div>
-        <div v-if="showsave === true" class="nofloat">
-            <AppButton @click="saveData()" :title="playerinput.buttonLabel" :disabled="selectedParty === undefined" />
-        </div>
+  <component v-if="partyPresentation !== undefined" :is="partyPresentation" :binding="presentationBinding" />
+  <div v-else class="wf-component wf-component--select-party">
+    <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
+    <div class="wf-component--list-party" v-if="turmoil !== undefined">
+      <label v-for="party in turmoil.parties" :key="party.name">
+        <input type="radio" v-model="selectedParty" :value="party.name" v-if="partyAvailableToSelect(party.name)">
+        <Party :party="party" :isDominant="isDominant(party.name)" :isAvailable="partyAvailableToSelect(party.name)" />
+      </label>
     </div>
+    <div v-if="showsave === true" class="nofloat">
+      <AppButton @click="saveData()" :title="playerinput.buttonLabel" :disabled="selectedParty === undefined" />
+    </div>
+  </div>
 </template>
 <script lang="ts">
 import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';

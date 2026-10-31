@@ -1,6 +1,6 @@
 <template>
   <div class="or-tab-intro card-intro">
-    <SourceCardThumbnail :card="card"/>
+    <SourceCardThumbnail :card="card" />
     <div>
       <div class="or-tab-intro-title card-intro-name">{{ $t(card) }}</div>
       <div v-if="description !== undefined" class="or-tab-intro-hint">{{ $t(description) }}</div>

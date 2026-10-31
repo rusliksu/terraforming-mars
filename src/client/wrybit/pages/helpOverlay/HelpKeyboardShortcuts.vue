@@ -11,11 +11,11 @@
       <div class="help-shortcut-grid">
         <div v-for="shortcut in SHORTCUTS" :key="shortcut.key" class="help-shortcut">
           <svg class="help-sketch" viewBox="0 0 160 100" aria-hidden="true">
-            <rect class="help-sketch-frame" x="0.5" y="0.5" width="159" height="99" rx="6"/>
-            <rect class="help-sketch-area" :class="{'help-sketch-area--target': shortcut.target === 'players'}" x="8" y="8" width="84" height="26" rx="3"/>
-            <rect class="help-sketch-area" :class="{'help-sketch-area--target': shortcut.target === 'hand'}" x="8" y="40" width="84" height="52" rx="3"/>
-            <circle class="help-sketch-area" :class="{'help-sketch-area--target': shortcut.target === 'board'}" cx="126" cy="38" r="26"/>
-            <rect class="help-sketch-area" :class="{'help-sketch-area--target': shortcut.target === 'colonies'}" x="100" y="72" width="52" height="20" rx="3"/>
+            <rect class="help-sketch-frame" x="0.5" y="0.5" width="159" height="99" rx="6" />
+            <rect class="help-sketch-area" :class="{'help-sketch-area--target': shortcut.target === 'players'}" x="8" y="8" width="84" height="26" rx="3" />
+            <rect class="help-sketch-area" :class="{'help-sketch-area--target': shortcut.target === 'hand'}" x="8" y="40" width="84" height="52" rx="3" />
+            <circle class="help-sketch-area" :class="{'help-sketch-area--target': shortcut.target === 'board'}" cx="126" cy="38" r="26" />
+            <rect class="help-sketch-area" :class="{'help-sketch-area--target': shortcut.target === 'colonies'}" x="100" y="72" width="52" height="20" rx="3" />
           </svg>
           <div class="help-shortcut-text">
             <span class="help-key help-key--hot">{{ shortcut.key }}</span>

@@ -8,7 +8,7 @@
     @click="$emit('select')">
     <span class="or-tab-title">{{ $t(label) }}</span>
     <span class="or-tab-count">{{ count }} options</span>
-    <HotkeyKeys action="tab-hand"/>
+    <HotkeyKeys action="tab-hand" />
   </button>
 </template>
 

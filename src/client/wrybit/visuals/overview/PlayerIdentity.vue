@@ -8,7 +8,7 @@
         <span class="players-table-name-text">{{ symbol + nameParts.name }}</span>
         <span v-if="nameParts.marker !== undefined" class="players-table-name-marker">{{ nameParts.marker }}</span>
       </span>
-      <PlayerStatus :timer="player.timer" :showTimer="playerView.game.gameOptions.showTimers && escapeVelocity === undefined" :liveTimer="!readOnly && playerView.game.phase !== Phase.END" :actionLabel="actionLabel" v-trim-whitespace/>
+      <PlayerStatus :timer="player.timer" :showTimer="playerView.game.gameOptions.showTimers && escapeVelocity === undefined" :liveTimer="!readOnly && playerView.game.phase !== Phase.END" :actionLabel="actionLabel" />
     </div>
     <!-- Several corporations (Merger): joined by a gold plus -->
     <div class="players-table-corporation" :title="corporations">
@@ -16,7 +16,7 @@
     </div>
     <!-- Escape Velocity: used against allowed thinking time, penalty once over -->
     <EscapeVelocityClock v-if="escapeVelocity !== undefined" :timer="player.timer" :actionsTaken="player.actionsTakenThisGame"
-      :options="escapeVelocity" :live="!readOnly && playerView.game.phase !== Phase.END" :penalty="player.victoryPointsBreakdown.escapeVelocity"/>
+      :options="escapeVelocity" :live="!readOnly && playerView.game.phase !== Phase.END" :penalty="player.victoryPointsBreakdown.escapeVelocity" />
   </div>
 </template>
 

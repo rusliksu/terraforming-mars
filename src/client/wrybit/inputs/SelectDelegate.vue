@@ -1,14 +1,14 @@
 <template>
-<div data-hotkey-group>
-    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
+  <div data-hotkey-group>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView" />
     <label v-for="player in binding.playerinput.players" :key="player" class="form-radio form-inline">
       <input type="radio" :checked="binding.selected === player" :value="player" @change="binding.select(player)">
       <i class="form-icon"></i>
       <span v-if="player === 'NEUTRAL'" v-i18n>Neutral</span>
-      <SelectPlayerRow v-else :player="binding.playerView.players.find((other) => other.color === player)"/>
+      <SelectPlayerRow v-else :player="binding.playerView.players.find((other) => other.color === player)" />
     </label>
     <TabPanelFooterSlot>
-      <AppButton v-if="binding.showsave" size="big" hotkey="confirm" @click="binding.save()" :title="$t(binding.playerinput.buttonLabel)"/>
+      <AppButton v-if="binding.showsave" size="big" hotkey="confirm" @click="binding.save()" :title="$t(binding.playerinput.buttonLabel)" />
     </TabPanelFooterSlot>
   </div>
 </template>

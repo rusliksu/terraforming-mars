@@ -1,9 +1,9 @@
 <template>
   <div class="wf-component wf-component--select-option">
-    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
-    <WarningsComponent :warnings="binding.playerinput.warnings"/>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView" />
+    <WarningsComponent :warnings="binding.playerinput.warnings" />
     <TabPanelFooterSlot>
-      <AppButton v-if="binding.showsave" size="big" hotkey="confirm" @click="binding.save()" :title="$t(binding.playerinput.buttonLabel)"/>
+      <AppButton v-if="binding.showsave" size="big" hotkey="confirm" @click="binding.save()" :title="$t(binding.playerinput.buttonLabel)" />
     </TabPanelFooterSlot>
   </div>
 </template>

@@ -2,7 +2,7 @@
   <button @click="$emit('click')" class="btn" :class="outerClass" :disabled="isDisabled" :data-hotkey="hotkey" v-i18n>
     <span v-if="hasIcon" class="icon" :class="iconClass" data-test="icon"></span>
     <span v-else>{{ buttonText }}</span>
-    <HotkeyKeys v-if="hotkey !== undefined" :action="hotkey"/>
+    <HotkeyKeys v-if="hotkey !== undefined" :action="hotkey" />
   </button>
 </template>
 

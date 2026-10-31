@@ -1,24 +1,24 @@
 <template>
   <div v-if="isMobileLayout" id="player-home" ref="mobileRoot" class="mb-home" :class="{'mb-home--turn': activeScreen === 'turn'}">
     <header class="mb-topbar">
-      <GameMenu/>
-      <MobileHeader :game="game"/>
+      <GameMenu />
+      <MobileHeader :game="game" />
     </header>
     <div class="mb-screens">
       <MobileMarsScreen v-show="activeScreen === 'mars'" ref="gameBoardView" :game="game" :players="playerView.players"
         :participant-id="playerView.id" :tile-view="tileView" :acting="isPlayerActing" :banner-title="bannerTitle"
         :viewer-color="thisPlayer?.color" :viewer="thisPlayer"
-        @toggle-tile-view="cycleTileView()" @show-milestones="openMilestones"/>
+        @toggle-tile-view="cycleTileView()" @show-milestones="openMilestones" />
       <section v-show="activeScreen === 'hand'" class="mb-screen mb-screen--hand">
         <a name="cards" class="player_home_anchor"></a>
         <div v-if="playerView.draftedCards.length > 0" class="mb-drafted">
-          <DynamicTitle title="Drafted cards" :color="thisPlayer?.color"/>
-          <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox"><Card :card="card"/></div>
+          <DynamicTitle title="Drafted cards" :color="thisPlayer?.color" />
+          <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox"><Card :card="card" /></div>
         </div>
-        <HandCardsPanel :playerView="playerView"/>
+        <HandCardsPanel :playerView="playerView" />
       </section>
       <section v-show="activeScreen === 'turn'" ref="turnSection" class="mb-screen mb-screen--turn">
-        <SetupTurnOrder v-if="isSetupPhase" :players="playerView.players"/>
+        <SetupTurnOrder v-if="isSetupPhase" :players="playerView.players" />
         <div v-if="carousel !== undefined && carousel.count > 1" class="mb-dots">
           <button v-for="index in carousel.count" :key="index" type="button"
             :class="['mb-dot', {'mb-dot--active': index - 1 === carousel.index, 'mb-dot--unavailable': carousel.unavailable[index - 1]}]"
@@ -26,75 +26,75 @@
           <span class="mb-dots-count">{{ carousel.index + 1 }} / {{ carousel.count }}</span>
         </div>
         <InputHost v-if="game.phase !== 'end'">
-          <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+          <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor" />
         </InputHost>
       </section>
       <section v-show="activeScreen === 'players'" class="mb-screen mb-screen--players">
         <MobilePlayersPanel :view-model="playerView" :segment="playersSegment" :viewer-color="thisPlayer?.color"
-          @update:segment="playersSegment = $event"/>
+          @update:segment="playersSegment = $event" />
       </section>
       <section v-show="activeScreen === 'log'" class="mb-screen mb-screen--log">
         <LogPanel :view-model="playerView" :milestonesAwards="true" :acting="isPlayerActing" :zoom-carousel="true"
-          @space-clicked="onSpaceClicked"/>
+          @space-clicked="onSpaceClicked" />
       </section>
     </div>
     <MobileNav :items="navItems" :active="activeScreen" :hand-count="cardsInHandCount" @navigate="selectScreen">
       <template #turn>
-        <MobileTurnButton :acting="isPlayerActing" :action-number="actionNumber" :actions-per-turn="actionsPerTurn"/>
+        <MobileTurnButton :acting="isPlayerActing" :action-number="actionNumber" :actions-per-turn="actionsPerTurn" />
       </template>
     </MobileNav>
     <MobileTurnSheet v-if="sheetOpen" :menu="menu" :waiting-players="waitingPlayers" :title="bannerTitle"
       :action-number="actionNumber" :actions-per-turn="actionsPerTurn"
-      @close="sheetOpen = false" @select="startTask" @confirm="confirmTask"/>
-    <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"/>
-    <HotkeyHelpDialog :open="keyboardShortcutOpened" :expansions="hotkeyExpansions" @close="keyboardShortcutOpened = false"/>
+      @close="sheetOpen = false" @select="startTask" @confirm="confirmTask" />
+    <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs" />
+    <HotkeyHelpDialog :open="keyboardShortcutOpened" :expansions="hotkeyExpansions" @close="keyboardShortcutOpened = false" />
   </div>
   <div v-else id="player-home" :class="{'with-turmoil': game.turmoil, 'player-home--acting': isPlayerActing}">
-    <TopBar :playerView="playerView"/>
+    <TopBar :playerView="playerView" />
     <div id="wrybit-players-table" class="player-home-table-slot"></div>
     <div v-if="game.phase === 'end'" class="player_home_block">
-      <DynamicTitle title="This game is over!" :color="thisPlayer.color"/>
+      <DynamicTitle title="This game is over!" :color="thisPlayer.color" />
       <a :href="'the-end?id=' + playerView.id" v-i18n>Go to game results</a>
     </div>
     <HomeColumns :boardCollapsed="isSetupPhase && setupBoardCollapsed">
       <template #board>
         <div class="player_home_block player-home-columns__mars">
-          <GameBoardView ref="gameBoardView" :game="game" :tileView="tileView" :players="playerView.players" :viewer="playerView.thisPlayer" @toggleTileView="cycleTileView()"/>
+          <GameBoardView ref="gameBoardView" :game="game" :tileView="tileView" :players="playerView.players" :viewer="playerView.thisPlayer" @toggleTileView="cycleTileView()" />
         </div>
-        <RowResizeHandle v-if="!isSetupPhase" kind="mars"/>
+        <RowResizeHandle v-if="!isSetupPhase" kind="mars" />
         <a class="hotkey-target"></a>
         <div class="player_home_block nofloat player-home-columns__log">
-          <LogPanel :viewModel="playerView" milestonesAwards :acting="isPlayerActing" @spaceClicked="onSpaceClicked"/>
+          <LogPanel :viewModel="playerView" milestonesAwards :acting="isPlayerActing" @spaceClicked="onSpaceClicked" />
         </div>
       </template>
       <template #main>
         <a class="hotkey-target"></a>
-        <SetupTurnOrder v-if="isSetupPhase" :players="playerView.players"><SetupBoardToggle/></SetupTurnOrder>
-        <PlayersOverview v-else class="player_home_block player_home_block--players nofloat" :playerView="playerView" :table-target="'#wrybit-players-table'" id="shortkey-playersoverview"/>
-        <RowResizeHandle v-if="!isSetupPhase" kind="players"/>
-        <PlayerSetupView v-if="isSetupPhase" :playerView="playerView"/>
+        <SetupTurnOrder v-if="isSetupPhase" :players="playerView.players"><SetupBoardToggle /></SetupTurnOrder>
+        <PlayersOverview v-else class="player_home_block player_home_block--players nofloat" :playerView="playerView" :table-target="'#wrybit-players-table'" id="shortkey-playersoverview" />
+        <RowResizeHandle v-if="!isSetupPhase" kind="players" />
+        <PlayerSetupView v-if="isSetupPhase" :playerView="playerView" />
         <template v-else>
           <a class="hotkey-target"></a>
           <div class="player_home_block player_home_block--actions nofloat">
             <a name="actions" class="player_home_anchor"></a>
             <InputHost v-if="game.phase !== 'end'">
-              <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+              <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor" />
             </InputHost>
           </div>
           <div v-if="playerView.draftedCards.length > 0 && (cardPresentation === undefined || showsDraftedCardsBlock(playerView))" class="player_home_block player_home_block--hand">
-            <DynamicTitle title="Drafted cards" :color="thisPlayer.color"/>
-            <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox"><Card :card="card"/></div>
+            <DynamicTitle title="Drafted cards" :color="thisPlayer.color" />
+            <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox"><Card :card="card" /></div>
           </div>
           <a name="cards" class="player_home_anchor"></a>
           <div v-if="!hasHandInInputTabs" class="player_home_block player_home_block--hand" id="shortkey-hand">
-            <div class="or-tabs" role="tablist"><HandCardsTab :count="cardsInHandCount" :active="true"/></div>
-            <div v-docked-tab class="or-tab-panel or-tab-panel--view" role="tabpanel"><HandCardsPanel :playerView="playerView"/></div>
+            <div class="or-tabs" role="tablist"><HandCardsTab :count="cardsInHandCount" :active="true" /></div>
+            <div v-docked-tab class="or-tab-panel or-tab-panel--view" role="tabpanel"><HandCardsPanel :playerView="playerView" /></div>
           </div>
         </template>
       </template>
     </HomeColumns>
-    <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"/>
-    <HotkeyHelpDialog :open="keyboardShortcutOpened" :expansions="hotkeyExpansions" @close="keyboardShortcutOpened = false"/>
+    <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs" />
+    <HotkeyHelpDialog :open="keyboardShortcutOpened" :expansions="hotkeyExpansions" @close="keyboardShortcutOpened = false" />
   </div>
 </template>
 

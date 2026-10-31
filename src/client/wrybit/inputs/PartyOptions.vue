@@ -1,8 +1,8 @@
 <template>
-<div data-hotkey-group class="select-party select-party--options" role="radiogroup">
+  <div data-hotkey-group class="select-party select-party--options" role="radiogroup">
     <div class="select-party__cards" :style="{'--party-columns': Math.min(3, choices.length)}">
       <PartyCard v-for="choice in choices" :key="choice.index" :card="{...choice.card, selected: selected === choice.index, disabled: false}"
-        :turmoil="turmoil" :groupName="groupName" :note="choice.stays ? 'Stays here' : undefined" @select="$emit('select', choice.index)"/>
+        :turmoil="turmoil" :groupName="groupName" :note="choice.stays ? 'Stays here' : undefined" @select="$emit('select', choice.index)" />
     </div>
   </div>
 </template>

@@ -1,293 +1,293 @@
 <template>
   <div id="game-end" class="game_end_cont">
-      <h1><HomeLink>{{ constants.APP_NAME }} - Game finished!</HomeLink></h1>
-      <div class="game_end">
-          <div v-if="isSoloGame">
-              <div v-if="game.isSoloModeWin">
-                  <div class="game_end_success">
-                      <h2 v-i18n>You win!</h2>
-                      <div class="game_end_solo_img">
-                          <img src="assets/solo_win.png" >
-                      </div>
-                      <div class="game_end_notice">
-                        <span v-i18n>But it isn't the reason to stop making Mars better.</span>
-                      </div>
-                      <ul class="game_end_list">
-                          <li v-i18n>Try to win with expansions enabled</li>
-                          <li v-i18n>Try to win before the last generation</li>
-                          <li><span v-i18n>Can you get</span> {{ participant.players[0].victoryPointsBreakdown.total + 10 }}<span v-i18n>+ Victory Points?</span></li>
-                      </ul>
-                  </div>
-              </div>
-              <div v-else>
-                  <div class="game_end_fail">
-                      <h2 v-i18n>Sorry, you lose.</h2>
-                      <div class="game_end_notice">
-                        <span v-i18n>Next time you will get more luck!</span><br>
-                        <span v-i18n>Also, take into account these small hints to win:</span>
-                      </div>
-                      <ul class="game_end_list" v-i18n>
-                          <li>Concentrate more on Global parameters, not on Victory Points</li>
-                          <li>Don't be greedy with card selection</li>
-                          <li>Try to increase heat production, not Megacredits</li>
-                          <li>Try starting with the Beginner corporation</li>
-                      </ul>
-                  </div>
-              </div>
-          </div>
-          <div class="game_end_navigation">
-            <div>
-              <a v-if="game.spectatorId" :href="'replay?id=' + encodeURIComponent(game.spectatorId)"
-                 class="game-end-navigation-link tooltip tooltip-top"
-                 :data-tooltip="$t('Watch the saved states of this game')">
-                  <AppButton size="big" type="back" />
-                  <span v-i18n>Game replay</span>
-              </a>
-              <a href="new-game" class="game-end-navigation-link tooltip tooltip-top"
-                 :data-tooltip="$t('Start a new game and invite the other players')">
-                  <AppButton size="big" type="back" />
-                  <span v-i18n>Create New Game</span>
-              </a>
-
-              <a :href="'new-game?cloneGameId=' + game.gameId" :title="$t('Start a new game with the same initial setup')"
-                 class="game-end-navigation-link tooltip tooltip-top"
-                 :data-tooltip="$t('Open a new lobby with the same settings')">
-                  <AppButton size="big" type="back" />
-                  <span>♻&nbsp;</span><span v-i18n>Rematch (same setup)</span>
-              </a>
-
-              <a href="." class="game-end-navigation-link tooltip tooltip-top"
-                 :data-tooltip="$t('Main menu: start a game or open the guides')">
-                  <AppButton size="big" type="back" />
-                  <span v-i18n>Go to main page</span>
-              </a>
-              <a href="history.html" class="game-end-navigation-link tooltip tooltip-top"
-                 :data-tooltip="$t('Elo ratings and finished games')">
-                  <AppButton size="big" type="back" />
-                  <span>Elo &amp; History</span>
-              </a>
+    <h1><HomeLink>{{ constants.APP_NAME }} - Game finished!</HomeLink></h1>
+    <div class="game_end">
+      <div v-if="isSoloGame">
+        <div v-if="game.isSoloModeWin">
+          <div class="game_end_success">
+            <h2 v-i18n>You win!</h2>
+            <div class="game_end_solo_img">
+              <img src="assets/solo_win.png">
             </div>
-          </div>
-          <div v-if="spectatorUrl" class="game-end-spectator" style="text-align:center;margin:8px 0;font-size:12px;color:#888">
-            <span>Spectator: </span><a :href="spectatorUrl" style="color:#ff7f50">{{ spectatorUrl }}</a>
-          </div>
-          <div v-if="!isSoloGame || game.isSoloModeWin" class="game-end-winner-announcement">
-              <span v-for="p in winners" :key="p.color" class="game-end-name-and-elo">
-                <span :class="'log-player ' + getEndGamePlayerRowColorClass(p.color)">{{ p.name }}</span>
-                <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
-              </span> <span v-i18n>won!</span>
-          </div>
-          <div v-if="eloResults.length > 0" class="game_end_victory_points">
-              <h2 class="game-end-elo-heading">
-                <span v-i18n>Elo results</span>
-                <span
-                  class="game-end-elo-help tooltip tooltip-top"
-                  :aria-label="$t('Elo scoring note')"
-                  :data-tooltip="$t('Places use final VP, then M€. Exact ties count as 0.5 in pairwise Elo.')">?</span>
-              </h2>
-              <table class="table game_end_table game-end-elo-table">
-                  <thead>
-                      <tr v-i18n>
-                          <th>Player</th>
-                          <th>Place</th>
-                          <th>Before</th>
-                          <th>Delta</th>
-                          <th>After</th>
-                          <th>Avg place</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      <tr v-for="entry in eloResults" :key="entry.color || entry.name" :class="getEndGamePlayerRowColorClass(entry.color)">
-                          <td>{{ entry.name }}</td>
-                          <td>{{ entry.placeLabel }}</td>
-                          <td>{{ entry.oldElo }}</td>
-                          <td :class="getEloDeltaClass(entry.delta)">{{ formatEloDelta(entry.delta) }}</td>
-                          <td>{{ entry.newElo }}</td>
-                          <td>{{ formatAvgPlaceScore(entry.avgPlaceScore) }}</td>
-                      </tr>
-                  </tbody>
-              </table>
-          </div>
-          <div class="game_end_victory_points">
-              <h2><span v-i18n>Victory point breakdown after</span> {{game.generation}} <span v-i18n>generations</span></h2>
-              <table class="table game_end_table">
-                  <thead>
-                      <tr v-i18n>
-                          <th>Place</th>
-                          <th><div class="card-delegate"></div></th>
-                          <th><div class="tr"></div></th>
-                          <th><div class="m-and-a tooltip tooltip-top" :data-tooltip="$t('Milestones points')">M</div></th>
-                          <th><div class="m-and-a tooltip tooltip-top" :data-tooltip="$t('Awards points')">A</div></th>
-                          <th><div class="table-forest-tile"></div></th>
-                          <th><div class="table-city-tile"></div></th>
-                          <th v-if="game.moon !== undefined"><div class="table-moon-road-tile"></div></th>
-                          <th v-if="game.moon !== undefined"><div class="table-moon-habitat-tile"></div></th>
-                          <th v-if="game.moon !== undefined"><div class="table-moon-mine-tile"></div></th>
-                          <th v-if="game.pathfinders !== undefined"><div class="table-planetary-track"></div></th>
-                          <th><div class="vp">VP</div></th>
-                          <th v-if="game.gameOptions.escapeVelocity" class="clock-icon tooltip tooltip-top" :data-tooltip="$t('Escape Velocity penalty')">&#x23F3;</th>
-                          <th class="game-end-total"><div class="game-end-total-column">Total</div></th>
-                          <th><div class="mc-icon"></div></th>
-                          <th v-if="game.gameOptions.showTimers" class="clock-icon">&#x1F551;</th>
-                          <th><div class="table-red-arrow tooltip tooltip-top" :data-tooltip="$t('Actions taken this game')"></div></th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      <tr v-for="p in playersInPlace" :key="p.color" :class="getEndGamePlayerRowColorClass(p.color)">
-                          <td data-test="result-place">{{ getPlayerPlaceLabel(p) }}</td>
-                          <td>
-                            <span class="game-end-name-and-elo">
-                              <a :href="'player?id='+p.id+'&noredirect'">{{ p.name }}</a>
-                              <span
-                                v-if="p.isSurrendered"
-                                data-test="surrendered-player-flag"
-                                class="surrendered-player-flag"
-                                :title="$t('Surrendered')">&#9873;</span>
-                              <span
-                                v-if="p.isBotControlled"
-                                class="bot-controlled-marker"
-                                :title="$t('This player is controlled by a bot')"
-                                :aria-label="$t('This player is controlled by a bot')"
-                                role="status">BOT</span>
-                              <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
-                            </span>
-                            <div class="column-corporation">
-                              <div v-for="(corporationName, index) in getCorporationName(p)" :key="index" v-i18n>{{ corporationName }}</div>
-                            </div>
-                          </td>
-                          <td>{{ p.victoryPointsBreakdown.terraformRating }}</td>
-                          <td>{{ p.victoryPointsBreakdown.milestones }}</td>
-                          <td>{{ p.victoryPointsBreakdown.awards }}</td>
-                          <td>{{ p.victoryPointsBreakdown.greenery }}</td>
-                          <td>{{ p.victoryPointsBreakdown.city }}</td>
-                          <td v-if="game.moon !== undefined">{{ p.victoryPointsBreakdown.moonRoads }}</td>
-                          <td v-if="game.moon !== undefined">{{ p.victoryPointsBreakdown.moonHabitats }}</td>
-                          <td v-if="game.moon !== undefined">{{ p.victoryPointsBreakdown.moonMines }}</td>
-                          <td v-if="game.pathfinders !== undefined"> {{ p.victoryPointsBreakdown.planetaryTracks}}</td>
-                          <td>{{ p.victoryPointsBreakdown.victoryPoints }}</td>
-                          <td v-if="game.gameOptions.escapeVelocity">{{ p.victoryPointsBreakdown.escapeVelocity }}</td>
-                          <td class="game-end-total">{{ p.victoryPointsBreakdown.total }}</td>
-                          <td class="game-end-mc">
-                            <div>{{ p.megacredits }}</div>
-                          </td>
-                          <td v-if="game.gameOptions.showTimers"><div class="game-end-timer">{{ getTimer(p) }}</div></td>
-                          <td><div class="game-end-timer">{{ p.actionsTakenThisGame }}</div></td>
-                      </tr>
-                  </tbody>
-              </table>
-              <br>
-              <h2 v-i18n>Victory points details</h2>
-              <VictoryPointChart
-                :datasets="vpDataset"
-                :generation="game.generation"
-                :animation="true"
-                :id="'victory-point-chart'"
-                />
-              <div class="game-end-flexrow">
-                  <div v-for="p in playersInPlace" :key="p.color" class="game-end-column">
-                      <div class="game-end-winner-scorebreak-player-title">
-                          <div :class="'game-end-player ' + getEndGamePlayerRowColorClass(p.color)">
-                            <span class="game-end-name-and-elo">
-                              <a :href="'player?id='+p.id+'&noredirect'">{{p.name}}</a>
-                              <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
-                            </span>
-                          </div>
-                      </div>
-                      <div v-for="v in p.victoryPointsBreakdown.detailsCards" :key="v.cardName">
-                        <div class="game-end-column-row">
-                          <div class="game-end-column-vp">{{v.victoryPoint}}</div>
-                          <div class="game-end-column-text" v-i18n>{{v.cardName}}</div>
-                        </div>
-                      </div>
-                      <div class="game-end-column-row">
-                        <div class="game-end-column-vp">&nbsp;</div>
-                        <div class="game-end-column-text">&nbsp;</div>
-                      </div>
-                      <div v-for="v in p.victoryPointsBreakdown.detailsMilestones" :key="v.message">
-                        <div class="game-end-column-row">
-                          <div class="game-end-column-vp">{{v.victoryPoint}}</div>
-                          <div class="game-end-column-text">{{translateMilestoneDetails(v)}}</div>
-                        </div>
-                      </div>
-                      <div v-for="v in p.victoryPointsBreakdown.detailsAwards" :key="v.message">
-                        <div class="game-end-column-row">
-                          <div class="game-end-column-vp">{{v.victoryPoint}}</div>
-                          <div class="game-end-column-text">{{translateAwardDetails(v)}}</div>
-                        </div>
-                      </div>
-                      <div v-for="v in p.victoryPointsBreakdown.detailsPlanetaryTracks" :key="v.tag">
-                        <div class="game-end-column-row">
-                          <div class="game-end-column-vp">{{v.points}}</div>
-                          <div class="game-end-column-text" v-i18n>Most tags on the {{v.tag}} track</div>
-                        </div>
-                      </div>
-                  </div>
-              </div>
-          </div>
-          <div class="game_end_victory_points">
-              <h2 v-i18n>Global Parameter Contributions</h2>
-              <table class="table game_end_table">
-                  <thead>
-                      <tr>
-                          <th><div class="card-delegate"></div></th>
-                          <th><div class="tile temperature-tile"></div></th>
-                          <th><div class="tile oxygen-tile"></div></th>
-                          <th><div class="tile ocean-tile"></div></th>
-                          <th v-if="game.gameOptions.expansions.venus"><div class="tile venus-tile"></div></th>
-                          <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-habitat-tile"></div></th>
-                          <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-mine-tile"></div></th>
-                          <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-road-tile"></div></th>
-                          <th><div class="game-end-total-column">Total</div></th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      <tr v-for="data in playerContributionsData" :key="data.color" :class="getEndGamePlayerRowColorClass(data.color)">
-                          <td>{{ data.player }}</td>
-                          <td>{{ data.temp }}</td>
-                          <td>{{ data.oxygen }}</td>
-                          <td>{{ data.oceans }}</td>
-                          <td v-if="game.gameOptions.expansions.venus">{{ data.venus }}</td>
-                          <td v-if="game.gameOptions.expansions.moon">{{ data.moonHabitat }}</td>
-                          <td v-if="game.gameOptions.expansions.moon">{{ data.moonMining }}</td>
-                          <td v-if="game.gameOptions.expansions.moon">{{ data.moonLogistic }}</td>
-                          <td class="game-end-total">{{ data.total }}</td>
-                      </tr>
-                  </tbody>
-              </table>
-          </div>
-          <div class="game-end-flexrow">
-          <div class="game_end_block--board game-end-column">
-              <VictoryPointChart
-                :datasets="globalsDataset"
-                :generation="game.generation"
-                :animation="true"
-                :id="'global-parameter-chart'"
-                :yAxisLabel="'% completed'"
-              />
-              <h2 v-i18n>Final situation on the board</h2>
-              <Board
-                  :spaces="game.spaces"
-                  :expansions="game.gameOptions.expansions"
-                  :venusScaleLevel="game.venusScaleLevel"
-                  :altVenusBoard="game.gameOptions.altVenusBoard"
-                  :boardName ="game.gameOptions.boardName"
-                  :oceans_count="game.oceans"
-                  :oxygen_level="game.oxygenLevel"
-                  :temperature="game.temperature"
-                  :tileView="tileView"
-                  @toggleTileView="cycleTileView()"/>
-            <MoonBoard v-if="game.moon !== undefined" :model="game.moon" :tileView="tileView"/>
-            <div v-if="game.gameOptions.expansions.pathfinders">
-              <PlanetaryTracks :tracks="game.pathfinders" :gameOptions="game.gameOptions"/>
+            <div class="game_end_notice">
+              <span v-i18n>But it isn't the reason to stop making Mars better.</span>
             </div>
-            <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="participant.players"/>
+            <ul class="game_end_list">
+              <li v-i18n>Try to win with expansions enabled</li>
+              <li v-i18n>Try to win before the last generation</li>
+              <li><span v-i18n>Can you get</span> {{ participant.players[0].victoryPointsBreakdown.total + 10 }}<span v-i18n>+ Victory Points?</span></li>
+            </ul>
           </div>
-          <div class="game_end_block--log game-end-column">
-            <LogPanel :viewModel="participant"/>
-            <a :href="downloadLogUrl" target="_blank" v-i18n>Download game log</a>
+        </div>
+        <div v-else>
+          <div class="game_end_fail">
+            <h2 v-i18n>Sorry, you lose.</h2>
+            <div class="game_end_notice">
+              <span v-i18n>Next time you will get more luck!</span><br>
+              <span v-i18n>Also, take into account these small hints to win:</span>
+            </div>
+            <ul class="game_end_list" v-i18n>
+              <li>Concentrate more on Global parameters, not on Victory Points</li>
+              <li>Don't be greedy with card selection</li>
+              <li>Try to increase heat production, not Megacredits</li>
+              <li>Try starting with the Beginner corporation</li>
+            </ul>
           </div>
         </div>
       </div>
+      <div class="game_end_navigation">
+        <div>
+          <a v-if="game.spectatorId" :href="'replay?id=' + encodeURIComponent(game.spectatorId)"
+            class="game-end-navigation-link tooltip tooltip-top"
+            :data-tooltip="$t('Watch the saved states of this game')">
+            <AppButton size="big" type="back" />
+            <span v-i18n>Game replay</span>
+          </a>
+          <a href="new-game" class="game-end-navigation-link tooltip tooltip-top"
+            :data-tooltip="$t('Start a new game and invite the other players')">
+            <AppButton size="big" type="back" />
+            <span v-i18n>Create New Game</span>
+          </a>
+
+          <a :href="'new-game?cloneGameId=' + game.gameId" :title="$t('Start a new game with the same initial setup')"
+            class="game-end-navigation-link tooltip tooltip-top"
+            :data-tooltip="$t('Open a new lobby with the same settings')">
+            <AppButton size="big" type="back" />
+            <span>♻&nbsp;</span><span v-i18n>Rematch (same setup)</span>
+          </a>
+
+          <a href="." class="game-end-navigation-link tooltip tooltip-top"
+            :data-tooltip="$t('Main menu: start a game or open the guides')">
+            <AppButton size="big" type="back" />
+            <span v-i18n>Go to main page</span>
+          </a>
+          <a href="history.html" class="game-end-navigation-link tooltip tooltip-top"
+            :data-tooltip="$t('Elo ratings and finished games')">
+            <AppButton size="big" type="back" />
+            <span>Elo &amp; History</span>
+          </a>
+        </div>
+      </div>
+      <div v-if="spectatorUrl" class="game-end-spectator" style="text-align:center;margin:8px 0;font-size:12px;color:#888">
+        <span>Spectator: </span><a :href="spectatorUrl" style="color:#ff7f50">{{ spectatorUrl }}</a>
+      </div>
+      <div v-if="!isSoloGame || game.isSoloModeWin" class="game-end-winner-announcement">
+        <span v-for="p in winners" :key="p.color" class="game-end-name-and-elo">
+          <span :class="'log-player ' + getEndGamePlayerRowColorClass(p.color)">{{ p.name }}</span>
+          <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
+        </span> <span v-i18n>won!</span>
+      </div>
+      <div v-if="eloResults.length > 0" class="game_end_victory_points">
+        <h2 class="game-end-elo-heading">
+          <span v-i18n>Elo results</span>
+          <span
+            class="game-end-elo-help tooltip tooltip-top"
+            :aria-label="$t('Elo scoring note')"
+            :data-tooltip="$t('Places use final VP, then M€. Exact ties count as 0.5 in pairwise Elo.')">?</span>
+        </h2>
+        <table class="table game_end_table game-end-elo-table">
+          <thead>
+            <tr v-i18n>
+              <th>Player</th>
+              <th>Place</th>
+              <th>Before</th>
+              <th>Delta</th>
+              <th>After</th>
+              <th>Avg place</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="entry in eloResults" :key="entry.color || entry.name" :class="getEndGamePlayerRowColorClass(entry.color)">
+              <td>{{ entry.name }}</td>
+              <td>{{ entry.placeLabel }}</td>
+              <td>{{ entry.oldElo }}</td>
+              <td :class="getEloDeltaClass(entry.delta)">{{ formatEloDelta(entry.delta) }}</td>
+              <td>{{ entry.newElo }}</td>
+              <td>{{ formatAvgPlaceScore(entry.avgPlaceScore) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="game_end_victory_points">
+        <h2><span v-i18n>Victory point breakdown after</span> {{ game.generation }} <span v-i18n>generations</span></h2>
+        <table class="table game_end_table">
+          <thead>
+            <tr v-i18n>
+              <th>Place</th>
+              <th><div class="card-delegate"></div></th>
+              <th><div class="tr"></div></th>
+              <th><div class="m-and-a tooltip tooltip-top" :data-tooltip="$t('Milestones points')">M</div></th>
+              <th><div class="m-and-a tooltip tooltip-top" :data-tooltip="$t('Awards points')">A</div></th>
+              <th><div class="table-forest-tile"></div></th>
+              <th><div class="table-city-tile"></div></th>
+              <th v-if="game.moon !== undefined"><div class="table-moon-road-tile"></div></th>
+              <th v-if="game.moon !== undefined"><div class="table-moon-habitat-tile"></div></th>
+              <th v-if="game.moon !== undefined"><div class="table-moon-mine-tile"></div></th>
+              <th v-if="game.pathfinders !== undefined"><div class="table-planetary-track"></div></th>
+              <th><div class="vp">VP</div></th>
+              <th v-if="game.gameOptions.escapeVelocity" class="clock-icon tooltip tooltip-top" :data-tooltip="$t('Escape Velocity penalty')">&#x23F3;</th>
+              <th class="game-end-total"><div class="game-end-total-column">Total</div></th>
+              <th><div class="mc-icon"></div></th>
+              <th v-if="game.gameOptions.showTimers" class="clock-icon">&#x1F551;</th>
+              <th><div class="table-red-arrow tooltip tooltip-top" :data-tooltip="$t('Actions taken this game')"></div></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="p in playersInPlace" :key="p.color" :class="getEndGamePlayerRowColorClass(p.color)">
+              <td data-test="result-place">{{ getPlayerPlaceLabel(p) }}</td>
+              <td>
+                <span class="game-end-name-and-elo">
+                  <a :href="'player?id='+p.id+'&noredirect'">{{ p.name }}</a>
+                  <span
+                    v-if="p.isSurrendered"
+                    data-test="surrendered-player-flag"
+                    class="surrendered-player-flag"
+                    :title="$t('Surrendered')">&#9873;</span>
+                  <span
+                    v-if="p.isBotControlled"
+                    class="bot-controlled-marker"
+                    :title="$t('This player is controlled by a bot')"
+                    :aria-label="$t('This player is controlled by a bot')"
+                    role="status">BOT</span>
+                  <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
+                </span>
+                <div class="column-corporation">
+                  <div v-for="(corporationName, index) in getCorporationName(p)" :key="index" v-i18n>{{ corporationName }}</div>
+                </div>
+              </td>
+              <td>{{ p.victoryPointsBreakdown.terraformRating }}</td>
+              <td>{{ p.victoryPointsBreakdown.milestones }}</td>
+              <td>{{ p.victoryPointsBreakdown.awards }}</td>
+              <td>{{ p.victoryPointsBreakdown.greenery }}</td>
+              <td>{{ p.victoryPointsBreakdown.city }}</td>
+              <td v-if="game.moon !== undefined">{{ p.victoryPointsBreakdown.moonRoads }}</td>
+              <td v-if="game.moon !== undefined">{{ p.victoryPointsBreakdown.moonHabitats }}</td>
+              <td v-if="game.moon !== undefined">{{ p.victoryPointsBreakdown.moonMines }}</td>
+              <td v-if="game.pathfinders !== undefined"> {{ p.victoryPointsBreakdown.planetaryTracks }}</td>
+              <td>{{ p.victoryPointsBreakdown.victoryPoints }}</td>
+              <td v-if="game.gameOptions.escapeVelocity">{{ p.victoryPointsBreakdown.escapeVelocity }}</td>
+              <td class="game-end-total">{{ p.victoryPointsBreakdown.total }}</td>
+              <td class="game-end-mc">
+                <div>{{ p.megacredits }}</div>
+              </td>
+              <td v-if="game.gameOptions.showTimers"><div class="game-end-timer">{{ getTimer(p) }}</div></td>
+              <td><div class="game-end-timer">{{ p.actionsTakenThisGame }}</div></td>
+            </tr>
+          </tbody>
+        </table>
+        <br>
+        <h2 v-i18n>Victory points details</h2>
+        <VictoryPointChart
+          :datasets="vpDataset"
+          :generation="game.generation"
+          :animation="true"
+          :id="'victory-point-chart'"
+        />
+        <div class="game-end-flexrow">
+          <div v-for="p in playersInPlace" :key="p.color" class="game-end-column">
+            <div class="game-end-winner-scorebreak-player-title">
+              <div :class="'game-end-player ' + getEndGamePlayerRowColorClass(p.color)">
+                <span class="game-end-name-and-elo">
+                  <a :href="'player?id='+p.id+'&noredirect'">{{ p.name }}</a>
+                  <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
+                </span>
+              </div>
+            </div>
+            <div v-for="v in p.victoryPointsBreakdown.detailsCards" :key="v.cardName">
+              <div class="game-end-column-row">
+                <div class="game-end-column-vp">{{ v.victoryPoint }}</div>
+                <div class="game-end-column-text" v-i18n>{{ v.cardName }}</div>
+              </div>
+            </div>
+            <div class="game-end-column-row">
+              <div class="game-end-column-vp">&nbsp;</div>
+              <div class="game-end-column-text">&nbsp;</div>
+            </div>
+            <div v-for="v in p.victoryPointsBreakdown.detailsMilestones" :key="v.message">
+              <div class="game-end-column-row">
+                <div class="game-end-column-vp">{{ v.victoryPoint }}</div>
+                <div class="game-end-column-text">{{ translateMilestoneDetails(v) }}</div>
+              </div>
+            </div>
+            <div v-for="v in p.victoryPointsBreakdown.detailsAwards" :key="v.message">
+              <div class="game-end-column-row">
+                <div class="game-end-column-vp">{{ v.victoryPoint }}</div>
+                <div class="game-end-column-text">{{ translateAwardDetails(v) }}</div>
+              </div>
+            </div>
+            <div v-for="v in p.victoryPointsBreakdown.detailsPlanetaryTracks" :key="v.tag">
+              <div class="game-end-column-row">
+                <div class="game-end-column-vp">{{ v.points }}</div>
+                <div class="game-end-column-text" v-i18n>Most tags on the {{ v.tag }} track</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="game_end_victory_points">
+        <h2 v-i18n>Global Parameter Contributions</h2>
+        <table class="table game_end_table">
+          <thead>
+            <tr>
+              <th><div class="card-delegate"></div></th>
+              <th><div class="tile temperature-tile"></div></th>
+              <th><div class="tile oxygen-tile"></div></th>
+              <th><div class="tile ocean-tile"></div></th>
+              <th v-if="game.gameOptions.expansions.venus"><div class="tile venus-tile"></div></th>
+              <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-habitat-tile"></div></th>
+              <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-mine-tile"></div></th>
+              <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-road-tile"></div></th>
+              <th><div class="game-end-total-column">Total</div></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="data in playerContributionsData" :key="data.color" :class="getEndGamePlayerRowColorClass(data.color)">
+              <td>{{ data.player }}</td>
+              <td>{{ data.temp }}</td>
+              <td>{{ data.oxygen }}</td>
+              <td>{{ data.oceans }}</td>
+              <td v-if="game.gameOptions.expansions.venus">{{ data.venus }}</td>
+              <td v-if="game.gameOptions.expansions.moon">{{ data.moonHabitat }}</td>
+              <td v-if="game.gameOptions.expansions.moon">{{ data.moonMining }}</td>
+              <td v-if="game.gameOptions.expansions.moon">{{ data.moonLogistic }}</td>
+              <td class="game-end-total">{{ data.total }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="game-end-flexrow">
+        <div class="game_end_block--board game-end-column">
+          <VictoryPointChart
+            :datasets="globalsDataset"
+            :generation="game.generation"
+            :animation="true"
+            :id="'global-parameter-chart'"
+            :yAxisLabel="'% completed'"
+          />
+          <h2 v-i18n>Final situation on the board</h2>
+          <Board
+            :spaces="game.spaces"
+            :expansions="game.gameOptions.expansions"
+            :venusScaleLevel="game.venusScaleLevel"
+            :altVenusBoard="game.gameOptions.altVenusBoard"
+            :boardName="game.gameOptions.boardName"
+            :oceans_count="game.oceans"
+            :oxygen_level="game.oxygenLevel"
+            :temperature="game.temperature"
+            :tileView="tileView"
+            @toggleTileView="cycleTileView()" />
+          <MoonBoard v-if="game.moon !== undefined" :model="game.moon" :tileView="tileView" />
+          <div v-if="game.gameOptions.expansions.pathfinders">
+            <PlanetaryTracks :tracks="game.pathfinders" :gameOptions="game.gameOptions" />
+          </div>
+          <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="participant.players" />
+        </div>
+        <div class="game_end_block--log game-end-column">
+          <LogPanel :viewModel="participant" />
+          <a :href="downloadLogUrl" target="_blank" v-i18n>Download game log</a>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -317,6 +317,7 @@ import {Color} from '@/common/Color';
 import {CardType} from '@/common/cards/CardType';
 import {getCard} from '@/client/cards/ClientCardManifest';
 import {GlobalParameter} from '@/common/GlobalParameter';
+import {getGlobalParameterMaximums} from '@/common/boards/GlobalParameterMaximums';
 import {$t, translateTextWithParams, translateMessage} from '@/client/directives/i18n';
 import {Message} from '@/common/logs/Message';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
@@ -408,11 +409,12 @@ export default defineComponent({
         });
       }
 
-      dataset.push({label: $t('Temperature'), color: 'red', data: getValues(GlobalParameter.TEMPERATURE, -30, 8)});
-      dataset.push({label: $t('Oxygen'), color: 'green', data: getValues(GlobalParameter.OXYGEN, 0, 14)});
-      dataset.push({label: $t('Oceans'), color: 'blue', data: getValues(GlobalParameter.OCEANS, 0, 9)});
+      const max = getGlobalParameterMaximums(this.game.gameOptions.boardName);
+      dataset.push({label: $t('Temperature'), color: 'red', data: getValues(GlobalParameter.TEMPERATURE, constants.MIN_TEMPERATURE, max.temperature)});
+      dataset.push({label: $t('Oxygen'), color: 'green', data: getValues(GlobalParameter.OXYGEN, constants.MIN_OXYGEN_LEVEL, max.oxygen)});
+      dataset.push({label: $t('Oceans'), color: 'blue', data: getValues(GlobalParameter.OCEANS, 0, max.oceans)});
       if (this.game.gameOptions.expansions.venus === true) {
-        dataset.push({label: $t('Venus'), color: 'yellow', data: getValues(GlobalParameter.VENUS, 0, 30)});
+        dataset.push({label: $t('Venus'), color: 'yellow', data: getValues(GlobalParameter.VENUS, constants.MIN_VENUS_SCALE, max.venus)});
       }
       if (this.game.gameOptions.expansions.moon === true) {
         dataset.push({label: $t('L. Habitat'), color: 'orange', data: getValues(GlobalParameter.MOON_HABITAT_RATE, 0, 8)});

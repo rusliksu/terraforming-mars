@@ -7,7 +7,7 @@
     <div v-if="codeError" class="map-submit-error">{{ codeError }}</div>
     <template v-else-if="decoded !== undefined">
       <div class="map-submit-preview-label" v-i18n>This is how it'll look in the Map Library:</div>
-      <MapLibraryRow :entry="previewEntry" :is-admin="false" :preview-only="true"/>
+      <MapLibraryRow :entry="previewEntry" :is-admin="false" :preview-only="true" />
       <div v-if="warnings.length" class="map-submit-warnings">
         <div v-for="(w, i) in warnings" :key="i">⚠ {{ w }}</div>
       </div>

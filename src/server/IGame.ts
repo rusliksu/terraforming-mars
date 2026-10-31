@@ -43,6 +43,7 @@ import {EarlyGameStats} from './game/EarlyGameStats';
 import type {EngineRuntime} from './engine/EngineRuntime';
 import type {ActionReplayState} from './game/ActionReplay';
 import {GlobalParameterTracks} from '@/server/boards/GlobalParameterTracks';
+import {Resource} from '@/common/Resource';
 
 export interface Score {
   corporation: String;
@@ -316,12 +317,21 @@ export interface IGame extends Logger {
 
   /**
    * Gives all the bonuses from a space on the map.
+   *
+   * `onStandardResource` is called with the resource chosen for a STANDARD_RESOURCE bonus.
    */
-  grantSpaceBonuses(player: IPlayer, space: Space, tilePlaced?: boolean): void;
+  grantSpaceBonuses(player: IPlayer, space: Space, onStandardResource?: (resource: Resource) => void): void;
   /**
-   * Gives one bonus from rewards on `space`. Space can be omitted.
+   * Gives all the bonuses from a space as placement bonuses, so cards can react to a
+   * chosen standard resource (see ICard.onStandardResourcePlacementBonus).
    */
-  grantSpaceBonus(player: IPlayer, spaceBonus: SpaceBonus, count?: number, space?: Space): void;
+  grantSpaceBonusesAsPlacement(player: IPlayer, space: Space): void;
+  /**
+   * Gives one bonus from rewards on a space.
+   *
+   * `onStandardResource` is called with the resource chosen for a STANDARD_RESOURCE bonus.
+   */
+  grantSpaceBonus(player: IPlayer, spaceBonus: SpaceBonus, count?: number, onStandardResource?: (resource: Resource) => void): void;
   addGreenery(player: IPlayer, space: Space, shouldRaiseOxygen?: boolean): void;
   addCity(player: IPlayer, space: Space, cardName?: CardName | undefined): void;
   canAddOcean(): boolean;
@@ -337,10 +347,7 @@ export interface IGame extends Logger {
    * Returns the Player holding this card, or returns undefined.
    */
   getCardPlayerOrUndefined(name: CardName): IPlayer | undefined;
-  /**
-   * Returns the list of standard project cards used in this game, sorted by cost.
-   */
-  getStandardProjects(): Array<IStandardProjectCard>;
+  standardProjects: ReadonlyArray<IStandardProjectCard>;
 
   logActionContext?: {id: string, actor: IPlayer, generation: number, phase: Phase, ordinal: number, firstMessage: boolean};
   log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>, effect?: LogEffect}): void;

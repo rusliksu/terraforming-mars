@@ -34,8 +34,16 @@ describe('App Wrybit player root', () => {
   });
 
   it('collapses the setup board without remounting it or changing the native pending choice', async () => {
-    const Classic = defineComponent({components: {InputHost}, props: ['playerView'], template: '<section data-classic-root><InputHost/></section>'});
-    const Boundary = defineComponent({props: ['enabled', 'screen'], emits: ['classic', 'active', 'views'], template: '<div/>'});
+    const Classic = defineComponent({
+      components: {InputHost},
+      props: {playerView: {type: Object, default: undefined}},
+      template: '<section data-classic-root><InputHost/></section>',
+    });
+    const Boundary = defineComponent({
+      props: {enabled: {type: Boolean, default: false}, screen: {type: String, default: ''}},
+      emits: ['classic', 'active', 'views'],
+      template: '<div/>',
+    });
     const input: SelectCardModel = {type: 'card', title: 'Select initial cards to buy', buttonLabel: 'Buy', min: 0, max: 2,
       cards: [{name: CardName.ANTS}, {name: CardName.BIRDS}], showOnlyInLearnerMode: false, selectBlueCardAction: false,
       showOwner: false, showSelectAll: false};
@@ -85,8 +93,16 @@ describe('App Wrybit player root', () => {
   });
 
   it('moves our card and payment form into the real Wrybit root and back without a save or reset', async () => {
-    const Classic = defineComponent({components: {InputHost}, props: ['playerView'], template: '<section data-classic-root><InputHost/></section>'});
-    const Boundary = defineComponent({props: ['enabled', 'screen'], emits: ['classic', 'active', 'views'], template: '<div/>'});
+    const Classic = defineComponent({
+      components: {InputHost},
+      props: {playerView: {type: Object, default: undefined}},
+      template: '<section data-classic-root><InputHost/></section>',
+    });
+    const Boundary = defineComponent({
+      props: {enabled: {type: Boolean, default: false}, screen: {type: String, default: ''}},
+      emits: ['classic', 'active', 'views'],
+      template: '<div/>',
+    });
     const input: SelectProjectCardToPlayModel = {
       type: 'projectCard', title: 'Select a card to play', buttonLabel: 'Save',
       cards: [{name: CardName.ANTS, calculatedCost: 9}, {name: CardName.BIRDS, calculatedCost: 10}],

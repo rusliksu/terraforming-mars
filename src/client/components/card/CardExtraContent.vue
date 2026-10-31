@@ -1,13 +1,13 @@
 <template>
-    <div class="card-extra-content-container">
-      <div v-if="lifeFound()" class="little-green-men" ></div>
-      <div v-if="isMiningTileOnSteel()" class="mined-metal mined-steel" ></div>
-      <div v-if="isMiningTileOnTitanium()" class="mined-metal mined-titanium" ></div>
-      <div v-if="inSpireResources.length > 0" class="in-spire-resources">
-        <span class="in-spire-resources-label">Stored:</span>
-        <CardRenderItemComponent v-for="(item, index) in inSpireResources" :key="index" :item="item" />
-      </div>
+  <div class="card-extra-content-container">
+    <div v-if="lifeFound()" class="little-green-men"></div>
+    <div v-if="isMiningTileOnSteel()" class="mined-metal mined-steel"></div>
+    <div v-if="isMiningTileOnTitanium()" class="mined-metal mined-titanium"></div>
+    <div v-if="inSpireResources.length > 0" class="in-spire-resources">
+      <span class="in-spire-resources-label">Stored:</span>
+      <CardRenderItemComponent v-for="(item, index) in inSpireResources" :key="index" :item="item" />
     </div>
+  </div>
 </template>
 
 <script lang="ts">

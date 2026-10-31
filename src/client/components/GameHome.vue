@@ -1,13 +1,13 @@
 <template>
   <div id="game-home" class="game-home-container">
-    <h1><HomeLink>Terraforming Mars</HomeLink> [<span v-i18n>game id:</span> <span>{{gameId}}</span>]</h1>
+    <h1><HomeLink>Terraforming Mars</HomeLink> [<span v-i18n>game id:</span> <span>{{ gameId }}</span>]</h1>
     <h4><span v-i18n>Instructions: Share this page with all players. Each player can open it on any device and then click their name.</span></h4>
     <ul>
       <li v-for="(player, index) in (game === undefined ? [] : game.players)" :key="player.color" class="game-home-player-row">
-        <span class="turn-order" v-i18n>{{getTurnOrder(index)}}</span>
-        <span :class="'color-square ' + getPlayerCubeColorClass(player.color)">{{playerSymbol(player.color)}}</span>
+        <span class="turn-order" v-i18n>{{ getTurnOrder(index) }}</span>
+        <span :class="'color-square ' + getPlayerCubeColorClass(player.color)">{{ playerSymbol(player.color) }}</span>
         <span class="player-name">
-          <a :href="getHref(player.id)" :title="$t('Enter the game as this player')" data-test="enter-game-link">{{player.name}}</a>
+          <a :href="getHref(player.id)" :title="$t('Enter the game as this player')" data-test="enter-game-link">{{ player.name }}</a>
           <span
             v-if="player.isBotControlled"
             class="bot-controlled-marker"
@@ -15,14 +15,14 @@
             :aria-label="$t('This player is controlled by a bot')"
             role="status">BOT</span>
         </span>
-        <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(player.id)"/></span>
+        <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(player.id)" /></span>
         <span v-if="isPlayerUrlCopied(player.id)" class="copied-notice"><span v-i18n>Copied!</span></span>
       </li>
       <li v-if="game !== undefined && game.spectatorId" class="game-home-player-row game-home-player-row--spectator">
         <span class="turn-order"></span>
         <span class="color-square"></span>
         <span class="player-name"><a :href="getHref(game.spectatorId)" :title="$t('Watch the game without playing')" v-i18n>Spectator</a></span>
-        <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(game.spectatorId)"/></span>
+        <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(game.spectatorId)" /></span>
       </li>
     </ul>
 
@@ -35,12 +35,12 @@
 
     <div class="spacing-setup"></div>
 
-    <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"/>
+    <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs" />
 
     <div class="spacing-setup"></div>
     <div v-if="game !== undefined">
       <h1 v-i18n>Game settings</h1>
-      <GameSetupDetail :gameOptions="game.gameOptions" :playerNumber="game.players.length" :lastSoloGeneration="game.lastSoloGeneration"/>
+      <GameSetupDetail :gameOptions="game.gameOptions" :playerNumber="game.players.length" :lastSoloGeneration="game.lastSoloGeneration" />
     </div>
   </div>
 </template>

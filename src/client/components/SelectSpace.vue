@@ -1,22 +1,22 @@
 <template>
-  <component v-if="spacePresentation !== undefined" :is="spacePresentation" :binding="presentationBinding" v-bind="$attrs"/>
+  <component v-if="spacePresentation !== undefined" :is="spacePresentation" :binding="presentationBinding" v-bind="$attrs" />
   <div v-else class="select_space_cont" v-bind="$attrs">
     <div v-if="showtitle" class="wf-select-space">
       {{ $t(playerinput.title) }}
-      <GoToMap :playerinput="playerinput"/>
+      <GoToMap :playerinput="playerinput" />
     </div>
     <div v-if="warning" class="nes-container is-rounded">
       <span class="nes-text is-warning" v-i18n>{{ warning }}</span>
-      <GoToMap :playerinput="playerinput"/>
+      <GoToMap :playerinput="playerinput" />
     </div>
   </div>
-    <ConfirmDialog
-        message="Place your tile here?"
-        :enableDontShowAgainCheckbox="true"
-        ref="confirmation"
-        @accept="confirmPlacement"
-        @dismiss="cancelPlacement"
-        @hide="hideDialog" />
+  <ConfirmDialog
+    message="Place your tile here?"
+    :enableDontShowAgainCheckbox="true"
+    ref="confirmation"
+    @accept="confirmPlacement"
+    @dismiss="cancelPlacement"
+    @hide="hideDialog" />
 </template>
 
 <script lang="ts">

@@ -1,8 +1,8 @@
 <template>
   <div class="trade-colony" data-test="trade-colony">
-    <PresentationHost :hosts="binding.childHosts[0]"/>
+    <PresentationHost :hosts="binding.childHosts[0]" />
     <div class="deal-step__arrow" aria-hidden="true">↓</div>
-    <PresentationHost :hosts="binding.childHosts[1]"/>
+    <PresentationHost :hosts="binding.childHosts[1]" />
     <div v-if="picked !== undefined && fee?.selectedOption !== undefined" class="trade-colony__receipt">
       <span class="trade-colony__receipt-line"><span class="trade-colony__pay">{{ $t(fullTabTitle(fee.selectedOption.title)) }}</span><i>→</i>
         <span class="trade-colony__get">{{ $t(picked.model.name) }} · {{ picked.tradeValue ?? '—' }}
@@ -16,7 +16,7 @@
     <div v-else class="trade-colony__receipt trade-colony__receipt--empty">{{ $t('Pick a colony …') }}</div>
     <TabPanelFooterSlot>
       <div v-if="binding.showsave" class="wf-action">
-        <AppButton data-test="trade-submit" :title="binding.playerinput.buttonLabel" type="submit" size="normal" @click="binding.save()" :disabled="!canSave"/>
+        <AppButton data-test="trade-submit" :title="binding.playerinput.buttonLabel" type="submit" size="normal" @click="binding.save()" :disabled="!canSave" />
       </div>
     </TabPanelFooterSlot>
   </div>

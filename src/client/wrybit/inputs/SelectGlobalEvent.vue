@@ -1,13 +1,13 @@
 <template>
-<div data-hotkey-group class="wf-component wf-component--select-global-event">
-    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
+  <div data-hotkey-group class="wf-component wf-component--select-global-event">
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView" />
     <label v-for="name in binding.playerinput.globalEventNames" :key="name" class="cardBox">
       <input type="radio" :checked="binding.selected === name" :value="name" @change="binding.select(name)">
-      <GlobalEvent :globalEventName="name" type="distant"/>
+      <GlobalEvent :globalEventName="name" type="distant" />
     </label>
     <TabPanelFooterSlot>
       <div v-if="binding.showsave" class="nofloat">
-        <AppButton :disabled="binding.selected === undefined" type="submit" hotkey="confirm" @click="binding.save()" title="OK"/>
+        <AppButton :disabled="binding.selected === undefined" type="submit" hotkey="confirm" @click="binding.save()" title="OK" />
       </div>
     </TabPanelFooterSlot>
   </div>

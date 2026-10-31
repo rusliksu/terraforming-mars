@@ -1,25 +1,25 @@
 <template>
   <div v-if="hasWaitingForTabs(binding.playerinput)" class="wf-options wf-options--tabs" data-source-waiting>
     <div class="or-tabs" role="tablist">
-      <HandCardsTab :count="handCount" :active="handTabActive" @select="handTabActive = true"/>
+      <HandCardsTab :count="handCount" :active="handTabActive" @select="handTabActive = true" />
       <button type="button" role="tab" data-input-tab data-hotkey="tab-actions" :title="$t(fullTabTitle(binding.playerinput.title))" :aria-selected="!handTabActive"
         :class="['or-tab', {'or-tab--active': !handTabActive}, tone === undefined ? undefined : 'or-tab--tone-' + tone]" @click="handTabActive = false">
         <span class="or-tab-title">{{ $t(inputTabLabel(binding.playerinput)) }}</span>
         <span v-if="count !== undefined" class="or-tab-count">{{ count }} options</span>
-        <HotkeyKeys action="tab-actions"/>
+        <HotkeyKeys action="tab-actions" />
       </button>
-      <WaitingForPlayersTab v-if="binding.playerinput.optional" :playerView="binding.playerView"/>
+      <WaitingForPlayersTab v-if="binding.playerinput.optional" :playerView="binding.playerView" />
     </div>
     <div v-docked-tab :class="['or-tab-panel', {'or-tab-panel--view': handTabActive}, !handTabActive && tone !== undefined ? 'or-tab-panel--tone-' + tone : undefined]" role="tabpanel">
       <template v-if="handTabActive">
-        <HandCardsPanel v-if="cards.length > 0 || dealt.length === 0" :playerView="binding.playerView"/>
-        <CardListSection v-for="section in dealt" :key="section.title" :title="section.title" :cards="section.cards"/>
+        <HandCardsPanel v-if="cards.length > 0 || dealt.length === 0" :playerView="binding.playerView" />
+        <CardListSection v-for="section in dealt" :key="section.title" :title="section.title" :cards="section.cards" />
       </template>
-      <PresentationHost v-show="!handTabActive" :hosts="binding.bodyHost"/>
-      <PresentationHost v-show="!handTabActive" class="or-tab-footer" :hosts="binding.footerHost"><CancelActionButton/></PresentationHost>
+      <PresentationHost v-show="!handTabActive" :hosts="binding.bodyHost" />
+      <PresentationHost v-show="!handTabActive" class="or-tab-footer" :hosts="binding.footerHost"><CancelActionButton /></PresentationHost>
     </div>
   </div>
-  <PresentationHost v-else :hosts="binding.bodyHost"/>
+  <PresentationHost v-else :hosts="binding.bodyHost" />
 </template>
 
 <script setup lang="ts">

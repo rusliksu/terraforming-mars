@@ -1,6 +1,6 @@
 <template>
   <div id="load-game" class="games-overview-container admin-home">
-    <AdminNav active="load"/>
+    <AdminNav active="load" />
 
     <form class="games-overview-card load-game-card" @submit.prevent="loadGame">
       <label class="server-settings-label" for="gameId" v-i18n>Game, player, or spectator ID to reload:</label>

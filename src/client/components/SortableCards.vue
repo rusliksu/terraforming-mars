@@ -1,19 +1,19 @@
 <template>
-<div>
-  <div class="sortable-cards">
-    <div ref="draggers" :class="{ 'dragging': Boolean(dragCard) }" v-for="(card, index) in getSortedCards()" :key="card.name" draggable="true" @dragend="onDragEnd()" @dragstart="onDragStart(card.name)" @dragover="onDragOver(card.name, $event)">
-      <div v-if="dragCard" ref="droppers" class="drop-target" @dragover="onDragOver(card.name, $event)"></div>
-      <div ref="cardbox" class="cardbox" @click="clickMethod">
-        <Card :card="card"/>
-        <div v-if="showReorder" class="reorder-banners-container">
-          <div class="reorder-banners-left" v-if="index > 0"></div>
-          <div class="reorder-banners-right" v-if="index < cards.length - 1"></div>
+  <div>
+    <div class="sortable-cards">
+      <div ref="draggers" :class="{ 'dragging': Boolean(dragCard) }" v-for="(card, index) in getSortedCards()" :key="card.name" draggable="true" @dragend="onDragEnd()" @dragstart="onDragStart(card.name)" @dragover="onDragOver(card.name, $event)">
+        <div v-if="dragCard" ref="droppers" class="drop-target" @dragover="onDragOver(card.name, $event)"></div>
+        <div ref="cardbox" class="cardbox" @click="clickMethod">
+          <Card :card="card" />
+          <div v-if="showReorder" class="reorder-banners-container">
+            <div class="reorder-banners-left" v-if="index > 0"></div>
+            <div class="reorder-banners-right" v-if="index < cards.length - 1"></div>
+          </div>
         </div>
       </div>
+      <div v-if="dragCard" ref="dropend" class="drop-target" @dragover="onDragOver('end')"></div>
     </div>
-    <div v-if="dragCard" ref="dropend" class="drop-target" @dragover="onDragOver('end')"></div>
   </div>
-</div>
 </template>
 
 <script lang="ts">

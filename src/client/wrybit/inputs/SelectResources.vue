@@ -1,11 +1,11 @@
 <template>
   <div class="wf-component wf-options">
-    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView" />
     <PaymentUnit v-for="unit in binding.keys" :key="unit" v-model:count.number="valueFor(unit).value" :unit="unit" :showMax="false" description=""
-      @plus="binding.plus(unit)" @minus="binding.minus(unit)"/>
+      @plus="binding.plus(unit)" @minus="binding.minus(unit)" />
     <TabPanelFooterSlot>
       <div v-if="binding.showsave" class="nofloat">
-        <AppButton hotkey="confirm" @click="binding.save()" :title="binding.playerinput.buttonLabel"/>
+        <AppButton hotkey="confirm" @click="binding.save()" :title="binding.playerinput.buttonLabel" />
       </div>
     </TabPanelFooterSlot>
   </div>

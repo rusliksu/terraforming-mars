@@ -5,10 +5,10 @@
     <span class="select-party__badge"><span class="select-party__hex"><img :src="partyImage(card.party.name)" alt=""></span></span>
     <span class="select-party__name">{{ $t(card.party.name) }}</span>
     <span class="select-party__leader" :title="$t('Party leader')">
-      <DelegateFigure v-if="card.party.partyLeader !== undefined" :color="card.party.partyLeader" :size="26"/>
+      <DelegateFigure v-if="card.party.partyLeader !== undefined" :color="card.party.partyLeader" :size="26" />
       <span v-else class="select-party__seat" style="background-image: url('assets/wrybit/figures/astronaut-neutral.png');"></span>
     </span>
-    <span class="select-party__seats"><DelegateFigure v-for="(color, index) in seatedDelegates(card.party)" :key="index" :color="color"/></span>
+    <span class="select-party__seats"><DelegateFigure v-for="(color, index) in seatedDelegates(card.party)" :key="index" :color="color" /></span>
     <span v-if="card.policyText !== undefined" class="select-party__rule select-party__rule--policy"><small>{{ $t('While ruling') }}</small>{{ $t(card.policyText) }}</span>
     <span v-if="card.bonusText !== undefined" class="select-party__rule select-party__rule--bonus"><small>{{ $t('When taking over') }}</small>{{ $t(card.bonusText) }}</span>
     <span class="select-party__marks">

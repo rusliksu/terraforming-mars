@@ -3,7 +3,7 @@
     <div class="player-status-bottom">
       <div :class="getLabelAndTimerClasses()">
         <div v-if="actionLabel !== 'researching'" :class="getActionStatusClasses()"><span v-i18n>{{ actionLabel }}</span></div>
-        <div v-if="showTimer" class="player-status-timer"><PlayerTimer :timer="timer" :live="liveTimer"/></div>
+        <div v-if="showTimer" class="player-status-timer"><PlayerTimer :timer="timer" :live="liveTimer" /></div>
       </div>
     </div>
   </div>

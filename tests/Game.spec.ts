@@ -7,7 +7,7 @@ import {Thermalist} from '../src/server/awards/Thermalist';
 import {Birds} from '../src/server/cards/base/Birds';
 import {WaterImportFromEuropa} from '../src/server/cards/base/WaterImportFromEuropa';
 import {Phase} from '../src/common/Phase';
-import {addCity, addGreenery, addOcean, fakeCard, forceGenerationEnd, formatMessage, maxOutOceans, runAllActions, setOxygenLevel, setTemperature, setVenusScaleLevel, testGame} from './TestingUtils';
+import {addCity, addGreenery, addOcean, doWait, fakeCard, forceGenerationEnd, formatMessage, maxOutOceans, runAllActions, setOxygenLevel, setTemperature, setVenusScaleLevel, testGame} from './TestingUtils';
 import {cast, toName} from '../src/common/utils/utils';
 import {TestPlayer} from './TestPlayer';
 import {SaturnSystems} from '../src/server/cards/corporation/SaturnSystems';
@@ -1287,6 +1287,7 @@ describe('Game', () => {
       'skipGeneration1Actions',
       'max',
       'globalParameterTracks',
+      'standardProjects',
     ];
     const serializedValuesNotInGame: Array<keyof SerializedGame> = [
       'seed',
@@ -1804,11 +1805,11 @@ describe('Game', () => {
   player.tagsForTest = {earth: 1};
 
   game.worldGovernmentTerraforming();
-  const [input, cb] = player2.popWaitingFor2();
-  const orOptions = cast(input, OrOptions);
-  const oceanAction = cast(orOptions.options.filter((o) => o.title.toString() === 'Add an ocean')[0], SelectSpace);
-  assertPlaceOcean(player2, oceanAction);
-  cb?.(); // Will gain 2 plants and lose 1 plant.
+  // The callback will gain 2 plants and lose 1 plant.
+  doWait(player2, OrOptions, (orOptions) => {
+    const oceanAction = cast(orOptions.options.filter((o) => o.title.toString() === 'Add an ocean')[0], SelectSpace);
+    assertPlaceOcean(player2, oceanAction);
+  });
 
   expect(player.plants).to.eq(1);
   });

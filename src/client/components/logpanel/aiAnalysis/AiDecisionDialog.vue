@@ -14,7 +14,7 @@
       <div v-if="cardOptions.length > 0" class="ai-decision-dialog__cards" data-test="ai-decision-cards">
         <div v-for="option in cardOptions" :key="option.index"
           :class="['ai-decision-dialog__card', {'ai-decision-dialog__card--chosen': option.chosen === true}]">
-          <Card :card="cardModel(option.card)"/>
+          <Card :card="cardModel(option.card)" />
           <span class="ai-decision-dialog__value">{{ option.chosen === true ? '✓ ' : '' }}{{ formatValue(option.value) }}</span>
         </div>
       </div>

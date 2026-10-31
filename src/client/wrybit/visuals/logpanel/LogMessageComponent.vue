@@ -1,6 +1,6 @@
 <template>
   <Canonical :message="message" :viewModel="viewModel" :class="[lineColor ? 'log-line--' + lineColor : '', {'log-line--expandable': expandable}]"
-    @click="$emit('click')" @spaceClicked="$emit('spaceClicked', $event)"/>
+    @click="$emit('click')" @spaceClicked="$emit('spaceClicked', $event)" />
 </template>
 <script setup lang="ts">
 import {computed} from 'vue';

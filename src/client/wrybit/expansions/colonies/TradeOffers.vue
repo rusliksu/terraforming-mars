@@ -7,8 +7,8 @@
         :disabled="!offered(colony.model.name)" :data-test="'trade-offer-' + colony.model.name"
         :aria-pressed="binding.selected === colony.model.name" :title="$t(colony.metadata.trade.description)" @click="binding.select(colony.model.name)">
         <span class="trade-colony__offer-head">
-          <span class="trade-colony__offer-planet"><ColonyPlanet :name="colony.model.name"/>
-            <TradeShip v-if="colony.model.visitor !== undefined" class="trade-colony__offer-ship" :color="colony.model.visitor" :size="30"/>
+          <span class="trade-colony__offer-planet"><ColonyPlanet :name="colony.model.name" />
+            <TradeShip v-if="colony.model.visitor !== undefined" class="trade-colony__offer-ship" :color="colony.model.visitor" :size="30" />
           </span>
           <b>{{ $t(colony.model.name) }}</b>
         </span>

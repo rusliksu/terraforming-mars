@@ -3,7 +3,7 @@
     <!-- Toggles in front, level with the icons: show and hide goods / tags / scoring.
          Before them the game menu (only in the player view, GameMenu.vue) -->
     <div class="players-table-toggles">
-      <GameMenu/>
+      <GameMenu />
       <button v-for="section in sections" :key="section.key" type="button"
         :class="['players-table-toggle', {'players-table-toggle--squeezed': autoHidden.includes(section.key)}]"
         :aria-pressed="visibility[section.key] ? 'true' : 'false'"
@@ -29,7 +29,7 @@
         <template v-for="(group, groupIndex) in tagColumns" :key="groupIndex">
           <div v-if="groupIndex > 0"></div>
           <div class="players-table-cell" v-for="tag in group" :key="tag" :data-test="'tag-head-' + tag">
-            <Tag :tag="(tag as CardTag)" size="big" type="secondary"/>
+            <Tag :tag="(tag as CardTag)" size="big" type="secondary" />
           </div>
         </template>
       </template>

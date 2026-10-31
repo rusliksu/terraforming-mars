@@ -42,7 +42,7 @@
       </button>
     </div>
 
-    <MapSubmitForm v-if="showSubmitForm" @submitted="onSubmitted"/>
+    <MapSubmitForm v-if="showSubmitForm" @submitted="onSubmitted" />
 
     <p v-if="loading" v-i18n>Loading…</p>
     <p v-else-if="error" class="map-library-error">{{ error }}</p>

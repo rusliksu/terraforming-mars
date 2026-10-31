@@ -23,7 +23,7 @@ describe('CloudCityStandardProject', () => {
   });
 
   it('is offered in the grouped Standard Projects list', () => {
-    const names = game.getStandardProjects().map((c) => c.name);
+    const names = game.standardProjects.map((c) => c.name);
     expect(names).to.include(card.name);
   });
 

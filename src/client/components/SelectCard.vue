@@ -1,28 +1,28 @@
 <template>
-    <component v-if="cardPresentation !== undefined" :is="cardPresentation" :binding="presentationBinding"/>
-    <div v-else class="wf-component wf-component--select-card">
-        <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
-        <label v-for="card in getOrderedCards()" :key="card.name" :class="getCardBoxClass(card)">
-            <template v-if="!card.isDisabled">
-              <input v-if="selectOnlyOneCard" type="radio" v-model="cards" :value="card" >
-              <input v-else type="checkbox" v-model="cards" :value="card" :disabled="playerinput.max !== undefined && Array.isArray(cards) && cards.length >= playerinput.max && !cards.some((selected) => selected.name === card.name)" >
-            </template>
-            <Card :card="card" :actionUsed="isCardActivated(card)" :robotCard="robotCard(card)">
-              <template v-if="playerinput.showOwner">
-                <div :class="'card-owner-label player_translucent_bg_color_'+ getOwner(card).color">
-                  {{getOwner(card).name}}
-                </div>
-              </template>
-            </Card>
-        </label>
-        <div v-if="hasCardWarning()" class="card-warning" v-i18n>{{ warning }}</div>
-        <WarningsComponent :warnings="warnings"/>
-        <div v-if="showsave === true" class="nofloat">
-            <AppButton v-if="showSelectAll" @click="toggleSelectAll" type="submit" :title="allSelected ? $t('Deselect All') : $t('Select All')" />
-            <AppButton :disabled="isOptionalToManyCards && cardsSelected() === 0" type="submit" @click="saveData()" :title="buttonLabel()" />
-            <AppButton :disabled="isOptionalToManyCards && cardsSelected() > 0" v-if="isOptionalToManyCards" @click="saveData()" type="submit" :title="$t('Skip this action')" />
-        </div>
+  <component v-if="cardPresentation !== undefined" :is="cardPresentation" :binding="presentationBinding" />
+  <div v-else class="wf-component wf-component--select-card">
+    <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
+    <label v-for="card in getOrderedCards()" :key="card.name" :class="getCardBoxClass(card)">
+      <template v-if="!card.isDisabled">
+        <input v-if="selectOnlyOneCard" type="radio" v-model="cards" :value="card">
+        <input v-else type="checkbox" v-model="cards" :value="card" :disabled="playerinput.max !== undefined && Array.isArray(cards) && cards.length >= playerinput.max && !cards.some((selected) => selected.name === card.name)">
+      </template>
+      <Card :card="card" :actionUsed="isCardActivated(card)" :robotCard="robotCard(card)">
+        <template v-if="playerinput.showOwner">
+          <div :class="'card-owner-label player_translucent_bg_color_'+ getOwner(card).color">
+            {{ getOwner(card).name }}
+          </div>
+        </template>
+      </Card>
+    </label>
+    <div v-if="hasCardWarning()" class="card-warning" v-i18n>{{ warning }}</div>
+    <WarningsComponent :warnings="warnings" />
+    <div v-if="showsave === true" class="nofloat">
+      <AppButton v-if="showSelectAll" @click="toggleSelectAll" type="submit" :title="allSelected ? $t('Deselect All') : $t('Select All')" />
+      <AppButton :disabled="isOptionalToManyCards && cardsSelected() === 0" type="submit" @click="saveData()" :title="buttonLabel()" />
+      <AppButton :disabled="isOptionalToManyCards && cardsSelected() > 0" v-if="isOptionalToManyCards" @click="saveData()" type="submit" :title="$t('Skip this action')" />
     </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -61,6 +61,7 @@ type WidgetDataModel = {
 
 export default defineComponent({
   name: 'SelectCard',
+  emits: ['cardschanged'],
   setup() {
     return {cardPresentation: useInputPresentation('card')};
   },

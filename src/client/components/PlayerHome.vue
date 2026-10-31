@@ -8,28 +8,28 @@
     <TopBar :playerView="playerView" />
     <div v-if="game.phase === 'end'">
       <div class="player_home_block">
-        <DynamicTitle title="This game is over!" :color="thisPlayer.color"/>
+        <DynamicTitle title="This game is over!" :color="thisPlayer.color" />
         <a :href="'the-end?id='+ playerView.id" v-i18n>Go to game results</a>
       </div>
     </div>
 
-    <Sidebar v-trim-whitespace
+    <Sidebar
       :actingPlayer="isPlayerActing(playerView)"
       :playerColor="thisPlayer.color"
       :generation="game.generation"
       :coloniesCount="game.colonies.length"
-      :temperature = "game.temperature"
-      :oxygen = "game.oxygenLevel"
-      :oceans = "game.oceans"
-      :venus = "game.venusScaleLevel"
-      :turmoil = "game.turmoil"
+      :temperature="game.temperature"
+      :oxygen="game.oxygenLevel"
+      :oceans="game.oceans"
+      :venus="game.venusScaleLevel"
+      :turmoil="game.turmoil"
       :moonData="game.moon"
-      :gameOptions = "game.gameOptions"
-      :playerNumber = "playerView.players.length"
-      :lastSoloGeneration = "game.lastSoloGeneration"
-      :deckSize = "game.deckSize"
-      :discardPileSize = "game.discardPileSize"
-      :otherDeckSizes = "game.otherDeckSizes"/>
+      :gameOptions="game.gameOptions"
+      :playerNumber="playerView.players.length"
+      :lastSoloGeneration="game.lastSoloGeneration"
+      :deckSize="game.deckSize"
+      :discardPileSize="game.discardPileSize"
+      :otherDeckSizes="game.otherDeckSizes" />
 
     <div v-if="thisPlayer.tableau.length > 0" data-player-panels>
       <div class="player_home_block player-layout-board" data-layout-panel="board">
@@ -42,45 +42,45 @@
         />
       </div>
 
-    <a class="hotkey-target"></a>
-    <PlayersOverview class="player_home_block player_home_block--players nofloat" data-layout-panel="players" :playerView="playerView" v-trim-whitespace id="shortkey-playersoverview"/>
+      <a class="hotkey-target"></a>
+      <PlayersOverview class="player_home_block player_home_block--players nofloat" data-layout-panel="players" :playerView="playerView" id="shortkey-playersoverview" />
 
       <a class="hotkey-target"></a>
       <div class="player_home_block nofloat player-layout-log" data-layout-panel="log" v-if="!isInitialDraftingPhase">
-        <LogPanel :viewModel="playerView" :step="game.step" @spaceClicked="onSpaceClicked"/>
+        <LogPanel :viewModel="playerView" :step="game.step" @spaceClicked="onSpaceClicked" />
       </div>
 
       <a class="hotkey-target"></a>
       <div class="player_home_block player_home_block--actions nofloat" data-layout-panel="actions">
         <a name="actions" class="player_home_anchor"></a>
-        <DynamicTitle title="Actions" :color="thisPlayer.color"/>
+        <DynamicTitle title="Actions" :color="thisPlayer.color" />
         <InputHost v-if="game.phase !== 'end'">
-          <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+          <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor" :requestId="playerView.requestId" />
         </InputHost>
       </div>
 
       <div class="player_home_block player_home_block--hand" data-layout-panel="cards" v-if="playerView.draftedCards.length > 0">
         <DynamicTitle title="Drafted cards" :color="thisPlayer.color" />
         <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox">
-          <Card :card="card"/>
+          <Card :card="card" />
         </div>
       </div>
 
       <a name="cards" class="player_home_anchor"></a>
       <div class="player_home_block player_home_block--hand" data-layout-panel="cards" v-if="cardsInHandCount > 0" id="shortkey-hand">
         <div class="hiding-card-button-row">
-          <DynamicTitle title="Cards In Hand" :color="thisPlayer.color"/>
+          <DynamicTitle title="Cards In Hand" :color="thisPlayer.color" />
           <div :class="getHideButtonClass('HAND')" @click.prevent="toggle('HAND')">
-            <div class="played-cards-count">{{cardsInHandCount.toString()}}</div>
-            <div class="played-cards-selection" v-i18n>{{ getToggleLabel('HAND')}}</div>
+            <div class="played-cards-count">{{ cardsInHandCount.toString() }}</div>
+            <div class="played-cards-selection" v-i18n>{{ getToggleLabel('HAND') }}</div>
           </div>
           <div class="text-overview" v-i18n>[ toggle cards in hand ]</div>
-          <CardSortButtons v-model:sortOrder="handSortOrder"/>
+          <CardSortButtons v-model:sortOrder="handSortOrder" />
         </div>
         <SortableCards v-show="isVisible('HAND')" :playerId="playerView.id"
-                        :cards="playerView.preludeCardsInHand
-                                .concat(playerView.ceoCardsInHand)
-                                .concat(playerView.cardsInHand)" v-model:sortOrder="handSortOrder"/>
+          :cards="playerView.preludeCardsInHand
+            .concat(playerView.ceoCardsInHand)
+            .concat(playerView.cardsInHand)" v-model:sortOrder="handSortOrder" />
       </div>
 
       <div class="player_home_block player_home_block--cards" data-layout-panel="cards">
@@ -88,28 +88,28 @@
           <DynamicTitle title="Played Cards" :color="thisPlayer.color" />
           <div class="played-cards-filters">
             <div :class="getHideButtonClass('ACTIVE')" @click.prevent="toggle('ACTIVE')">
-              <div class="played-cards-count">{{getCardsByType(thisPlayer.tableau, [CardType.ACTIVE, CardType.PRELUDE]).filter(isActive).length.toString()}}</div>
-              <div class="played-cards-selection" v-i18n>{{ getToggleLabel('ACTIVE')}}</div>
+              <div class="played-cards-count">{{ getCardsByType(thisPlayer.tableau, [CardType.ACTIVE, CardType.PRELUDE]).filter(isActive).length.toString() }}</div>
+              <div class="played-cards-selection" v-i18n>{{ getToggleLabel('ACTIVE') }}</div>
             </div>
             <div :class="getHideButtonClass('AUTOMATED')" @click.prevent="toggle('AUTOMATED')">
-              <div class="played-cards-count">{{getCardsByType(thisPlayer.tableau, [CardType.AUTOMATED, CardType.PRELUDE]).filter(isNotActive).length.toString()}}</div>
-              <div class="played-cards-selection" v-i18n>{{ getToggleLabel('AUTOMATED')}}</div>
+              <div class="played-cards-count">{{ getCardsByType(thisPlayer.tableau, [CardType.AUTOMATED, CardType.PRELUDE]).filter(isNotActive).length.toString() }}</div>
+              <div class="played-cards-selection" v-i18n>{{ getToggleLabel('AUTOMATED') }}</div>
             </div>
             <div :class="getHideButtonClass('EVENT')" @click.prevent="toggle('EVENT')">
-              <div class="played-cards-count">{{getCardsByType(thisPlayer.tableau, [CardType.EVENT]).length.toString()}}</div>
-              <div class="played-cards-selection" v-i18n>{{ getToggleLabel('EVENT')}}</div>
+              <div class="played-cards-count">{{ getCardsByType(thisPlayer.tableau, [CardType.EVENT]).length.toString() }}</div>
+              <div class="played-cards-selection" v-i18n>{{ getToggleLabel('EVENT') }}</div>
             </div>
           </div>
           <div class="text-overview" v-i18n>[ toggle cards filters ]</div>
         </div>
         <div v-for="card in getCardsByType(thisPlayer.tableau, [CardType.CORPORATION])" :key="card.name" class="cardbox">
-            <Card :card="card" :actionUsed="isCardActivated(card, thisPlayer)"/>
+          <Card :card="card" :actionUsed="isCardActivated(card, thisPlayer)" />
         </div>
         <div v-for="card in getCardsByType(thisPlayer.tableau, [CardType.CEO])" :key="card.name" class="cardbox">
-            <Card :card="card" :actionUsed="isCardActivated(card, thisPlayer)"/>
+          <Card :card="card" :actionUsed="isCardActivated(card, thisPlayer)" />
         </div>
         <div v-show="isVisible('ACTIVE')" v-for="card in sortActiveCards(getCardsByType(thisPlayer.tableau, [CardType.ACTIVE, CardType.PRELUDE]).filter(isActive))" :key="card.name" class="cardbox">
-            <Card :card="card" :actionUsed="isCardActivated(card, thisPlayer)"/>
+          <Card :card="card" :actionUsed="isCardActivated(card, thisPlayer)" />
         </div>
 
         <StackedCards v-show="isVisible('AUTOMATED')" :cards="getCardsByType(thisPlayer.tableau, [CardType.AUTOMATED, CardType.PRELUDE]).filter(isNotActive)" />
@@ -119,27 +119,27 @@
       </div>
 
       <div v-if="thisPlayer.selfReplicatingRobotsCards.length > 0" class="player_home_block" data-layout-panel="cards">
-        <DynamicTitle title="Self-replicating Robots cards" :color="thisPlayer.color"/>
+        <DynamicTitle title="Self-replicating Robots cards" :color="thisPlayer.color" />
         <div>
           <div v-for="card in thisPlayer.selfReplicatingRobotsCards" :key="card.name" class="cardbox">
-            <Card :card="card"/>
+            <Card :card="card" />
           </div>
         </div>
       </div>
     </div>
 
     <div v-if="thisPlayer.underworldData.tokens.length > 0" data-layout-panel="cards">
-      <DynamicTitle title="Claimed Underground Resource Tokens" :color="thisPlayer.color"/>
-      <UndergroundTokens :underworldData="thisPlayer.underworldData"/>
+      <DynamicTitle title="Claimed Underground Resource Tokens" :color="thisPlayer.color" />
+      <UndergroundTokens :underworldData="thisPlayer.underworldData" />
     </div>
 
     <template v-if="thisPlayer.tableau.length === 0">
-      <PlayerSetupView :playerView="playerView" :tileView="tileView" @toggleTileView="cycleTileView()"/>
+      <PlayerSetupView :playerView="playerView" :tileView="tileView" @toggleTileView="cycleTileView()" />
     </template>
 
     <div v-if="game.colonies.length > 0" class="player_home_block" data-layout-panel="board" ref="colonies" id="shortkey-colonies">
       <a name="colonies" class="player_home_anchor hotkey-target"></a>
-      <DynamicTitle title="Colonies" :color="thisPlayer.color"/>
+      <DynamicTitle title="Colonies" :color="thisPlayer.color" />
       <div class="colonies-fleets-cont">
         <div class="colonies-player-fleets" v-for="colonyPlayer in playerView.players" :key="colonyPlayer.color">
           <div :class="'colonies-fleet colonies-fleet-'+ colonyPlayer.color" v-for="idx in getFleetsCountRange(colonyPlayer)" :key="idx"></div>
@@ -147,7 +147,7 @@
       </div>
       <div class="player_home_colony_cont">
         <div class="player_home_colony" v-for="colony in game.colonies" :key="colony.name">
-          <Colony :colony="colony" :active="colony.isActive"/>
+          <Colony :colony="colony" :active="colony.isActive" />
         </div>
       </div>
     </div>
@@ -155,10 +155,10 @@
     <div>
       <a :href="'/spectator?id=' +game.spectatorId" target="_blank" rel="noopener noreferrer" v-i18n>Spectator link</a>
     </div>
-    <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"/>
+    <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs" />
     <ExperimentalPlayerNavigation v-if="experimentalLayout && thisPlayer.tableau.length > 0"
-      :activePanel="layoutPanel" :cardCount="cardsInHandCount" @navigate="navigateLayout"/>
-    <KeyboardShortcuts v-show="keyboardShortcutOpened" @close="keyboardShortcutOpened = false"/>
+      :activePanel="layoutPanel" :cardCount="cardsInHandCount" @navigate="navigateLayout" />
+    <KeyboardShortcuts v-show="keyboardShortcutOpened" @close="keyboardShortcutOpened = false" />
   </div>
 </template>
 

@@ -122,6 +122,57 @@ each(@players, {
   }
 });
 
+// When the tag columns are auto-hidden, the same row grows a compact strip of tag icons.
+// The strip is a grid item spanning all columns, so the fixed-height row becomes auto-sized.
+.players-table-row:has(> .players-table-tag-strip) {
+  height: auto;
+  min-height: @players-table-row-height;
+  padding-bottom: 5px;
+}
+
+.players-table-tag-strip {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 7px;
+  min-height: 24px;
+  padding: 3px 8px 0 26px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.players-table-tag-strip-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 30px;
+  color: #fff;
+
+  .tag-count {
+    zoom: 0.55;
+    flex: none;
+  }
+}
+
+.players-table-tag-strip-count {
+  min-width: 1.2em;
+  font-family: Prototype, sans-serif;
+  font-size: 15px;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+}
+
+.players-table-tag-strip-count--zero {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+@media only screen and (max-width: 1399px) {
+  .players-table-tag-strip {
+    display: none;
+  }
+}
+
 .players-table-row--me {
   height: @players-table-own-row-height;
   margin-block: @players-table-own-row-offset;

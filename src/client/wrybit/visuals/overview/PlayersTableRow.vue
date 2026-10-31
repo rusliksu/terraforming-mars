@@ -43,6 +43,15 @@
       <!-- No own click handler: the click bubbles up to the row; the button stays for keyboard use -->
       <button type="button" class="players-table-played" :aria-label="$t('Played cards')" data-test="played-cards">{{ player.tableau.length }}</button>
     </div>
+
+    <!-- When the wide table has to hide the tag columns, keep the played tags visible below the row.
+         The old panel was dropped here because the remaining four numbers said nothing about tags. -->
+    <div v-if="!visibility.tags && tagStrip.length > 0" class="players-table-tag-strip" data-test="tags-strip">
+      <span v-for="tag in tagStrip" :key="tag" class="players-table-tag-strip-item" :title="$t(tag)">
+        <Tag :tag="tag" size="small" type="secondary" />
+        <span :class="['players-table-tag-strip-count', {'players-table-tag-strip-count--zero': tagDetail(tag).count === 0}]">{{ tagDetail(tag).count }}</span>
+      </span>
+    </div>
   </div>
 </template>
 
@@ -54,6 +63,8 @@ import PlayerIdentity from '@/client/wrybit/visuals/overview/PlayerIdentity.vue'
 import PlayersTableGoods from '@/client/wrybit/visuals/overview/PlayersTableGoods.vue';
 import PointsPerTag from '@/client/components/overview/PointsPerTag.vue';
 import PlayerTagSubstitution from '@/client/components/overview/PlayerTagSubstitution.vue';
+import Tag from '@/client/components/Tag.vue';
+import {Tag as CardTag} from '@/common/cards/Tag';
 import {PlayerGood, playerGoods} from '@/client/wrybit/visuals/overview/playerGoods';
 import {protectedTagsOf} from '@/client/wrybit/visuals/overview/protectedTags';
 import {InterfaceTagsType, TagDetail, TagDetails, handDiscountLabel, isVictoryPointCountHidden} from '@/client/wrybit/visuals/overview/playerTagDetails';
@@ -70,6 +81,7 @@ export default defineComponent({
     PlayersTableGoods,
     PointsPerTag,
     PlayerTagSubstitution,
+    Tag,
   },
   props: {
     readOnly: {type: Boolean, default: false},
@@ -105,6 +117,11 @@ export default defineComponent({
     tagColumns: {
       type: Array as () => TagColumnGroups,
       required: true,
+    },
+    // Compact strip used when the tag columns are auto-hidden; all game tags, no VP/TR specials.
+    tagStrip: {
+      type: Array as () => ReadonlyArray<CardTag>,
+      default: () => [],
     },
     tagDetails: {
       type: Object as () => TagDetails,

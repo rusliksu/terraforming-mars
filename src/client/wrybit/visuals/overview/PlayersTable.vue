@@ -12,6 +12,7 @@
         :visibility="effectiveVisibility"
         :sectionOrder="sectionOrder"
         :tagColumns="tagColumns"
+        :tagStrip="tagStrip"
         :tagDetails="tagDetailsByColor[row.player.color]"
         :productionLeaders="productionLeadersByColor[row.player.color] ?? []"
         :goodsBoxWidths="goodsBoxWidths" />
@@ -21,6 +22,7 @@
 
 <script lang="ts">
 import {defineComponent} from 'vue';
+import {Tag as CardTag} from '@/common/cards/Tag';
 import {PLAYERS_TABLE_ZOOM_VARIABLE} from '@/client/wrybit/visuals/common/playersCardFit';
 import {ViewModel} from '@/common/models/PlayerModel';
 import {Color} from '@/common/Color';
@@ -129,6 +131,12 @@ export default defineComponent({
         groups[groups.length - 1].push(tag);
       }
       return groups.filter((group) => group.length > 0);
+    },
+    // Flattened tag list for the compact strip shown when the tag columns had to be hidden.
+    // The Tag component only accepts real card tags, not display tags such as "none".
+    tagStrip(): ReadonlyArray<CardTag> {
+      const cardTags = new Set<string>(Object.values(CardTag));
+      return this.tagColumns.flat().filter((tag): tag is CardTag => cardTags.has(tag));
     },
     // The tags section is dropped if there is not a single tag column; what's too wide drops out by priority
     fitted(): FittedVisibility {

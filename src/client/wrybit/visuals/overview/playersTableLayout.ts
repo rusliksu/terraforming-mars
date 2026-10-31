@@ -131,8 +131,9 @@ export function minimumWidth(visibility: SectionVisibility, tagColumns: TagColum
   return width;
 }
 
-// Order in which sections drop out when the column is too narrow: resources matter most and stay longest
-const AUTO_HIDE_ORDER: Array<TableSection> = ['tags', 'score', 'goods'];
+// Order in which sections drop out when the column is too narrow: scoring (VP/TR/hand/actions) stays
+// longer than the resource boxes, because the tag strip below the row already carries the played tags.
+const AUTO_HIDE_ORDER: Array<TableSection> = ['tags', 'goods', 'score'];
 
 export type FittedVisibility = {
   visibility: SectionVisibility;

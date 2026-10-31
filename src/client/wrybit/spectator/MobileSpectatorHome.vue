@@ -2,27 +2,27 @@
   <div id="spectator-home" :class="['mb-home', 'mb-home--spectator', 'mb-home--' + screen]">
     <!-- Mobile view for spectators: same building blocks as the player view, without hand, turn and own money. -->
     <header class="mb-topbar">
-      <MobileHeader :game="game"/>
+      <MobileHeader :game="game" />
     </header>
 
     <main class="mb-screens">
       <MobileMarsScreen v-show="screen === 'mars'" ref="gameBoardView"
         :game="game" :players="spectator.players" :participant-id="spectator.id" :tile-view="tileView"
         :acting="false" :banner-title="bannerTitle"
-        @toggle-tile-view="cycleTileView()" @show-milestones="showMilestones"/>
+        @toggle-tile-view="cycleTileView()" @show-milestones="showMilestones" />
 
       <section v-show="screen === 'players'" class="mb-screen mb-screen--players" @scroll.capture="markHorizontalScroll">
-        <MobilePlayersPanel :view-model="spectator" :segment="playersSegment" @update:segment="playersSegment = $event"/>
+        <MobilePlayersPanel :view-model="spectator" :segment="playersSegment" @update:segment="playersSegment = $event" />
       </section>
 
       <section v-show="screen === 'log'" class="mb-screen mb-screen--log">
-        <LogPanel :view-model="spectator" :zoom-carousel="true" @space-clicked="showSpace"/>
+        <LogPanel :view-model="spectator" :zoom-carousel="true" @space-clicked="showSpace" />
       </section>
     </main>
 
-    <MobileNav :items="navItems" :active="screen" @navigate="go"/>
+    <MobileNav :items="navItems" :active="screen" @navigate="go" />
     <!-- Polls the server regularly for updates, exactly like the desktop spectator view. -->
-    <WaitingFor v-show="false" v-if="game.phase !== 'end'" :player-view="spectator" :waitingfor="undefined"/>
+    <WaitingFor v-show="false" v-if="game.phase !== 'end'" :player-view="spectator" :waitingfor="undefined" />
   </div>
 </template>
 

@@ -3,7 +3,7 @@
     <div class="action-log-summary">
       <ul class="action-log-title">
         <LogMessageComponent :message="entry.messages[0]" :viewModel="viewModel"
-          @click="$emit('messageClicked', entry.messages[0])" @spaceClicked="$emit('spaceClicked', $event)"/>
+          @click="$emit('messageClicked', entry.messages[0])" @spaceClicked="$emit('spaceClicked', $event)" />
       </ul>
       <div class="action-log-effects">
         <span v-for="(summary, index) in effects" :key="index" class="action-log-effect"
@@ -35,7 +35,7 @@
     <ul v-if="expanded" class="action-log-detail-list">
       <LogMessageComponent v-for="(message, index) in entry.messages.slice(1)" :key="index"
         :message="message" :viewModel="viewModel" @click="$emit('messageClicked', message)"
-        @spaceClicked="$emit('spaceClicked', $event)"/>
+        @spaceClicked="$emit('spaceClicked', $event)" />
     </ul>
   </li>
 </template>

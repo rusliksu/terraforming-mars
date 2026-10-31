@@ -2,7 +2,7 @@
   <div class="card-library-row">
     <div class="card-library-row-preview">
       <div class="cardbox">
-        <Card :card="cardModel" auto-tall/>
+        <Card :card="cardModel" auto-tall />
       </div>
     </div>
 
@@ -36,7 +36,7 @@
 
       <details v-if="isAdmin" class="card-library-row-behavior">
         <summary v-i18n>Admin: set effect (raw JSON)</summary>
-        <textarea v-model="behaviorJson" rows="4" placeholder='{"production": {"megacredits": 1}}'></textarea>
+        <textarea v-model="behaviorJson" rows="4" placeholder="{&quot;production&quot;: {&quot;megacredits&quot;: 1}}"></textarea>
         <div class="card-library-row-behavior-actions">
           <button type="button" class="btn" @click="submitBehavior" v-i18n>Attach effect</button>
           <span v-if="behaviorError" class="card-library-row-error">{{ behaviorError }}</span>

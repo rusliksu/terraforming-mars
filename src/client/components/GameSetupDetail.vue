@@ -1,100 +1,103 @@
 <template>
-        <div id="game-setup-detail" class="game-setup-detail-container">
-          <ul>
-            <li><div class="setup-item" v-i18n>Expansion:</div>
-              <a v-if="gameOptions.expansions.venus" :href="rulebookUrls.venus" class="tooltip" data-tooltip="Venus Next rulebook" target="_blank"><div class="create-game-expansion-icon expansion-icon-venus"></div></a>
-              <a v-if="gameOptions.expansions.prelude" :href="rulebookUrls.prelude" class="tooltip" data-tooltip="Prelude rulebook" target="_blank"><div class="create-game-expansion-icon expansion-icon-prelude"></div></a>
-              <a v-if="gameOptions.expansions.prelude2" :href="rulebookUrls.prelude2" class="tooltip" data-tooltip="Prelude 2 rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-prelude2"></div></a>
-              <a v-if="gameOptions.expansions.colonies" :href="rulebookUrls.colonies" class="tooltip" data-tooltip="Colonies rulebook" target="_blank"><div class="create-game-expansion-icon expansion-icon-colony"></div></a>
-              <a v-if="gameOptions.expansions.turmoil" :href="rulebookUrls.turmoil" class="tooltip" data-tooltip="Turmoil rulebook" target="_blank"><div class="create-game-expansion-icon expansion-icon-turmoil"></div></a>
-              <a v-if="gameOptions.expansions.promo" :href="rulebookUrls.promo" class="tooltip" data-tooltip="Promo cards rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-promo"></div></a>
-              <a v-if="gameOptions.expansions.ares" :href="rulebookUrls.ares" class="tooltip" data-tooltip="Ares rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-ares"></div></a>
-              <a v-if="gameOptions.expansions.moon" :href="rulebookUrls.moon" class="tooltip" data-tooltip="The Moon rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-themoon"></div></a>
-              <a v-if="gameOptions.expansions.pathfinders" :href="rulebookUrls.pathfinders" class="tooltip" data-tooltip="Pathfinders rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-pathfinders"></div></a>
-              <a v-if="gameOptions.expansions.community" :href="rulebookUrls.community" class="tooltip" data-tooltip="Community rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-community"></div></a>
-              <div v-if="isPoliticalAgendasOn" class="create-game-expansion-icon expansion-icon-agendas"></div>
-              <a v-if="gameOptions.expansions.ceo" :href="rulebookUrls.ceo" class="tooltip" data-tooltip="CEOs rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-ceo"></div></a>
-              <a v-if="gameOptions.expansions.underworld" :href="rulebookUrls.underworld" class="tooltip" data-tooltip="Underworld rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-underworld"></div></a>
-              <a v-if="gameOptions.expansions.starwars" :href="rulebookUrls.starwars" class="tooltip" data-tooltip="Star Wars rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-starwars"></div></a>
-              <a v-if="gameOptions.expansions.deltaProject" :href="rulebookUrls.deltaProject" class="tooltip" data-tooltip="Delta Project rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-deltaProject"></div></a>
-              <a v-if="gameOptions.expansions.sillyfication" :href="rulebookUrls.sillyfication" class="tooltip" data-tooltip="Sillyfication rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-sillyfication"></div></a>
-              <a v-if="gameOptions.expansions.betterMars" :href="rulebookUrls.betterMars" class="tooltip" data-tooltip="BetterMars rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-betterMars"></div></a>
-              <a v-if="gameOptions.expansions.rebalanced" :href="rulebookUrls.rebalanced" class="tooltip" data-tooltip="Rebalanced rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-rebalanced"></div></a>
-              <a v-if="gameOptions.expansions.customCards" :href="rulebookUrls.customCards" class="tooltip" data-tooltip="Custom Cards rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-customCards"></div></a>
-              <a v-if="gameOptions.expansions.conglomerates" :href="rulebookUrls.conglomerates" class="tooltip" data-tooltip="Conglomerates rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-conglomerates"></div></a>
-              <a v-if="gameOptions.expansions.corporateBetterments" :href="rulebookUrls.corporateBetterments" class="tooltip" data-tooltip="Corporate Betterments rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-corporateBetterments"></div></a>
-              <a v-if="gameOptions.expansions.idesOfMars" :href="rulebookUrls.idesOfMars" class="tooltip" data-tooltip="Ides of Mars rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-idesOfMars"></div></a>
-              <a v-if="gameOptions.expansions.robAntilles" :href="rulebookUrls.robAntilles" class="tooltip" data-tooltip="Rob Antilles rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-robAntilles"></div></a>
-              <a v-if="gameOptions.expansions.moreParties" :href="rulebookUrls.moreParties" class="tooltip" data-tooltip="More Parties rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-moreParties"></div></a>
-              <a v-if="gameOptions.expansions.venusPhase2" :href="rulebookUrls.venusPhase2" class="tooltip" data-tooltip="Venus: Phase 2 rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-venusPhase2"></div></a>
-              <a v-if="gameOptions.expansions.industries" :href="rulebookUrls.industries" class="tooltip" data-tooltip="Industries rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-industries"></div></a>
-              <a v-if="gameOptions.expansions.highOrbit" :href="rulebookUrls.highOrbit" class="tooltip" data-tooltip="High Orbit rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-highOrbit"></div></a>
-              <a v-if="gameOptions.expansions.solaris" :href="rulebookUrls.solaris" class="tooltip" data-tooltip="Solaris rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-solaris"></div></a>
-              <a v-if="gameOptions.expansions.corpera" :href="rulebookUrls.corpera" class="tooltip" data-tooltip="Corporate Era rulebook" target="_blank"><div class="create-game-expansion-icon expansion-icon-CE"></div></a>
-            </li>
+  <div id="game-setup-detail" class="game-setup-detail-container">
+    <ul>
+      <li><div class="setup-item" v-i18n>Expansion:</div>
+        <a v-if="gameOptions.expansions.venus" :href="rulebookUrls.venus" class="tooltip" data-tooltip="Venus Next rulebook" target="_blank"><div class="create-game-expansion-icon expansion-icon-venus"></div></a>
+        <a v-if="gameOptions.expansions.prelude" :href="rulebookUrls.prelude" class="tooltip" data-tooltip="Prelude rulebook" target="_blank"><div class="create-game-expansion-icon expansion-icon-prelude"></div></a>
+        <a v-if="gameOptions.expansions.prelude2" :href="rulebookUrls.prelude2" class="tooltip" data-tooltip="Prelude 2 rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-prelude2"></div></a>
+        <a v-if="gameOptions.expansions.colonies" :href="rulebookUrls.colonies" class="tooltip" data-tooltip="Colonies rulebook" target="_blank"><div class="create-game-expansion-icon expansion-icon-colony"></div></a>
+        <a v-if="gameOptions.expansions.turmoil" :href="rulebookUrls.turmoil" class="tooltip" data-tooltip="Turmoil rulebook" target="_blank"><div class="create-game-expansion-icon expansion-icon-turmoil"></div></a>
+        <a v-if="gameOptions.expansions.promo" :href="rulebookUrls.promo" class="tooltip" data-tooltip="Promo cards rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-promo"></div></a>
+        <a v-if="gameOptions.expansions.ares" :href="rulebookUrls.ares" class="tooltip" data-tooltip="Ares rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-ares"></div></a>
+        <a v-if="gameOptions.expansions.moon" :href="rulebookUrls.moon" class="tooltip" data-tooltip="The Moon rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-themoon"></div></a>
+        <a v-if="gameOptions.expansions.pathfinders" :href="rulebookUrls.pathfinders" class="tooltip" data-tooltip="Pathfinders rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-pathfinders"></div></a>
+        <a v-if="gameOptions.expansions.community" :href="rulebookUrls.community" class="tooltip" data-tooltip="Community rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-community"></div></a>
+        <div v-if="isPoliticalAgendasOn" class="create-game-expansion-icon expansion-icon-agendas"></div>
+        <a v-if="gameOptions.expansions.ceo" :href="rulebookUrls.ceo" class="tooltip" data-tooltip="CEOs rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-ceo"></div></a>
+        <a v-if="gameOptions.expansions.underworld" :href="rulebookUrls.underworld" class="tooltip" data-tooltip="Underworld rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-underworld"></div></a>
+        <a v-if="gameOptions.expansions.starwars" :href="rulebookUrls.starwars" class="tooltip" data-tooltip="Star Wars rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-starwars"></div></a>
+        <a v-if="gameOptions.expansions.deltaProject" :href="rulebookUrls.deltaProject" class="tooltip" data-tooltip="Delta Project rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-deltaProject"></div></a>
+        <a v-if="gameOptions.expansions.sillyfication" :href="rulebookUrls.sillyfication" class="tooltip" data-tooltip="Sillyfication rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-sillyfication"></div></a>
+        <a v-if="gameOptions.expansions.betterMars" :href="rulebookUrls.betterMars" class="tooltip" data-tooltip="BetterMars rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-betterMars"></div></a>
+        <a v-if="gameOptions.expansions.rebalanced" :href="rulebookUrls.rebalanced" class="tooltip" data-tooltip="Rebalanced rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-rebalanced"></div></a>
+        <a v-if="gameOptions.expansions.customCards" :href="rulebookUrls.customCards" class="tooltip" data-tooltip="Custom Cards rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-customCards"></div></a>
+        <a v-if="gameOptions.expansions.conglomerates" :href="rulebookUrls.conglomerates" class="tooltip" data-tooltip="Conglomerates rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-conglomerates"></div></a>
+        <a v-if="gameOptions.expansions.corporateBetterments" :href="rulebookUrls.corporateBetterments" class="tooltip" data-tooltip="Corporate Betterments rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-corporateBetterments"></div></a>
+        <a v-if="gameOptions.expansions.idesOfMars" :href="rulebookUrls.idesOfMars" class="tooltip" data-tooltip="Ides of Mars rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-idesOfMars"></div></a>
+        <a v-if="gameOptions.expansions.robAntilles" :href="rulebookUrls.robAntilles" class="tooltip" data-tooltip="Rob Antilles rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-robAntilles"></div></a>
+        <a v-if="gameOptions.expansions.moreParties" :href="rulebookUrls.moreParties" class="tooltip" data-tooltip="More Parties rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-moreParties"></div></a>
+        <a v-if="gameOptions.expansions.venusPhase2" :href="rulebookUrls.venusPhase2" class="tooltip" data-tooltip="Venus: Phase 2 rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-venusPhase2"></div></a>
+        <a v-if="gameOptions.expansions.industries" :href="rulebookUrls.industries" class="tooltip" data-tooltip="Industries rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-industries"></div></a>
+        <a v-if="gameOptions.expansions.highOrbit" :href="rulebookUrls.highOrbit" class="tooltip" data-tooltip="High Orbit rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-highOrbit"></div></a>
+        <a v-if="gameOptions.expansions.solaris" :href="rulebookUrls.solaris" class="tooltip" data-tooltip="Solaris rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-solaris"></div></a>
+        <a v-if="gameOptions.expansions.corpera" :href="rulebookUrls.corpera" class="tooltip" data-tooltip="Corporate Era rulebook" target="_blank"><div class="create-game-expansion-icon expansion-icon-CE"></div></a>
+      </li>
 
-            <li><div class="setup-item" v-i18n>Board:</div>
-              <span :class="boardColorClass" v-i18n>{{ gameOptions.boardName }}</span>
+      <li><div class="setup-item" v-i18n>Board:</div>
+        <span :class="boardColorClass" v-i18n>{{ gameOptions.boardName }}</span>
               &nbsp;
-              <span v-if="gameOptions.shuffleMapOption" class="game-config generic" v-i18n>(randomized tiles)</span>
-            </li>
+        <span v-if="gameOptions.shuffleMapOption" class="game-config generic" v-i18n>(randomized tiles)</span>
+      </li>
 
-            <li><div class="setup-item" v-i18n>WGT:</div>
-              <div v-if="gameOptions.solarPhaseOption" class="game-config generic" v-i18n>On</div>
-              <div v-else class="game-config generic" v-i18n>Off</div>
-            </li>
-            <li v-if="gameOptions.requiresVenusTrackCompletion" v-i18n>Require terraforming Venus to end the game</li>
-            <li v-if="gameOptions.requiresMoonTrackCompletion" v-i18n>Require terraforming The Moon to end the game</li>
+      <li><div class="setup-item" v-i18n>WGT:</div>
+        <div v-if="gameOptions.solarPhaseOption" class="game-config generic" v-i18n>On</div>
+        <div v-else class="game-config generic" v-i18n>Off</div>
+      </li>
+      <li v-if="gameOptions.requiresVenusTrackCompletion" v-i18n>Require terraforming Venus to end the game</li>
+      <li v-if="gameOptions.requiresMoonTrackCompletion" v-i18n>Require terraforming The Moon to end the game</li>
 
-            <li v-if="playerNumber > 1">
-              <div class="setup-item" v-i18n>Milestones and Awards:</div>
+      <li v-if="playerNumber > 1">
+        <div class="setup-item" v-i18n>Milestones and Awards:</div>
 
-              <div v-if="gameOptions.randomMA === RandomMAOptionType.NONE" class="game-config generic" v-i18n>Board-defined</div>
-              <div v-if="gameOptions.randomMA === RandomMAOptionType.LIMITED" class="game-config generic" v-i18n>Randomized with limited synergy</div>
-              <div v-if="gameOptions.randomMA === RandomMAOptionType.UNLIMITED" class="game-config generic" v-i18n>Full randomized</div>
-              <div v-if="gameOptions.randomMA !== RandomMAOptionType.NONE && gameOptions.includeFanMA" class="game-config generic" v-i18n>Include fan Milestones/Awards</div>
-            </li>
+        <div v-if="gameOptions.randomMA === RandomMAOptionType.NONE" class="game-config generic" v-i18n>Board-defined</div>
+        <div v-else-if="gameOptions.randomMA === RandomMAOptionType.MANUAL" class="game-config generic" v-i18n>Manually chosen</div>
+        <template v-else>
+          <div v-if="gameOptions.randomMA === RandomMAOptionType.LIMITED" class="game-config generic" v-i18n>Randomized with limited synergy</div>
+          <div v-else class="game-config generic" v-i18n>Full randomized</div>
+          <div v-if="gameOptions.includeFanMA" class="game-config generic" v-i18n>Include fan Milestones/Awards</div>
+        </template>
+      </li>
 
-            <li v-if="playerNumber > 1">
-              <div class="setup-item" v-i18n>Draft:</div>
-              <div v-if="gameOptions.initialDraftVariant" class="game-config generic" v-i18n>Initial</div>
-              <div v-if="gameOptions.initialDraftOneWay" class="game-config generic" v-i18n>10-card one-way (experimental)</div>
-              <div v-if="gameOptions.draftVariant" class="game-config generic" v-i18n>Research phase</div>
-              <div v-if="!gameOptions.initialDraftVariant && !gameOptions.draftVariant" class="game-config generic" v-i18n>Off</div>
-              <div v-if="gameOptions.preludeDraftVariant">Prelude</div>
-            </li>
+      <li v-if="playerNumber > 1">
+        <div class="setup-item" v-i18n>Draft:</div>
+        <div v-if="gameOptions.initialDraftVariant" class="game-config generic" v-i18n>Initial</div>
+        <div v-if="gameOptions.initialDraftOneWay" class="game-config generic" v-i18n>10-card one-way (experimental)</div>
+        <div v-if="gameOptions.draftVariant" class="game-config generic" v-i18n>Research phase</div>
+        <div v-if="!gameOptions.initialDraftVariant && !gameOptions.draftVariant" class="game-config generic" v-i18n>Off</div>
+        <div v-if="gameOptions.preludeDraftVariant">Prelude</div>
+      </li>
 
-            <li v-if="gameOptions.escapeVelocity !== undefined">
-              <div class="create-game-expansion-icon expansion-icon-escape-velocity"></div>
-              <span>{{escapeVelocityDescription}}</span>
-            </li>
+      <li v-if="gameOptions.escapeVelocity !== undefined">
+        <div class="create-game-expansion-icon expansion-icon-escape-velocity"></div>
+        <span>{{ escapeVelocityDescription }}</span>
+      </li>
 
-            <li v-if="gameOptions.expansions.venus && gameOptions.removeNegativeGlobalEvents">
-              <div class="setup-item" v-i18n>Turmoil:</div>
-              <div class="game-config generic" v-i18n>No negative Turmoil event</div>
-            </li>
+      <li v-if="gameOptions.expansions.venus && gameOptions.removeNegativeGlobalEvents">
+        <div class="setup-item" v-i18n>Turmoil:</div>
+        <div class="game-config generic" v-i18n>No negative Turmoil event</div>
+      </li>
 
-            <li v-if="playerNumber === 1">
-              <div class="setup-item" v-i18n>Solo:</div>
-              <div class="game-config generic" v-i18n>{{ lastSoloGeneration }} Gens</div>
-              <div v-if="gameOptions.soloTR" class="game-config generic" v-i18n>63 TR</div>
-              <div v-else class="game-config generic" v-i18n>TR all</div>
-            </li>
+      <li v-if="playerNumber === 1">
+        <div class="setup-item" v-i18n>Solo:</div>
+        <div class="game-config generic" v-i18n>{{ lastSoloGeneration }} Gens</div>
+        <div v-if="gameOptions.soloTR" class="game-config generic" v-i18n>63 TR</div>
+        <div v-else class="game-config generic" v-i18n>TR all</div>
+      </li>
 
-            <li><div class="setup-item" v-i18n>Game configs:</div>
-              <div v-if="gameOptions.fastModeOption" class="game-config fastmode" v-i18n>fast mode</div>
-              <div v-if="gameOptions.showTimers" class="game-config timer" v-i18n>timer</div>
-              <div v-if="gameOptions.showOtherPlayersVP" class="game-config realtime-vp" v-i18n>real-time vp</div>
-              <div v-if="gameOptions.privateHands" class="game-config generic" v-i18n>private hands</div>
-              <div v-else class="game-config generic" v-i18n>open hands</div>
-              <div v-if="gameOptions.noEloGame" class="game-config generic" v-i18n>no ELO</div>
-              <div v-if="gameOptions.undoOption" class="game-config undo" v-i18n>undo action</div>
-              <div v-if="gameOptions.undoStepOption" class="game-config undo" v-i18n>undo one step</div>
-            </li>
-            <li v-if="gameOptions.twoCorpsVariant"><div class="setup-item" v-i18n>Merger</div></li>
-            <li v-if="gameOptions.bannedCards.length > 0"><div class="setup-item" v-i18n>Banned cards:</div>{{ gameOptions.bannedCards.join(', ') }}</li>
-          </ul>
-        </div>
+      <li><div class="setup-item" v-i18n>Game configs:</div>
+        <div v-if="gameOptions.fastModeOption" class="game-config fastmode" v-i18n>fast mode</div>
+        <div v-if="gameOptions.showTimers" class="game-config timer" v-i18n>timer</div>
+        <div v-if="gameOptions.showOtherPlayersVP" class="game-config realtime-vp" v-i18n>real-time vp</div>
+        <div v-if="gameOptions.privateHands" class="game-config generic" v-i18n>private hands</div>
+        <div v-else class="game-config generic" v-i18n>open hands</div>
+        <div v-if="gameOptions.noEloGame" class="game-config generic" v-i18n>no ELO</div>
+        <div v-if="gameOptions.undoOption" class="game-config undo" v-i18n>undo action</div>
+        <div v-if="gameOptions.undoStepOption" class="game-config undo" v-i18n>undo one step</div>
+      </li>
+      <li v-if="gameOptions.twoCorpsVariant"><div class="setup-item" v-i18n>Merger</div></li>
+      <li v-if="gameOptions.bannedCards.length > 0"><div class="setup-item" v-i18n>Banned cards:</div>{{ gameOptions.bannedCards.join(', ') }}</li>
+    </ul>
+  </div>
 </template>
 
 <script lang="ts">

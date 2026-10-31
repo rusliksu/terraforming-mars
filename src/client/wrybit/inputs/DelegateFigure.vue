@@ -1,6 +1,6 @@
 <template>
   <img v-if="standard" :src="'assets/wrybit/figures/astronaut-' + (color ?? 'neutral') + '.png'" :width="size" :height="size * 1.3" alt="">
-  <PlayerCube v-else :color="color ?? 'neutral'" view="slight" :size="size"/>
+  <PlayerCube v-else :color="color ?? 'neutral'" view="slight" :size="size" />
 </template>
 
 <script setup lang="ts">

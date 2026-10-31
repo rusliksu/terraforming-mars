@@ -24,7 +24,7 @@ describe('Wrybit current input refresh', () => {
   const Wrybit = defineComponent({components: {InputHost}, template: '<article data-view="wrybit"><header>Other layout</header><InputHost /></article>'});
   const Home = defineComponent({
     components: {Classic, Wrybit},
-    props: ['playerView'],
+    props: {playerView: {type: Object, default: undefined}},
     setup: () => ({wrybit: computed(() => getPreferences().experimental_layout)}),
     template: '<Wrybit v-if="wrybit" /><Classic v-else />',
   });

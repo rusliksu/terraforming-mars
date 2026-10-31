@@ -1,54 +1,54 @@
 <template>
-      <div class="player-info" :class="colorClass">
-        <div class="player-status-and-res">
-        <div class="player-status">
-          <div class="player-info-details">
-            <div class="player-info-name-row">
-              <span class="player-info-name" @click="togglePlayerDetails">{{ playerSymbol + player.name }}</span>
-              <span
-                v-if="player.isBotControlled"
-                class="bot-controlled-marker"
-                :title="$t('This player is controlled by a bot')"
-                :aria-label="$t('This player is controlled by a bot')"
-                role="status">BOT</span>
-              <PlayerEloBadge v-if="!readOnly" :playerName="player.name" :tooltipCss="tooltipCss" :compact="true" :eloDelta="eloDelta" />
+  <div class="player-info" :class="colorClass">
+    <div class="player-status-and-res">
+      <div class="player-status">
+        <div class="player-info-details">
+          <div class="player-info-name-row">
+            <span class="player-info-name" @click="togglePlayerDetails">{{ playerSymbol + player.name }}</span>
+            <span
+              v-if="player.isBotControlled"
+              class="bot-controlled-marker"
+              :title="$t('This player is controlled by a bot')"
+              :aria-label="$t('This player is controlled by a bot')"
+              role="status">BOT</span>
+            <PlayerEloBadge v-if="!readOnly" :playerName="player.name" :tooltipCss="tooltipCss" :compact="true" :eloDelta="eloDelta" />
+          </div>
+          <span v-if="player.color === 'credicor'" class="player-persona-title">Магистр Кредикора</span>
+          <span @click="togglePlayerDetails" v-for="(corporationName, index) in corporationNames" :key="index" v-i18n>
+            <div class="player-info-corp" :title="$t(corporationName)">
+              {{ corporationName }}
             </div>
-            <span v-if="player.color === 'credicor'" class="player-persona-title">Магистр Кредикора</span>
-            <span @click="togglePlayerDetails" v-for="(corporationName, index) in corporationNames" :key="index" v-i18n>
-              <div class="player-info-corp" :title="$t(corporationName)">
-                {{ corporationName }}
-              </div>
-            </span>
-          </div>
-          <div>
-            <div class="icon-first-player" v-if="firstForGen && playerView.players.length > 1" v-i18n>1st</div>
-            <PlayerStatus :timer="player.timer" :showTimer="playerView.game.gameOptions.showTimers" :liveTimer="!readOnly && playerView.game.phase !== Phase.END" :firstForGen="firstForGen" v-trim-whitespace :actionLabel="actionLabel"/>
-          </div>
+          </span>
         </div>
-          <PlayerResources :player="player" :conglomeratesExpansion="playerView.game.gameOptions.expansions.conglomerates" v-trim-whitespace />
-          <div class="player-played-cards">
-            <div class="player-played-cards-top">
-              <div class="played-cards-elements">
-                <div class="played-cards-icon hiding-card-button active"></div>
-                <div class="played-cards-icon hiding-card-button automated"></div>
-                <div class="played-cards-icon hiding-card-button event"></div>
-                <div class="played-cards-count">{{numberOfPlayedCards}}</div>
-              </div>
-            </div>
-            <AppButton class="played-cards-button player-table-button" size="tiny" @click="togglePlayerDetails" :title="tableButtonLabel()" />
-            <AppButton v-if="canViewSpectatorHand()" class="played-cards-button spectator-hand-button" size="tiny" @click="toggleSpectatorHand" :title="spectatorHandButtonLabel()" />
-          </div>
-          <div class="tag-display player-board-blue-action-counter" :class="tooltipCss" :data-tooltip="$t('The number of available actions on active cards')">
-            <div class="tag-count tag-action-card">
-              <div class="blue-stripe"></div>
-              <div class="red-arrow"></div>
-            </div>
-            <span class="tag-count-display">{{ availableBlueActionCount }}</span>
-          </div>
+        <div>
+          <div class="icon-first-player" v-if="firstForGen && playerView.players.length > 1" v-i18n>1st</div>
+          <PlayerStatus :timer="player.timer" :showTimer="playerView.game.gameOptions.showTimers" :liveTimer="!readOnly && playerView.game.phase !== Phase.END" :firstForGen="firstForGen" :actionLabel="actionLabel" />
         </div>
-        <PlayerTags :player="player" :playerView="playerView" :hideZeroTags="hideZeroTags" :isTopBar="isTopBar" />
-        <PlayerAlliedParty :player="player" :morePartiesExpansion="playerView.game.gameOptions.expansions.moreParties"/>
       </div>
+      <PlayerResources :player="player" :conglomeratesExpansion="playerView.game.gameOptions.expansions.conglomerates" />
+      <div class="player-played-cards">
+        <div class="player-played-cards-top">
+          <div class="played-cards-elements">
+            <div class="played-cards-icon hiding-card-button active"></div>
+            <div class="played-cards-icon hiding-card-button automated"></div>
+            <div class="played-cards-icon hiding-card-button event"></div>
+            <div class="played-cards-count">{{ numberOfPlayedCards }}</div>
+          </div>
+        </div>
+        <AppButton class="played-cards-button player-table-button" size="tiny" @click="togglePlayerDetails" :title="tableButtonLabel()" />
+        <AppButton v-if="canViewSpectatorHand()" class="played-cards-button spectator-hand-button" size="tiny" @click="toggleSpectatorHand" :title="spectatorHandButtonLabel()" />
+      </div>
+      <div class="tag-display player-board-blue-action-counter" :class="tooltipCss" :data-tooltip="$t('The number of available actions on active cards')">
+        <div class="tag-count tag-action-card">
+          <div class="blue-stripe"></div>
+          <div class="red-arrow"></div>
+        </div>
+        <span class="tag-count-display">{{ availableBlueActionCount }}</span>
+      </div>
+    </div>
+    <PlayerTags :player="player" :playerView="playerView" :hideZeroTags="hideZeroTags" :isTopBar="isTopBar" />
+    <PlayerAlliedParty :player="player" :morePartiesExpansion="playerView.game.gameOptions.expansions.moreParties" />
+  </div>
 </template>
 
 <script lang="ts">

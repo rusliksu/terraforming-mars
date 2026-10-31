@@ -1,16 +1,16 @@
 <template>
   <div data-hotkey-group class="wf-component wf-options">
-    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView" />
     <div class="underground-tokens choice-block choice-block--natural">
       <label v-for="(token, idx) in binding.playerinput.tokens" :key="idx">
         <input type="checkbox" :name="String(idx)" v-model="selected" :value="idx">
-        <UndergroundToken :token="token" location="tag-count"/>
+        <UndergroundToken :token="token" location="tag-count" />
         <br>
       </label>
     </div>
     <TabPanelFooterSlot>
       <div v-if="binding.showsave" class="nofloat">
-        <AppButton hotkey="confirm" @click="binding.save()" :title="binding.playerinput.buttonLabel"/>
+        <AppButton hotkey="confirm" @click="binding.save()" :title="binding.playerinput.buttonLabel" />
       </div>
     </TabPanelFooterSlot>
   </div>

@@ -1,20 +1,20 @@
 <template>
   <!-- Attach the modal to body: in the log (own stacking context) it would otherwise lie below the icons at top right -->
   <Teleport to="body" :disabled="!modal">
-  <div class="wrybit-ui wrybit-overlay-root" v-if="modal">
-    <div ref="panel" :class="['card-panel', 'card-panel--modal']" v-bind="$attrs" v-if="show" role="dialog" aria-modal="true">
-      <AppButton size="big" type="close" :disableOnServerBusy="false" @click="hideMe" align="right"/>
-      <LogCardsContent :message="message" :players="players"/>
+    <div class="wrybit-ui wrybit-overlay-root" v-if="modal">
+      <div ref="panel" :class="['card-panel', 'card-panel--modal']" v-bind="$attrs" v-if="show" role="dialog" aria-modal="true">
+        <AppButton size="big" type="close" :disableOnServerBusy="false" @click="hideMe" align="right" />
+        <LogCardsContent :message="message" :players="players" />
+      </div>
     </div>
-  </div>
-  <template v-else>
-  <!-- The root is the Teleport, so attributes (e.g. the hover preview's position as style) don't land here on their own -->
-  <div ref="panel" :class="['card-panel', {'card-panel--floating': floating, 'card-panel--modal': modal}]" v-bind="$attrs" v-if="message !== undefined && show">
-    <!-- Hover preview closes itself when leaving the row, needs no button -->
-    <AppButton v-if="!floating" size="big" type="close" :disableOnServerBusy="false" @click="hideMe" align="right"/>
-    <LogCardsContent :message="message" :players="players"/>
-  </div>
-  </template>
+    <template v-else>
+      <!-- The root is the Teleport, so attributes (e.g. the hover preview's position as style) don't land here on their own -->
+      <div ref="panel" :class="['card-panel', {'card-panel--floating': floating, 'card-panel--modal': modal}]" v-bind="$attrs" v-if="message !== undefined && show">
+        <!-- Hover preview closes itself when leaving the row, needs no button -->
+        <AppButton v-if="!floating" size="big" type="close" :disableOnServerBusy="false" @click="hideMe" align="right" />
+        <LogCardsContent :message="message" :players="players" />
+      </div>
+    </template>
   </Teleport>
 </template>
 
@@ -35,6 +35,7 @@ import {logMessageCards, logMessageColonies, logMessageGlobalEvents} from '@/cli
 
 export default defineComponent({
   name: 'LogPanel',
+  emits: ['hide'],
   // The template passes attributes on to the panel itself (Teleport as root)
   inheritAttrs: false,
   props: {

@@ -1,53 +1,53 @@
 <template>
   <div>
-  <component v-if="waitingPresentation !== undefined && presentationBinding !== undefined" :is="waitingPresentation" :binding="presentationBinding"/>
-  <PresentationHost v-else :hosts="bodyHost"/>
-  <InputPortal :target="bodyHost.target.value">
-  <div v-if="waitingfor === undefined || waitingfor.optional" class="wf-waiting-status">
-    <template v-if="waitingfor === undefined">
-      {{ $t('Not your turn to take any actions') }}
-    </template>
-    <template v-else>
-      {{ $t('Waiting for other players') }}
-    </template>
-    <template v-if="playersWaitingFor.length > 0">
-      (⌛ <span v-for="color in playersWaitingFor" class="log-player" :class="playerColorClass(color, 'bg')" :key="color">{{ getPlayerName(color) }}</span>)
-    </template>
-  </div>
-  <div v-if="showResearchPurchaseUndo()" v-show="waitingPresentation === undefined || presentationBinding === undefined" class="wf-options wf-undo-controls">
-    <AppButton title="Undo card purchase (experimental)" type="submit" size="normal" @click="undoResearchPurchase" />
-  </div>
-  <div v-if="waitingfor !== undefined" class="wf-root">
-    <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION">
-      <input type="checkbox" name="suspend" id="suspend-checkbox" v-model="suspend" @change="updateSuspend">
-      <label for="suspend-checkbox">
-        <span v-i18n>Pause updates</span>
-      </label>
-      <div v-if="showRefresh()">Refresh<span class="reset"></span></div>
-    </template>
-    <PlayerInputFactory :players="playerView.players"
-                          :playerView="playerView"
-                          :playerinput="playerinputWithStepBack()"
-                          :onsave="onsavePlayerInput"
-                          :showsave="true"
-                          :showtitle="true" />
-  </div>
-  <div v-if="showUndoFooter()" v-show="waitingPresentation === undefined || presentationBinding === undefined" class="wf-options wf-undo-controls">
-    <label v-if="showUndoAction()" class="form-radio">
-      <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="action">
-      <i class="form-icon"></i>
-      <span v-i18n>Undo action</span>
-    </label>
-    <label v-if="showStepBack()" class="form-radio">
-      <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="step">
-      <i class="form-icon"></i>
-      <span v-i18n>Undo one step (experimental)</span>
-    </label>
-    <div v-if="undoChoice" style="margin: 5px 30px 10px" class="wf-action">
-      <AppButton title="Undo" type="submit" size="normal" @click="undoSelected" />
-    </div>
-  </div>
-  </InputPortal>
+    <component v-if="waitingPresentation !== undefined && presentationBinding !== undefined" :is="waitingPresentation" :binding="presentationBinding" />
+    <PresentationHost v-else :hosts="bodyHost" />
+    <InputPortal :target="bodyHost.target.value">
+      <div v-if="waitingfor === undefined || waitingfor.optional" class="wf-waiting-status">
+        <template v-if="waitingfor === undefined">
+          {{ $t('Not your turn to take any actions') }}
+        </template>
+        <template v-else>
+          {{ $t('Waiting for other players') }}
+        </template>
+        <template v-if="playersWaitingFor.length > 0">
+          (⌛ <span v-for="color in playersWaitingFor" class="log-player" :class="playerColorClass(color, 'bg')" :key="color">{{ getPlayerName(color) }}</span>)
+        </template>
+      </div>
+      <div v-if="showResearchPurchaseUndo()" v-show="waitingPresentation === undefined || presentationBinding === undefined" class="wf-options wf-undo-controls">
+        <AppButton title="Undo card purchase (experimental)" type="submit" size="normal" @click="undoResearchPurchase" />
+      </div>
+      <div v-if="waitingfor !== undefined" class="wf-root">
+        <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION">
+          <input type="checkbox" name="suspend" id="suspend-checkbox" v-model="suspend" @change="updateSuspend">
+          <label for="suspend-checkbox">
+            <span v-i18n>Pause updates</span>
+          </label>
+          <div v-if="showRefresh()">Refresh<span class="reset"></span></div>
+        </template>
+        <PlayerInputFactory :players="playerView.players"
+          :playerView="playerView"
+          :playerinput="playerinputWithStepBack()"
+          :onsave="onsavePlayerInput"
+          :showsave="true"
+          :showtitle="true" />
+      </div>
+      <div v-if="showUndoFooter()" v-show="waitingPresentation === undefined || presentationBinding === undefined" class="wf-options wf-undo-controls">
+        <label v-if="showUndoAction()" class="form-radio">
+          <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="action">
+          <i class="form-icon"></i>
+          <span v-i18n>Undo action</span>
+        </label>
+        <label v-if="showStepBack()" class="form-radio">
+          <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="step">
+          <i class="form-icon"></i>
+          <span v-i18n>Undo one step (experimental)</span>
+        </label>
+        <div v-if="undoChoice" style="margin: 5px 30px 10px" class="wf-action">
+          <AppButton title="Undo" type="submit" size="normal" @click="undoSelected" />
+        </div>
+      </div>
+    </InputPortal>
   </div>
 </template>
 
@@ -74,7 +74,7 @@ import {paths} from '@/common/app/paths';
 import {statusCode} from '@/common/http/statusCode';
 import {isPlayerId} from '@/common/Types';
 import {InputResponse} from '@/common/inputs/InputResponse';
-import {INVALID_RUN_ID, UNDO_REVEALED_HIDDEN_INFORMATION, AppErrorResponse} from '@/common/app/AppErrorId';
+import {INVALID_REQUEST_ID, INVALID_RUN_ID, UNDO_REVEALED_HIDDEN_INFORMATION, AppErrorResponse} from '@/common/app/AppErrorId';
 import {Color} from '@/common/Color';
 import {gameDocumentTitle} from '../utils/documentTitle';
 import {setFaviconStatus, setFaviconTurnFrame} from '@/client/utils/favicon';
@@ -136,6 +136,10 @@ export default defineComponent({
     },
     waitingfor: {
       type: Object as () => PlayerInputModel | undefined,
+      default: undefined,
+    },
+    requestId: {
+      type: String as () => string | undefined,
       default: undefined,
     },
   },
@@ -215,7 +219,7 @@ export default defineComponent({
         {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({runId: this.playerView.runId, promptId: this.waitingfor?.promptId, ...out}),
+          body: JSON.stringify({runId: this.playerView.runId, promptId: this.waitingfor?.promptId, requestId: this.requestId, ...out}),
         });
     },
     stepBack() {
@@ -305,8 +309,10 @@ export default defineComponent({
               }
               return;
             }
-            let cb = () => root.updatePlayer();
-            if (resp.id === INVALID_RUN_ID) {
+            let cb: () => void = () => {
+              void root.updatePlayer();
+            };
+            if (resp.id === INVALID_RUN_ID || resp.id === INVALID_REQUEST_ID) {
               cb = () => setTimeout(() => window.location.reload(), 100);
             }
             showAlert('Error with input', resp.message, cb);
@@ -382,7 +388,7 @@ export default defineComponent({
         xhr.onerror = function() {
           retryAfterWaitingForPollError(CANNOT_CONTACT_SERVER);
         };
-        xhr.onload = () => {
+        xhr.onload = async () => {
           if (!current()) {
             return;
           }
@@ -391,16 +397,24 @@ export default defineComponent({
             this.playersWaitingFor = result.waitingFor;
             if (result.result === 'GO') {
               // Will only apply to player, not spectator.
-              root.updatePlayer();
+              const updated = root.updatePlayer();
               this.notify();
+              // When the fetch works, root.playerView changes and the playerView watcher
+              // calls startWaiting(), which decides whether to keep polling. When it fails
+              // nothing changes, so poll again here.
+              if (!await updated) {
+                vueApp.waitForUpdate();
+              }
               // We don't need to wait anymore - it's our turn
               return;
             } else if (result.result === 'REFRESH') {
               // Something changed, let's refresh UI
               if (isPlayerId(this.playerView.id)) {
-                root.updatePlayer();
-              } else {
-                root.updateSpectator();
+                if (!await root.updatePlayer()) {
+                  vueApp.waitForUpdate();
+                }
+              } else if (!await root.updateSpectator()) {
+                vueApp.waitForUpdate();
               }
 
               return;

@@ -1,5 +1,5 @@
 <template>
-  <SimpleMapEditor v-if="simpleBoardType !== undefined" :boardType="simpleBoardType"/>
+  <SimpleMapEditor v-if="simpleBoardType !== undefined" :boardType="simpleBoardType" />
   <div v-else class="map-editor">
     <h1 v-i18n>Custom Map Editor</h1>
     <div class="map-editor-board-nav">

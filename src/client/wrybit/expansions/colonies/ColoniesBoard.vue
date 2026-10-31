@@ -3,7 +3,7 @@
     <div v-for="colony in views" :key="colony.model.name"
       :class="['colonies-board__tile', {'colonies-board__tile--off': !colony.model.isActive, 'colonies-board__tile--docked': colony.model.visitor !== undefined}]"
       :style="{'--planet-tone': colony.tone}" :data-test="'colony-tile-' + colony.model.name">
-      <span class="colonies-board__art"><ColonyPlanet :name="colony.model.name"/></span>
+      <span class="colonies-board__art"><ColonyPlanet :name="colony.model.name" /></span>
       <div class="colonies-board__body">
         <div class="colonies-board__head">
           <b class="colonies-board__name">{{ $t(colony.model.name) }}</b>
@@ -15,10 +15,10 @@
         <div class="colonies-board__track" :style="{gridTemplateColumns: 'repeat(' + colony.cells.length + ', minmax(0, 1fr))'}">
           <span v-for="cell in colony.cells" :key="cell.index" class="colonies-board__cell">
             <span :class="['colonies-board__step', {'colonies-board__step--slot': cell.slot,
-              'colonies-board__step--colony': cell.owner !== undefined,
-              'colonies-board__step--at': cell.index === colony.model.trackPosition && cell.owner === undefined,
-              'colonies-board__step--past': cell.index < colony.model.trackPosition && cell.owner === undefined}]">
-              <PlayerCube v-if="cell.owner !== undefined" :color="cell.owner" view="slight" :size="13"/>
+                                                    'colonies-board__step--colony': cell.owner !== undefined,
+                                                    'colonies-board__step--at': cell.index === colony.model.trackPosition && cell.owner === undefined,
+                                                    'colonies-board__step--past': cell.index < colony.model.trackPosition && cell.owner === undefined}]">
+              <PlayerCube v-if="cell.owner !== undefined" :color="cell.owner" view="slight" :size="13" />
               <template v-else>
                 <b>{{ cell.value }}</b>
                 <img v-if="cell.index === colony.model.trackPosition && colony.tradeIcon.src !== undefined" class="colonies-board__step-icon" :src="'assets/' + colony.tradeIcon.src" alt="">
@@ -29,7 +29,7 @@
       </div>
       <div class="colonies-board__value" :title="$t(colony.metadata.trade.description)">
         <span v-if="colony.model.visitor !== undefined" class="colonies-board__docked">
-          <TradeShip :color="colony.model.visitor" :size="30"/>{{ playerName(colony.model.visitor) }}
+          <TradeShip :color="colony.model.visitor" :size="30" />{{ playerName(colony.model.visitor) }}
         </span>
         <span class="colonies-board__big">{{ colony.tradeValue ?? '—' }}<span :class="{'colonies-board__production': colony.tradeIcon.production}">
           <img v-if="colony.tradeIcon.src !== undefined" :src="'assets/' + colony.tradeIcon.src" alt=""><b v-else>{{ $t(colony.tradeIcon.label ?? '') }}</b>
@@ -49,7 +49,7 @@
       </span>
       <span class="colonies-board__berths">
         <span v-for="berth in berths" :key="berth.key" :class="['colonies-board__berth', {'colonies-board__berth--away': berth.away !== undefined, 'colonies-board__berth--me': berth.color === viewer?.color}]">
-          <TradeShip :color="berth.color" :size="28"/>{{ berth.name }}<small v-if="berth.away !== undefined">→ {{ $t(berth.away) }}</small>
+          <TradeShip :color="berth.color" :size="28" />{{ berth.name }}<small v-if="berth.away !== undefined">→ {{ $t(berth.away) }}</small>
         </span>
       </span>
     </div>

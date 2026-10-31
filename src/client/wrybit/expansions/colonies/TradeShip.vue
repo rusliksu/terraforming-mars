@@ -1,7 +1,7 @@
 <template>
   <span class="trade-ship" :style="{width: size + 'px', height: size + 'px'}">
     <img :src="'assets/wrybit/ships/shuttle-' + shipColor + '.png'" :width="size" :height="size" alt="">
-    <PlayerCube v-if="personal" class="trade-ship__identity" :color="color" :size="Math.max(9, size / 3)"/>
+    <PlayerCube v-if="personal" class="trade-ship__identity" :color="color" :size="Math.max(9, size / 3)" />
   </span>
 </template>
 

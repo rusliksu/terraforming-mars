@@ -20,6 +20,7 @@ export function projectCreateModel(owner: CreateGameModel): CreateModelView {
     customCeos: owner.customCeos,
     customColonies: owner.customColonies,
     customCorporations: owner.customCorporations,
+    customMA: owner.customMA,
     customPreludes: owner.customPreludes,
     draftVariant: owner.draftVariant,
     escapeVelocityBonusSeconds: owner.escapeVelocityBonusSeconds,

@@ -5,7 +5,7 @@
     </div>
     <div class="ma-name--milestones" :class="nameCss">
       <div v-if="conglomeratesNumberPatch !== undefined" class="ma-number-patch">{{ conglomeratesNumberPatch }}</div>
-      <span ref="name" v-i18n>{{name}}</span>
+      <span ref="name" v-i18n>{{ name }}</span>
       <div v-if="milestone.teamScores !== undefined" class="ma-team-scores">
         <span
           v-for="(team, idx) in milestone.teamScores"
@@ -29,8 +29,8 @@
             v-text="score.score"
             data-test="player-score"
           ></p>
-      </template>
-    </div>
+        </template>
+      </div>
     </div>
 
     <div v-if="showDescription" class="ma-description">

@@ -1,14 +1,14 @@
 <template>
   <div class="card-panel" v-if="message !== undefined && show">
-    <AppButton size="big" type="close" :disableOnServerBusy="false" @click="hideMe" align="right"/>
+    <AppButton size="big" type="close" :disableOnServerBusy="false" @click="hideMe" align="right" />
     <div id="log_panel_card" class="cardbox" v-for="name in cards" :key="name">
-      <Card :card="logCardModel(name, players)"/>
+      <Card :card="logCardModel(name, players)" />
     </div>
     <div id="log_panel_card" class="cardbox" v-for="name in globalEvents" :key="name">
-      <GlobalEvent :globalEventName="name" type="prior" :showIcons="false"/>
+      <GlobalEvent :globalEventName="name" type="prior" :showIcons="false" />
     </div>
     <div id="log_panel_card" class="cardbox" v-for="name in colonies" :key="name">
-      <Colony :colony="getColony(name)"/>
+      <Colony :colony="getColony(name)" />
     </div>
   </div>
 </template>
@@ -31,6 +31,7 @@ import {logCardModel} from './logCardModel';
 
 export default defineComponent({
   name: 'LogPanel',
+  emits: ['hide'],
   props: {
     message: {
       type: Object as () => LogMessage,

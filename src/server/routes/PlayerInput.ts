@@ -15,7 +15,7 @@ import {runId} from '../utils/server-ids';
 import {AppError} from '../server/AppError';
 import {InputError} from '../inputs/InputError';
 import {isIProjectCard} from '../cards/IProjectCard';
-import {INVALID_RUN_ID, STALE_PROMPT, UNDO_REVEALED_HIDDEN_INFORMATION, RESPONDING_TOO_QUICKLY} from '../../common/app/AppErrorId';
+import {INVALID_REQUEST_ID, INVALID_RUN_ID, STALE_PROMPT, UNDO_REVEALED_HIDDEN_INFORMATION, RESPONDING_TOO_QUICKLY} from '../../common/app/AppErrorId';
 import {hasRevealedHiddenInformation} from '../game/hasRevealedHiddenInformation';
 import {getUserAgent} from './auditRequest';
 import type {AccessAuditEvent, AccessAuditRecordInput} from '../server/AccessAudit';
@@ -228,6 +228,7 @@ export class PlayerInput extends Handler {
       promptSnapshot = capturePromptSnapshot(player);
       promptInputSeq = player.game.shadowInputSeq ?? 0;
       validateInputContext(player, entity);
+      validateRequestId(player, entity);
 
       // Placed here because it fits in a temporally cohesive sense.
       this.resetTableauCardState(player);
@@ -541,4 +542,14 @@ function validateInputContext(player: IPlayer, entity: any) {
       'This game screen is out of date. Click OK to refresh it before choosing again.',
     );
   }
+}
+
+// Rejects a response sent for an input the player has since moved past, e.g. from a page
+// that never got the reply to its previous response.
+function validateRequestId(player: IPlayer, entity: any) {
+  if (entity.requestId !== undefined && entity.requestId !== player.requestId) {
+    throw new AppError(INVALID_REQUEST_ID, 'This page is out of date. Click OK to refresh it.');
+  }
+  // Clearing this out to be compatible with the input response processors.
+  delete entity.requestId;
 }

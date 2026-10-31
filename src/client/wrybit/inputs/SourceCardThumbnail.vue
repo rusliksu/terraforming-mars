@@ -1,4 +1,4 @@
-<template><div class="card-intro-card"><Card :card="{name: card}"/></div></template>
+<template><div class="card-intro-card"><Card :card="{name: card}" /></div></template>
 
 <script setup lang="ts">
 import type {CardName} from '@/common/cards/CardName';

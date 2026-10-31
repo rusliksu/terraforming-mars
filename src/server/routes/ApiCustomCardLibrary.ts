@@ -110,7 +110,7 @@ export class ApiCustomCardLibrary extends Handler {
   }
 
   public override async post(req: Request, res: Response, ctx: Context): Promise<void> {
-    const withinQuota = this.quotaHandlers.every((handler) => handler.measure(ctx));
+    const withinQuota = this.quotaHandlers.every((handler) => handler.isWithinQuota(ctx));
     if (!withinQuota) {
       responses.quotaExceeded(req, res);
       return;
@@ -159,6 +159,8 @@ export class ApiCustomCardLibrary extends Handler {
       createdAt: ctx.clock.now(),
     };
     await Database.getInstance().insertCustomCardLibraryEntry(entry);
+    // Only submissions that are actually stored count against the quota.
+    this.quotaHandlers.forEach((handler) => handler.record(ctx));
     responses.writeJson(res, ctx, {entry, warnings});
   }
 }

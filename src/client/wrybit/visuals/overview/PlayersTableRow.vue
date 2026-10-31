@@ -3,13 +3,13 @@
     <!-- The whole row is clickable and opens the played cards (like the classic player bar) -->
     <!-- First player as "1" in the color bar so the name row has room for name and status -->
     <span v-if="firstForGen && playerView.players.length > 1" class="players-table-first-player" :title="$t('First player')" data-test="first-player">1</span>
-    <PlayerIdentity :readOnly="readOnly" :player="player" :playerView="playerView" :actionLabel="actionLabel" :highlighted="isThisPlayer"/>
+    <PlayerIdentity :readOnly="readOnly" :player="player" :playerView="playerView" :actionLabel="actionLabel" :highlighted="isThisPlayer" />
 
     <!-- Section order from PlayersTable (desktop: goods, tags, scoring; mobile: goods, scoring, tags) -->
     <template v-for="section in sectionOrder" :key="section">
       <template v-if="section === 'goods' && visibility.goods">
         <div class="players-table-divider"></div>
-        <PlayersTableGoods v-for="(good, index) in goods" :key="good.type" :good="good" :color="player.color" :isProductionLeader="productionLeaders.includes(good.type)" :boxWidth="goodsBoxWidths[index] ?? 0"/>
+        <PlayersTableGoods v-for="(good, index) in goods" :key="good.type" :good="good" :color="player.color" :isProductionLeader="productionLeaders.includes(good.type)" :boxWidth="goodsBoxWidths[index] ?? 0" />
       </template>
 
       <template v-if="section === 'tags' && visibility.tags">
@@ -17,9 +17,9 @@
         <template v-for="(group, groupIndex) in tagColumns" :key="groupIndex">
           <div v-if="groupIndex > 0"></div>
           <div class="players-table-cell" v-for="tag in group" :key="tag" :data-test="'tag-' + tag">
-            <span :class="tagCounterClasses(tag)"><span v-if="protectedTags.includes(tag)" class="players-table-protection shield_icon" :data-test="'protection-' + tag"></span>{{ tagDetail(tag).count || '·' }}<PlayerTagSubstitution v-if="tagDetail(tag).substitution !== undefined" :tag="tagDetail(tag).substitution!" :data-test="'substitution-' + tag"/></span>
+            <span :class="tagCounterClasses(tag)"><span v-if="protectedTags.includes(tag)" class="players-table-protection shield_icon" :data-test="'protection-' + tag"></span>{{ tagDetail(tag).count || '·' }}<PlayerTagSubstitution v-if="tagDetail(tag).substitution !== undefined" :tag="tagDetail(tag).substitution!" :data-test="'substitution-' + tag" /></span>
             <span v-if="tagDetail(tag).discount > 0" class="players-table-discount" :data-test="'discount-' + tag" :title="$t('Discount')">-{{ tagDetail(tag).discount }}</span>
-            <PointsPerTag :points="tagDetail(tag)"/>
+            <PointsPerTag :points="tagDetail(tag)" />
           </div>
         </template>
       </template>

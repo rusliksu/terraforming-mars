@@ -1,15 +1,15 @@
 <template>
   <div class="player_home_block player_home_block--setup nofloat">
-    <CardListSection v-for="section in dealtSections" :key="section.title" :title="section.title" :cards="section.cards"/>
-    <CardListSection v-if="cardPresentation === undefined || showsDraftedCardsBlock(playerView)" title="Drafted Cards" :cards="playerView.draftedCards"/>
+    <CardListSection v-for="section in dealtSections" :key="section.title" :title="section.title" :cards="section.cards" />
+    <CardListSection v-if="cardPresentation === undefined || showsDraftedCardsBlock(playerView)" title="Drafted Cards" :cards="playerView.draftedCards" />
     <div v-if="playerView.pickedCorporationCard.length === 1" class="setup-picked">
-      <div class="or-tabs" role="tablist"><HandCardsTab :count="pickedCards.length" :active="true" label="Your selection"/></div>
+      <div class="or-tabs" role="tablist"><HandCardsTab :count="pickedCards.length" :active="true" label="Your selection" /></div>
       <div v-docked-tab class="or-tab-panel or-tab-panel--view" role="tabpanel">
-        <div v-for="card in pickedCards" :key="card.name" class="cardbox"><Card :card="card"/></div>
+        <div v-for="card in pickedCards" :key="card.name" class="cardbox"><Card :card="card" /></div>
       </div>
     </div>
     <InputHost v-if="playerView.game.phase !== 'end'">
-      <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+      <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor" />
     </InputHost>
   </div>
 </template>

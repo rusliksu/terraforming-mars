@@ -1,11 +1,11 @@
 <template>
   <div id="games-overview" class="games-overview-container admin-home">
-    <AdminNav active="settings"/>
+    <AdminNav active="settings" />
     <section class="games-overview-card">
       <h2 v-i18n>Server administration</h2>
       <p class="games-overview-note" v-i18n>Read-only server endpoints and tools. Existing access rules are unchanged.</p>
       <ul class="admin-home-links">
-        <li v-for="path of paths" :key="path">
+        <li v-for="path in paths" :key="path">
           <a :href="path + '?serverId=' + serverId">{{ path }}</a>
         </li>
       </ul>

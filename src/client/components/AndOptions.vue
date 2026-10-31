@@ -1,15 +1,15 @@
 <template>
-  <component v-if="andPresentation !== undefined" :is="andPresentation" :binding="presentationBinding" v-bind="$attrs"/>
-  <div v-else class='wf-options' v-bind="$attrs">
+  <component v-if="andPresentation !== undefined" :is="andPresentation" :binding="presentationBinding" v-bind="$attrs" />
+  <div v-else class="wf-options" v-bind="$attrs">
     <div v-if="showtitle" class="wf-title">{{ $t(playerinput.title) }}</div>
-    <PresentationHost v-for="(host, idx) in childHosts" :key="idx" :hosts="host"/>
+    <PresentationHost v-for="(host, idx) in childHosts" :key="idx" :hosts="host" />
     <div v-if="showsave" class="wf-action">
-      <AppButton :title="playerinput.buttonLabel" type="submit" size="normal" @click="saveData()" :disabled="!canSave()"/>
+      <AppButton :title="playerinput.buttonLabel" type="submit" size="normal" @click="saveData()" :disabled="!canSave()" />
     </div>
   </div>
   <InputPortal v-for="(option, idx) in playerinput.options" :key="idx" :target="childHosts[idx].target.value">
     <PlayerInputFactory ref="childInputs" :playerView="playerView" :playerinput="option"
-      :onsave="playerFactorySaved(idx)" :showsave="false" :showtitle="true"/>
+      :onsave="playerFactorySaved(idx)" :showsave="false" :showtitle="true" />
   </InputPortal>
 </template>
 

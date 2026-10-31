@@ -31,11 +31,11 @@
           <h3 class="log-generation-title">
             <span class="log-generation-marker" aria-hidden="true">{{ section.generation }}</span>{{ generationTitle(section.generation) }}
           </h3>
-          <LogMessageComponent v-for="(message, index) in section.messages" :key="index" :data-log-row="section.generation + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @mouseenter="messageHovered(message, $event)" @spaceClicked="$emit('spaceClicked', $event)"/>
+          <LogMessageComponent v-for="(message, index) in section.messages" :key="index" :data-log-row="section.generation + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @mouseenter="messageHovered(message, $event)" @spaceClicked="$emit('spaceClicked', $event)" />
         </section>
       </div>
       <div v-if="hasMilestonesAwards" v-show="showsMilestonesAwards" class="log-milestones">
-        <MilestoneAwardTable :milestones="viewModel.game.milestones" :awards="viewModel.game.awards" :players="viewModel.players" :viewerColor="viewModel.thisPlayer?.color" scrollable/>
+        <MilestoneAwardTable :milestones="viewModel.game.milestones" :awards="viewModel.game.awards" :players="viewModel.players" :viewerColor="viewModel.thisPlayer?.color" scrollable />
       </div>
       <button
         v-show="showScrollToBottomButton && !showsMilestonesAwards"
@@ -47,7 +47,7 @@
         @click="showLatestLogs"
       >
         <svg class="log-latest-button-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
-          <path d="M12 5v14M19 12l-7 7-7-7"/>
+          <path d="M12 5v14M19 12l-7 7-7-7" />
         </svg>
       </button>
     </div>
@@ -57,8 +57,8 @@
         :class="['log-player-filter', 'player_bg_color_' + player.color]" :aria-pressed="selectedPlayerColor === player.color"
         @click="selectedPlayerColor = player.color">{{ player.name }}</button>
     </div>
-    <LogMessageInspector ref="messageInspector" :viewModel="viewModel" @pinnedClosed="drawnCardsClosed"/>
-    <LogCardsZoom v-if="zoomedMessage !== undefined" :message="zoomedMessage" :players="viewModel.players" @close="closeZoom"/>
+    <LogMessageInspector ref="messageInspector" :viewModel="viewModel" @pinnedClosed="drawnCardsClosed" />
+    <LogCardsZoom v-if="zoomedMessage !== undefined" :message="zoomedMessage" :players="viewModel.players" @close="closeZoom" />
   </div>
 </template>
 

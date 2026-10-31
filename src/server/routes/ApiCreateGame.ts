@@ -29,6 +29,7 @@ import {DEFAULT_EXPANSIONS} from '../../common/cards/GameModule';
 import {readBody} from './readBody';
 import {RouteError} from './RouteError';
 import {CEO_CARDS_DEALT_PER_PLAYER} from '../../common/constants';
+import {validateCustomMA} from '../../common/ma/CustomMA';
 import {hasNegativeEscapeVelocityOption} from '../../common/game/escapeVelocity';
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
@@ -46,6 +47,10 @@ export function normalizeLegacyBoardSelection(gameReq: NewGameConfig): void {
   let selection: Array<BoardName | RandomBoardOption>;
   if (Array.isArray(gameReq.boards) && gameReq.boards.length > 0) {
     selection = gameReq.boards;
+  } else if (Array.isArray(gameReq.boards)) {
+    // An explicitly empty selection is an error; the caller rejects it instead of
+    // silently substituting a board. Only legacy requests without `boards` fall back.
+    return;
   } else if (gameReq.board === undefined || gameReq.board === null) {
     selection = [BoardName.THARSIS];
   } else {
@@ -160,7 +165,7 @@ export class ApiCreateGame extends Handler {
   // TODO(kberg): much of this code can be moved outside of handler, and that
   // would be better.
   public override async post(req: Request, res: Response, ctx: Context): Promise<void> {
-    const withinQuota = this.quotaHandlers.map((handler) => handler.measure(ctx)).every((ok) => ok);
+    const withinQuota = this.quotaHandlers.every((handler) => handler.isWithinQuota(ctx));
     if (!withinQuota) {
       responses.quotaExceeded(req, res);
       return;
@@ -200,6 +205,9 @@ export class ApiCreateGame extends Handler {
         gameReq.players.map(() => '');
       if (gameReq.escapeVelocity !== undefined && gameReq.escapeVelocity !== null && hasNegativeEscapeVelocityOption(gameReq.escapeVelocity)) {
         throw RouteError.badRequest('Escape Velocity values cannot be negative.');
+      }
+      if (gameReq.boards.length === 0) {
+        throw RouteError.badRequest('Must select at least one board');
       }
       const gameId = safeCast(generateRandomId('g'), isGameId);
       const spectatorId = safeCast(generateRandomId('s'), isSpectatorId);
@@ -302,6 +310,7 @@ export class ApiCreateGame extends Handler {
         customCeos: gameReq.customCeos,
         customColoniesList: gameReq.customColoniesList,
         customCorporationsList: gameReq.customCorporationsList,
+        customMA: gameReq.customMA,
         customPreludes: gameReq.customPreludes,
         draftVariant: gameReq.draftVariant,
         escapeVelocity: normalizeEscapeVelocityOptions(gameReq.escapeVelocity),
@@ -369,6 +378,11 @@ export class ApiCreateGame extends Handler {
           throw RouteError.badRequest(reason);
         }
       };
+      try {
+        validateCustomMA(gameOptions.customMA, gameOptions.randomMA, gameOptions.venusNextExtension);
+      } catch (e) {
+        throw RouteError.badRequest(e instanceof Error ? e.message : String(e));
+      }
       let game: IGame;
       if (gameOptions.clonedGamedId !== undefined && !gameOptions.clonedGamedId.startsWith('#')) {
         const serialized = await Database.getInstance().getGameVersion(gameOptions.clonedGamedId, 0);
@@ -403,6 +417,8 @@ export class ApiCreateGame extends Handler {
       }
 
       await ctx.gameLoader.add(game);
+      // Only games that are actually created count against the quota.
+      this.quotaHandlers.forEach((handler) => handler.record(ctx));
       // Send Telegram game start notifications
       if (game.gameOptions.turnBasedGame === true) {
         for (const p of game.players) {

@@ -3,7 +3,7 @@
     <div v-for="pin in positioned" :key="pin.key" class="mars-scale-bonus" :style="pinStyle(pin)" :data-test="'mars-scale-bonus-' + pin.key">
       <span :class="['track-bonus-pin', {'track-bonus-pin--done': pin.done}]">
         <span class="track-bonus-pin__chips" :style="{transform: 'rotate(' + -pin.angle + 'deg)'}">
-          <TrackBonusChip :bonus="pin.bonus" :kind="pin.done ? 'done' : 'own'"/>
+          <TrackBonusChip :bonus="pin.bonus" :kind="pin.done ? 'done' : 'own'" />
         </span>
         <span class="track-bonus-link"></span>
       </span>
@@ -11,7 +11,7 @@
     <span v-if="listed.length > 0" class="mars-scale-bonus-list">
       <span v-for="pin in listed" :key="pin.key" :data-test="'mars-scale-bonus-' + pin.key">
         <span>{{ $t(pin.scale) }} {{ pin.value }}</span>
-        <TrackBonusChip :bonus="pin.bonus" :kind="pin.done ? 'done' : 'own'"/>
+        <TrackBonusChip :bonus="pin.bonus" :kind="pin.done ? 'done' : 'own'" />
       </span>
     </span>
   </span>

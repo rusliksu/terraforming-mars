@@ -10,6 +10,7 @@ import {EscapeVelocityOptions} from '../../common/game/NewGameConfig';
 import {CustomBoardDefinition} from '../../common/boards/CustomBoardDefinition';
 import {SimpleCustomBoardDefinition} from '../../common/boards/SimpleCustomBoardDefinition';
 import {GlobalParametersConfig} from '../../common/GlobalParameterConfig';
+import {CustomMA} from '../../common/ma/CustomMA';
 
 export type GameOptions = {
   /** Marks the expanded card pool; absent in pre-port saves. */
@@ -103,6 +104,8 @@ export type GameOptions = {
   customColoniesList: ReadonlyArray<ColonyName>;
   customPreludes: ReadonlyArray<CardName>;
   customCeos: ReadonlyArray<CardName>;
+  /** Preselected milestones and awards, used instead of the board's. Only valid when randomMA is MANUAL. */
+  customMA?: CustomMA;
   startingCeos: number;
   startingPreludes: number;
   /** Moon must be completed to end the game */
@@ -138,6 +141,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   customCeos: [],
   customColoniesList: [],
   customCorporationsList: [],
+  customMA: undefined,
   customPreludes: [],
   draftVariant: false,
   escapeVelocity: undefined,

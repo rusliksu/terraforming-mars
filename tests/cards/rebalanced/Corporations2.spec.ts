@@ -423,7 +423,7 @@ describe('Rebalanced corporations, group 2', () => {
     player.playedCards.push(card);
     player.production.energy = 1;
     expect(player.getPlayableActionCards()).includes(card);
-    cast(player.playActionCard(), SelectCard).cb([card]);
+    card.action(player);
     runAllActions(game);
     expect(player.production.energy).eq(0);
     expect(player.megaCredits).eq(6);

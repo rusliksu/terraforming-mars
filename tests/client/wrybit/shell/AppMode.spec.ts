@@ -76,7 +76,11 @@ describe('Wrybit App mode', () => {
     window.history.replaceState({}, '', '/cards');
     const Classic = defineComponent({template: '<div data-test="classic-catalog"/>'});
     const Wrybit = markRaw(defineComponent({template: '<div data-test="wrybit-catalog"/>'}));
-    const Boundary = defineComponent({props: ['enabled', 'screen'], emits: ['classic', 'active', 'views'], template: '<div/>'});
+    const Boundary = defineComponent({
+      props: {enabled: {type: Boolean, default: false}, screen: {type: String, default: ''}},
+      emits: ['classic', 'active', 'views'],
+      template: '<div/>',
+    });
     const wrapper = shallowMount(App, {global: {...globalConfig.global, stubs: {
       CardList: Classic, WrybitBoundary: Boundary,
     }}});

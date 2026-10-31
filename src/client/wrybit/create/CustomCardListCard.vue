@@ -3,7 +3,7 @@
     <div class="create-game-card-head">
       <h2 v-i18n>{{ binding.title }}</h2>
       <span v-if="binding.selected.length" class="create-game-count">{{ binding.selected.length }}</span>
-      <SegmentedControl class="create-game-custom-list-mode" v-model="mode" :options="MODE_OPTIONS"/>
+      <SegmentedControl class="create-game-custom-list-mode" v-model="mode" :options="MODE_OPTIONS" />
     </div>
     <template v-if="mode === 'view'">
       <div v-if="unchanged" class="create-game-note" v-i18n>Same as the default selection</div>
@@ -12,10 +12,10 @@
           <span v-i18n>{{ section.label }}</span>
           <span class="create-game-count">{{ section.names.length }}</span>
         </div>
-        <CardPreviewGrid v-if="section.names.length" :names="section.names" :tone="section.tone"/>
+        <CardPreviewGrid v-if="section.names.length" :names="section.names" :tone="section.tone" />
       </template>
     </template>
-    <div v-show="mode === 'edit'"><PresentationHost :hosts="binding.host"/></div>
+    <div v-show="mode === 'edit'"><PresentationHost :hosts="binding.host" /></div>
   </section>
 </template>
 

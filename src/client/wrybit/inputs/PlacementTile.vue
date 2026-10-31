@@ -1,5 +1,5 @@
 <template>
-  <span class="placement-tile-preview" aria-hidden="true"><BoardSpaceTile :space="space"/></span>
+  <span class="placement-tile-preview" aria-hidden="true"><BoardSpaceTile :space="space" /></span>
 </template>
 
 <script setup lang="ts">

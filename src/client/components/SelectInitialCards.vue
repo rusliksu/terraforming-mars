@@ -1,40 +1,40 @@
 <template>
-  <component v-if="initialPresentation !== undefined" :is="initialPresentation" :binding="presentationBinding" v-bind="$attrs"/>
+  <component v-if="initialPresentation !== undefined" :is="initialPresentation" :binding="presentationBinding" v-bind="$attrs" />
   <div v-else class="select-initial-cards" v-bind="$attrs">
-    <PresentationHost :hosts="initialHosts.corporation"/>
+    <PresentationHost :hosts="initialHosts.corporation" />
     <div v-if="playerCanChooseAridor" class="player_home_colony_cont">
       <div v-i18n>These are the colony tiles Aridor may choose from:</div>
       <div class="discarded-colonies-for-aridor">
         <div class="player_home_colony small_colony" v-for="colonyName in playerView.game.discardedColonies" :key="colonyName">
-          <Colony :colony="getColony(colonyName)" :active="getColony(colonyName).isActive"/>
+          <Colony :colony="getColony(colonyName)" :active="getColony(colonyName).isActive" />
         </div>
       </div>
     </div>
-    <PresentationHost v-if="hasPrelude" :hosts="initialHosts.prelude"/>
-    <PresentationHost v-if="hasCeo" :hosts="initialHosts.ceo"/>
-    <PresentationHost :hosts="initialHosts.projects"/>
+    <PresentationHost v-if="hasPrelude" :hosts="initialHosts.prelude" />
+    <PresentationHost v-if="hasCeo" :hosts="initialHosts.ceo" />
+    <PresentationHost :hosts="initialHosts.projects" />
     <template v-if="selectedCorporations.length === 1">
-      <div><span v-i18n>Starting M€:</span> <div class="starting-megacredits">{{getStartingMegacredits()}}</div></div>
-      <div v-if="hasPrelude"><span v-i18n>After Preludes:</span> <div class="starting-megacredits">{{getStartingMegacredits() + getAfterPreludes()}}</div></div>
+      <div><span v-i18n>Starting M€:</span> <div class="starting-megacredits">{{ getStartingMegacredits() }}</div></div>
+      <div v-if="hasPrelude"><span v-i18n>After Preludes:</span> <div class="starting-megacredits">{{ getStartingMegacredits() + getAfterPreludes() }}</div></div>
     </template>
     <div v-if="warning !== undefined" class="tm-warning">
       <label class="label label-error">{{ $t(warning) }}</label>
     </div>
     <!-- :key=warning is a way of validating that the state of the button should change. If the warning changes, or disappears, that's a signal that the button might change. -->
-    <AppButton :disabled="!valid" v-if="showsave" @click="saveIfConfirmed" type="submit" :title="playerinput.buttonLabel"/>
+    <AppButton :disabled="!valid" v-if="showsave" @click="saveIfConfirmed" type="submit" :title="playerinput.buttonLabel" />
   </div>
-  <ConfirmDialog message="Continue without buying any project cards?" ref="confirmation" @accept="confirmSelection"/>
+  <ConfirmDialog message="Continue without buying any project cards?" ref="confirmation" @accept="confirmSelection" />
   <InputPortal :target="initialHosts.corporation.target.value">
-    <SelectCard :playerView="playerView" :playerinput="corpCardOption" :showtitle="initialPresentation === undefined" :onsave="noop" @cardschanged="corporationChanged"/>
+    <SelectCard :playerView="playerView" :playerinput="corpCardOption" :showtitle="initialPresentation === undefined" :onsave="noop" @cardschanged="corporationChanged" />
   </InputPortal>
   <InputPortal v-if="hasPrelude" :target="initialHosts.prelude.target.value">
-    <SelectCard :playerView="playerView" :playerinput="preludeCardOption" :showtitle="initialPresentation === undefined" :onsave="noop" @cardschanged="preludesChanged"/>
+    <SelectCard :playerView="playerView" :playerinput="preludeCardOption" :showtitle="initialPresentation === undefined" :onsave="noop" @cardschanged="preludesChanged" />
   </InputPortal>
   <InputPortal v-if="hasCeo" :target="initialHosts.ceo.target.value">
-    <SelectCard :playerView="playerView" :playerinput="ceoCardOption" :showtitle="initialPresentation === undefined" :onsave="noop" @cardschanged="ceosChanged"/>
+    <SelectCard :playerView="playerView" :playerinput="ceoCardOption" :showtitle="initialPresentation === undefined" :onsave="noop" @cardschanged="ceosChanged" />
   </InputPortal>
   <InputPortal :target="initialHosts.projects.target.value">
-    <SelectCard :playerView="playerView" :playerinput="projectCardOption" :showtitle="initialPresentation === undefined" :onsave="noop" @cardschanged="cardsChanged"/>
+    <SelectCard :playerView="playerView" :playerinput="projectCardOption" :showtitle="initialPresentation === undefined" :onsave="noop" @cardschanged="cardsChanged" />
   </InputPortal>
 </template>
 

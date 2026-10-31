@@ -5,7 +5,7 @@
         <div v-if="showScaleTrack" class="venus-scale-track">
           <svg v-for="offset in scaleOffsets" :key="offset" viewBox="96 0 440 145" role="img"
             :aria-label="$t('Venus Scale') + ': ' + venusScaleLevel + ' / ' + venusScaleMax + '%'">
-            <image href="assets/board/mars.png" width="620" height="600" class="venus-scale-track__art" :class="{'venus-scale-track__art--extension': offset > 0}"/>
+            <image href="assets/board/mars.png" width="620" height="600" class="venus-scale-track__art" :class="{'venus-scale-track__art--extension': offset > 0}" />
             <foreignObject width="620" height="145">
               <div class="global-numbers">
                 <div class="global-numbers-venus">
@@ -35,8 +35,8 @@
             />
             <svg v-if="reservedLegendEntries.length > 0" :width="boardPixelSize.width" :height="boardPixelSize.height" class="venus-board-legend">
               <g v-for="entry in reservedLegendEntries" :key="entry.id">
-                <line :x1="entry.labelX" :y1="entry.lineY" :x2="entry.dotX" :y2="entry.dotY" class="board-line"/>
-                <circle :cx="entry.dotX" :cy="entry.dotY" r="2" class="board-caption board_caption--black"/>
+                <line :x1="entry.labelX" :y1="entry.lineY" :x2="entry.dotX" :y2="entry.dotY" class="board-line" />
+                <circle :cx="entry.dotX" :cy="entry.dotY" r="2" class="board-caption board_caption--black" />
                 <text class="board-caption" :x="entry.labelX" :y="entry.labelY" :text-anchor="entry.textAnchor">
                   <tspan v-for="(line, idx) in entry.lines" :key="idx" :x="entry.labelX" :dy="idx === 0 ? 0 : 12">{{ line }}</tspan>
                 </text>

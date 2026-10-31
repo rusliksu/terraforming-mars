@@ -1,19 +1,19 @@
 <template>
-  <component v-if="orPresentation !== undefined" :is="orPresentation" :binding="presentationBinding" v-bind="$attrs"/>
-  <div v-else class='wf-options' v-bind="$attrs">
+  <component v-if="orPresentation !== undefined" :is="orPresentation" :binding="presentationBinding" v-bind="$attrs" />
+  <div v-else class="wf-options" v-bind="$attrs">
     <label v-if="showtitle"><div>{{ $t(playerinput.title) }}</div></label>
     <label v-if="playerinput.warning !== undefined" class="card-warning"><div>({{ $t(playerinput.warning) }})</div></label>
     <div v-for="(option, idx) in displayedOptions"
-         :key="idx"
-         class="wf-option"
-         :data-input-annotation="option.annotation">
+      :key="idx"
+      class="wf-option"
+      :data-input-annotation="option.annotation">
       <label class="form-radio" ref="optionLabels">
-        <input v-model="selectedOption" type="radio" :name="radioElementName" :value="option" @change="selectOption(idx)" >
-        <i class="form-icon" ></i>
+        <input v-model="selectedOption" type="radio" :name="radioElementName" :value="option" @change="selectOption(idx)">
+        <i class="form-icon"></i>
         <span>{{ $t(option.title) }}</span>
       </label>
       <div v-if="selectedIdx === idx" style="margin-left: 30px">
-        <PresentationHost :hosts="childHost"/>
+        <PresentationHost :hosts="childHost" />
       </div>
     </div>
     <div v-if="showsave && selectedOption && !showChildSaveButton(selectedOption)">
@@ -26,7 +26,7 @@
     <PlayerInputFactory v-if="selectedOption !== undefined" ref="inputfactory" :key="selectedIdx"
       :playerView="playerView" :playerinput="selectedOption" :onsave="playerFactorySaved(selectedIdx)"
       :presentationIntro="asTabs"
-      :showsave="showsave && showChildSaveButton(selectedOption)" :showtitle="false"/>
+      :showsave="showsave && showChildSaveButton(selectedOption)" :showtitle="false" />
   </InputPortal>
 </template>
 

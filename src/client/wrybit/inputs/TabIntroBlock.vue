@@ -1,6 +1,6 @@
 <template>
   <div class="or-tab-intro">
-    <PlacementTile :tileType="tileType"/>
+    <PlacementTile :tileType="tileType" />
     <div>
       <div v-if="finale !== undefined" class="or-tab-intro-finale">{{ $t(finale === 'terraformed' ? 'Mars is terraformed' : 'Final greenery') }}</div>
       <div class="or-tab-intro-title">{{ $t(title) }}</div>

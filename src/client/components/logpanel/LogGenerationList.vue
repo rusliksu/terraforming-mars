@@ -9,7 +9,7 @@
     </div>
     <slot name="after-generations"></slot>
     <span class="label-additional" v-if="lastSoloGeneration !== undefined">
-      <span :class="lastGenerationClass" v-i18n>of {{lastSoloGeneration}}</span>
+      <span :class="lastGenerationClass" v-i18n>of {{ lastSoloGeneration }}</span>
     </span>
   </div>
 </template>

@@ -1,19 +1,19 @@
 <template>
-<div data-hotkey-group class="wf-component wf-component--select-card choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection || binding.playerinput.showOwner || sections.trailing.length > 0), {'choice-block--sections': sections.trailing.length > 0}]" :style="choiceBlockStyle(allCards.length)" data-source-card-choice>
+  <div data-hotkey-group class="wf-component wf-component--select-card choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection || binding.playerinput.showOwner || sections.trailing.length > 0), {'choice-block--sections': sections.trailing.length > 0}]" :style="choiceBlockStyle(allCards.length)" data-source-card-choice>
     <CardFilterBar v-if="isHandSelection || binding.playerinput.selectBlueCardAction" :cards="allCards" :filter="filter" :context="filterContext">
-      <template #lead><AppButton v-if="binding.showSelectAll" size="small" @click="binding.toggleAll()" :title="$t(binding.allSelected ? 'Deselect All' : 'Select All')"/></template>
+      <template #lead><AppButton v-if="binding.showSelectAll" size="small" @click="binding.toggleAll()" :title="$t(binding.allSelected ? 'Deselect All' : 'Select All')" /></template>
       <template #sort="{compact}">
-        <HandSortControl v-if="isHandSelection" :playerView="binding.playerView" :compact="compact" :allowManual="true"/>
-        <CardSortMenu v-else v-model="playedCardsSortOrder" :compact="compact"/>
+        <HandSortControl v-if="isHandSelection" :playerView="binding.playerView" :compact="compact" :allowManual="true" />
+        <CardSortMenu v-else v-model="playedCardsSortOrder" :compact="compact" />
       </template>
     </CardFilterBar>
-    <CardZoomBar v-else><template v-if="binding.showSelectAll" #lead><AppButton size="small" @click="binding.toggleAll()" :title="$t(binding.allSelected ? 'Deselect All' : 'Select All')"/></template></CardZoomBar>
-    <TabPanelIntroSlot v-if="showIntro"><InputIntro :input="binding.playerinput" :playerView="binding.playerView" :draftRepick="repick" belowHeader/></TabPanelIntroSlot>
-    <CardFilterEmptyHint v-if="nothingShown" @reset="resetCardFilter(filter)"/>
+    <CardZoomBar v-else><template v-if="binding.showSelectAll" #lead><AppButton size="small" @click="binding.toggleAll()" :title="$t(binding.allSelected ? 'Deselect All' : 'Select All')" /></template></CardZoomBar>
+    <TabPanelIntroSlot v-if="showIntro"><InputIntro :input="binding.playerinput" :playerView="binding.playerView" :draftRepick="repick" belowHeader /></TabPanelIntroSlot>
+    <CardFilterEmptyHint v-if="nothingShown" @reset="resetCardFilter(filter)" />
     <h3 v-if="sections.title !== undefined" class="hand-cards-panel__title choice-section-title">{{ $t(sections.title) }} <small>{{ cards.length }}</small></h3>
     <template v-for="group in groups" :key="group.owner?.color ?? 'none'">
       <h3 v-if="group.owner !== undefined" class="hand-cards-panel__title select-card-owner-title">
-        <PlayerCube :color="group.owner.color" view="slight" :size="11"/>{{ group.owner.name }} <small>{{ group.cards.length }}</small>
+        <PlayerCube :color="group.owner.color" view="slight" :size="11" />{{ group.owner.name }} <small>{{ group.cards.length }}</small>
       </h3>
       <label v-for="card in group.cards" :key="card.name" :data-card-name="card.name" :class="['cardbox', visibilityClass(card), pickClass(card), {'cardbox--unaffordable': cannotAfford}]" @click="keepCurrentPick(card)">
         <template v-if="!card.isDisabled">
@@ -28,21 +28,21 @@
         </Card>
       </label>
     </template>
-    <CardListSection v-for="section in sections.trailing" :key="section.title" :data-trailing-section="section.title" v-bind="section" :visibility="visibilityOf"/>
+    <CardListSection v-for="section in sections.trailing" :key="section.title" :data-trailing-section="section.title" v-bind="section" :visibility="visibilityOf" />
     <div v-if="binding.warning !== undefined" class="card-warning">{{ $t(binding.warning) }}</div>
-    <WarningsComponent :warnings="binding.warnings"/>
+    <WarningsComponent :warnings="binding.warnings" />
     <TabPanelFooterSlot>
       <span v-if="repick" class="or-tab-footer-hint">{{ $t(fullTabTitle(binding.playerinput.title)) }}</span>
       <div v-if="binding.showsave" class="nofloat select-card-actions">
         <span v-if="hiddenSelectedCount > 0" class="card-filter-hidden-note">{{ $t('Selected cards hidden by filters') }}: {{ hiddenSelectedCount }}</span>
         <template v-if="cannotAfford">
           <span class="select-card-unaffordable" v-i18n="[String(binding.playerView.thisPlayer.cardCost), String(binding.playerView.thisPlayer.megacredits)]">Not enough money: a card costs ${0} M€, you only have ${1} M€</span>
-          <AppButton :disabled="true" type="submit" :title="$t('Buy')" class="btn-tone-success"/>
-          <AppButton type="submit" hotkey="cancel" @click="binding.save()" :title="$t('Discard')" class="btn-tone-danger"/>
+          <AppButton :disabled="true" type="submit" :title="$t('Buy')" class="btn-tone-success" />
+          <AppButton type="submit" hotkey="cancel" @click="binding.save()" :title="$t('Discard')" class="btn-tone-danger" />
         </template>
         <template v-else>
-          <AppButton :disabled="!binding.canSave || (binding.optionalMany && binding.count === 0)" type="submit" hotkey="confirm" @click="binding.save()" :title="binding.count === 0 ? binding.playerinput.buttonLabel : binding.buttonLabel" :class="{'btn-tone-success': binding.optionalMany}"/>
-          <AppButton v-if="binding.optionalMany" :disabled="binding.count > 0" type="submit" hotkey="cancel" @click="binding.save()" :title="$t('Skip this action')" class="btn-tone-danger"/>
+          <AppButton :disabled="!binding.canSave || (binding.optionalMany && binding.count === 0)" type="submit" hotkey="confirm" @click="binding.save()" :title="binding.count === 0 ? binding.playerinput.buttonLabel : binding.buttonLabel" :class="{'btn-tone-success': binding.optionalMany}" />
+          <AppButton v-if="binding.optionalMany" :disabled="binding.count > 0" type="submit" hotkey="cancel" @click="binding.save()" :title="$t('Skip this action')" class="btn-tone-danger" />
         </template>
       </div>
     </TabPanelFooterSlot>

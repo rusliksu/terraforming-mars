@@ -23,7 +23,7 @@
         </span>
       </div>
       <div class="overpayment-dialog__bar">
-        <span v-for="part of parts" :key="part.unit" class="overpayment-dialog__segment"
+        <span v-for="part in parts" :key="part.unit" class="overpayment-dialog__segment"
           :class="'overpayment-dialog__segment--' + part.unit" :style="{flexGrow: part.value}" :data-test="'segment-' + part.unit">
           <i class="resource_icon" :class="iconClass(part.unit)"></i>
         </span>
@@ -39,7 +39,7 @@
 
       <!-- Legend under the bar: count × rate = value, in the order of the segments -->
       <ul class="overpayment-dialog__legend">
-        <li v-for="part of parts" :key="part.unit" class="overpayment-dialog__legend-row">
+        <li v-for="part in parts" :key="part.unit" class="overpayment-dialog__legend-row">
           <i class="resource_icon overpayment-dialog__legend-icon" :class="iconClass(part.unit)"></i>
           <span class="overpayment-dialog__legend-calc">{{ part.count }} × {{ part.rate }}</span>
           <span class="overpayment-dialog__legend-value">= {{ part.value }}</span>

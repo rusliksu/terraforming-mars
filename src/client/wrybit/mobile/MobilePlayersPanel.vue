@@ -6,13 +6,13 @@
       :class="['mb-segment', {'mb-segment--active': segment === entry.key}]"
       @click="emit('update:segment', entry.key)">{{ entry.labels.map((label) => $t(label)).join(' & ') }}</button>
   </div>
-  <PlayersOverview v-show="segment === 'players'" :playerView="viewModel" v-trim-whitespace/>
+  <PlayersOverview v-show="segment === 'players'" :playerView="viewModel" />
   <!-- Mount only when visible: the orientation watcher must measure the real mobile width. -->
   <div v-if="viewModel.players.length > 1 && segment === 'ma'" class="mb-ma">
     <MilestoneAwardTable :milestones="viewModel.game.milestones" :awards="viewModel.game.awards" :players="viewModel.players" :viewerColor="viewerColor" :scrollable="true">
       <!-- Same header as in the player section: name, status/time, corporation -->
       <template #player="{player}">
-        <PlayerIdentity :player="player" :playerView="viewModel" :actionLabel="nativeActionLabel(player)" :highlighted="player.color === viewerColor"/>
+        <PlayerIdentity :player="player" :playerView="viewModel" :actionLabel="nativeActionLabel(player)" :highlighted="player.color === viewerColor" />
       </template>
     </MilestoneAwardTable>
   </div>

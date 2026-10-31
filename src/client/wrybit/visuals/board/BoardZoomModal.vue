@@ -16,7 +16,7 @@
     <!-- Outside the scrolling background so close and the zoom bar stay put while panning -->
     <button v-if="visible" type="button" class="board-zoom-close" :aria-label="$t('Close')" @click.stop="$emit('close')">✕</button>
     <!-- Mobile view: zoom bar at the bottom (pinch and double tap work as well) -->
-    <MobileZoomControls v-if="visible && mobileLayout" :percent="zoomPercent" @zoom="zoomAtCenter" @fit="fitWholePlanet"/>
+    <MobileZoomControls v-if="visible && mobileLayout" :percent="zoomPercent" @zoom="zoomAtCenter" @fit="fitWholePlanet" />
   </div></Teleport>
 </template>
 

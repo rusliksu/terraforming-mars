@@ -24,6 +24,8 @@ const NO_ERRORS: ValidationErrors = {
   notEnoughCorporations: 0,
   allAiPlayers: false,
   aiUnsupportedExpansions: [],
+  modularMAInDevelopment: false,
+  invalidCustomMA: '',
 };
 
 describe('ValidationErrorsPopup', () => {

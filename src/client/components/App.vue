@@ -19,11 +19,11 @@
       <div v-if="wrybitMode && !wrybitReady" class="wrybit-boot" role="status" aria-live="polite">
         <div class="wrybit-boot__spinner"></div>
       </div>
-      <component :is="wrybitMode && wrybitReady && wrybitViews.startScreen ? wrybitViews.startScreen : 'StartScreen'" v-if="screen === 'start-screen'"/>
+      <component :is="wrybitMode && wrybitReady && wrybitViews.startScreen ? wrybitViews.startScreen : 'StartScreen'" v-if="screen === 'start-screen'" />
       <CreateGameForm
         v-else-if="screen === 'create-game-form'"
       />
-      <component :is="wrybitMode && wrybitReady && wrybitViews.loadGame ? wrybitViews.loadGame : 'LoadGameForm'" v-else-if="screen === 'load'"/>
+      <component :is="wrybitMode && wrybitReady && wrybitViews.loadGame ? wrybitViews.loadGame : 'LoadGameForm'" v-else-if="screen === 'load'" />
       <GameHome
         v-else-if="screen === 'game-home' && game !== undefined"
         :game="game"
@@ -43,17 +43,17 @@
         v-else-if="screen === 'the-end' && participant !== undefined"
         :participant="participant"
       />
-      <ReplayHome v-else-if="screen === 'replay'"/>
-      <component :is="wrybitMode && wrybitReady && wrybitViews.gamesOverview ? wrybitViews.gamesOverview : 'GamesOverview'" v-else-if="screen === 'games-overview'"/>
-      <component v-else-if="screen === 'cards'" :is="wrybitMode && wrybitReady && wrybitViews.cards ? wrybitViews.cards : 'CardList'"/>
-      <CardMaker v-else-if="screen === 'card-maker'"/>
-      <CardLibrary v-else-if="screen === 'card-library'"/>
-      <MapEditor v-else-if="screen === 'map-editor'"/>
-      <MapLibrary v-else-if="screen === 'map-library'"/>
-      <component :is="wrybitMode && wrybitReady && wrybitViews.adminHome ? wrybitViews.adminHome : 'AdminHome'" v-else-if="screen === 'admin'"/>
-      <component :is="wrybitMode && wrybitReady && wrybitViews.loginHome ? wrybitViews.loginHome : 'LoginHome'" v-else-if="screen === 'login-home'"/>
-      <component :is="wrybitMode && wrybitReady && wrybitViews.help ? wrybitViews.help : 'Help'" v-else-if="screen === 'help'"/>
-      <component :is="wrybitViews.stats ?? 'StartScreen'" v-else-if="screen === 'stats'"/>
+      <ReplayHome v-else-if="screen === 'replay'" />
+      <component :is="wrybitMode && wrybitReady && wrybitViews.gamesOverview ? wrybitViews.gamesOverview : 'GamesOverview'" v-else-if="screen === 'games-overview'" />
+      <component v-else-if="screen === 'cards'" :is="wrybitMode && wrybitReady && wrybitViews.cards ? wrybitViews.cards : 'CardList'" />
+      <CardMaker v-else-if="screen === 'card-maker'" />
+      <CardLibrary v-else-if="screen === 'card-library'" />
+      <MapEditor v-else-if="screen === 'map-editor'" />
+      <MapLibrary v-else-if="screen === 'map-library'" />
+      <component :is="wrybitMode && wrybitReady && wrybitViews.adminHome ? wrybitViews.adminHome : 'AdminHome'" v-else-if="screen === 'admin'" />
+      <component :is="wrybitMode && wrybitReady && wrybitViews.loginHome ? wrybitViews.loginHome : 'LoginHome'" v-else-if="screen === 'login-home'" />
+      <component :is="wrybitMode && wrybitReady && wrybitViews.help ? wrybitViews.help : 'Help'" v-else-if="screen === 'help'" />
+      <component :is="wrybitViews.stats ?? 'StartScreen'" v-else-if="screen === 'stats'" />
     </div>
     <InputPortal v-if="screen === 'player-home' && playerView !== undefined && playerView.game.phase !== 'end'"
       :target="inputHosts.target.value">
@@ -316,14 +316,19 @@ export default defineComponent({
     getVisibilityState(targetVar: string): boolean {
       return (this as unknown as MainAppData).componentsVisibility[targetVar] ? true : false;
     },
-    update(path: typeof paths.PLAYER | typeof paths.SPECTATOR): void {
+    /**
+     * Fetches and shows the latest player or spectator view.
+     *
+     * Resolves to false when the fetch fails.
+     */
+    update(path: typeof paths.PLAYER | typeof paths.SPECTATOR): Promise<boolean> {
       const currentPathname = getLastPathSegment();
       const app = this as unknown as MainAppData;
       const revision = ++app.refreshRevision;
 
       const url = 'api/' + path + window.location.search.replace('&noredirect', '');
 
-      fetch(url)
+      return fetch(url)
         .then((resp) => {
           if (!resp.ok) {
             throw new AppFetchError(`Error getting game data: ${resp.statusText}`, resp.status);
@@ -332,7 +337,8 @@ export default defineComponent({
         })
         .then((model: ViewModel) => {
           if (revision !== app.refreshRevision || (path === paths.PLAYER && app.isServerSideRequestInProgress)) {
-            return;
+            // A newer refresh is already in flight and owns the next poll.
+            return true;
           }
           if (path === paths.PLAYER) {
             const playerView = model as PlayerViewModel;
@@ -374,25 +380,27 @@ export default defineComponent({
               );
             }
           }
+          return true;
         })
         .catch((err) => {
           if (revision !== app.refreshRevision || (path === paths.PLAYER && app.isServerSideRequestInProgress)) {
-            return;
+            return true;
           }
           const status = err instanceof AppFetchError ? err.status : 0;
           if (path === paths.PLAYER && (status === statusCode.unauthorized || status === statusCode.forbidden)) {
             redirectToLogin();
-            return;
+            return false;
           }
           alert(getLoadErrorMessage(path, status));
           console.error(err);
+          return false;
         });
     },
-    updatePlayer() {
-      this.update(paths.PLAYER);
+    updatePlayer(): Promise<boolean> {
+      return this.update(paths.PLAYER);
     },
-    updateSpectator() {
-      this.update(paths.SPECTATOR);
+    updateSpectator(): Promise<boolean> {
+      return this.update(paths.SPECTATOR);
     },
   },
   created() {
@@ -415,7 +423,7 @@ export default defineComponent({
       dialogPolyfill.registerDialog(document.getElementById('alert-dialog') as HTMLDialogElement);
     }
     const currentPathname = getLastPathSegment();
-    const app = this as unknown as MainAppData & {updatePlayer(): void; updateSpectator(): void};
+    const app = this as unknown as MainAppData & {updatePlayer(): Promise<boolean>; updateSpectator(): Promise<boolean>};
     if (currentPathname === paths.PLAYER) {
       app.updatePlayer();
     } else if (currentPathname === paths.THE_END) {

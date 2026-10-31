@@ -1,5 +1,5 @@
 <template>
-  <HelpOverlay/>
+  <HelpOverlay />
 </template>
 
 <script setup lang="ts">

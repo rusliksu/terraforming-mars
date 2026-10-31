@@ -1,6 +1,6 @@
 <template>
   <div id="games-overview" class="games-overview-container">
-    <AdminNav active="games"/>
+    <AdminNav active="games" />
     <section class="games-overview-card">
       <p v-if="status === 'loading'" class="games-overview-note" v-i18n>Loading…</p>
       <template v-else-if="status === 'error'">

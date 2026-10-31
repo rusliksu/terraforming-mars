@@ -2,7 +2,7 @@
   <!-- Triggering card, scaled down at the top of a tab box (or_options_tabs.less, .card-intro-card);
        shared by CardIntroBlock.vue and TabIntroBlock.vue -->
   <div class="card-intro-card">
-    <Card v-if="known" :card="model ?? {name: card}"/>
+    <Card v-if="known" :card="model ?? {name: card}" />
     <span v-else>{{ $t(card) }}</span>
   </div>
 </template>

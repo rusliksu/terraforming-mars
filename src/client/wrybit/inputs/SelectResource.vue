@@ -1,6 +1,6 @@
 <template>
-<div data-hotkey-group class="wf-component wf-options">
-    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
+  <div data-hotkey-group class="wf-component wf-options">
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView" />
     <div class="resource-options choice-block" :style="choiceBlockStyle(binding.playerinput.include.length)" role="radiogroup">
       <label v-for="unit in binding.playerinput.include" :key="unit" :class="['resource-option', {'resource-option--selected': binding.selected === unit}]">
         <input type="radio" :checked="binding.selected === unit" :value="unit" class="resource-option-input" @change="binding.select(unit)">
@@ -10,7 +10,7 @@
     </div>
     <TabPanelFooterSlot>
       <div v-if="binding.showsave" class="nofloat">
-        <AppButton hotkey="confirm" @click="binding.save()" :title="binding.playerinput.buttonLabel" :disabled="!binding.canSave"/>
+        <AppButton hotkey="confirm" @click="binding.save()" :title="binding.playerinput.buttonLabel" :disabled="!binding.canSave" />
       </div>
     </TabPanelFooterSlot>
   </div>

@@ -1,6 +1,6 @@
 <template>
-  <TabIntroBlock v-if="input.type === 'space' && input.tileType !== undefined" :tileType="input.tileType" :title="caption" :facts="facts" :finale="finale"/>
-  <CardIntroBlock v-else-if="sourceCard !== undefined" :card="sourceCard" :title="caption"/>
+  <TabIntroBlock v-if="input.type === 'space' && input.tileType !== undefined" :tileType="input.tileType" :title="caption" :facts="facts" :finale="finale" />
+  <CardIntroBlock v-else-if="sourceCard !== undefined" :card="sourceCard" :title="caption" />
   <label v-else-if="!draftRepick" :class="belowHeader ? 'or-tab-panel-caption' : 'or-tab-panel-title'"><div>{{ $t(caption) }}</div></label>
 </template>
 

@@ -1,7 +1,7 @@
 <template>
   <div :class="['players-table', {'players-table--escape-velocity': escapeVelocity}]" :style="{'--wrybit-players-table-columns': template, '--wrybit-players-table-cell-count': cellCount}">
     <!-- Player list as a table (only visible in the two-column layout, see players_table.less) -->
-    <PlayersTableHeader :conglomeratesExpansion="playerView.game.gameOptions.expansions.conglomerates" :visibility="effectiveVisibility" :sectionOrder="sectionOrder" :autoHidden="fitted.autoHidden" :tagColumns="tagColumns" @toggle="toggleSection"/>
+    <PlayersTableHeader :conglomeratesExpansion="playerView.game.gameOptions.expansions.conglomerates" :visibility="effectiveVisibility" :sectionOrder="sectionOrder" :autoHidden="fitted.autoHidden" :tagColumns="tagColumns" @toggle="toggleSection" />
     <div class="players-table-rows">
       <PlayersTableRow v-for="row in rows" :key="row.player.color"
         :player="row.player" :readOnly="readOnly"
@@ -14,7 +14,7 @@
         :tagColumns="tagColumns"
         :tagDetails="tagDetailsByColor[row.player.color]"
         :productionLeaders="productionLeadersByColor[row.player.color] ?? []"
-        :goodsBoxWidths="goodsBoxWidths"/>
+        :goodsBoxWidths="goodsBoxWidths" />
     </div>
   </div>
 </template>

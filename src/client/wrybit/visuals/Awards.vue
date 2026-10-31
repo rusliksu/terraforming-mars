@@ -1,5 +1,5 @@
 <template>
-  <div class="awards_cont" v-trim-whitespace>
+  <div class="awards_cont">
     <div class="awards">
       <div class="ma-title">
         <a @click.prevent="toggleList" class="ma-clickable awards-padding" href="#" data-test="toggle-awards" v-i18n>Awards</a>
@@ -12,7 +12,7 @@
         >
           <span v-i18n>{{ award.name }}</span>
           <span class="ma-player-cube">
-            <BoardCube v-if="award.color !== undefined" class="board-cube" :color="award.color" view="slight" :data-test-player-cube="award.color"/>
+            <BoardCube v-if="award.color !== undefined" class="board-cube" :color="award.color" view="slight" :data-test-player-cube="award.color" />
           </span>
         </span>
 

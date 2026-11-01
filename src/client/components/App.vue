@@ -36,7 +36,7 @@
       <component :is="wrybitMode && wrybitReady && wrybitViews.spectatorHome ? wrybitViews.spectatorHome : 'SpectatorHome'"
         v-else-if="screen === 'spectator-home' && spectator !== undefined"
         :spectator="spectator"
-        :key="'spectator-' + playerkey"
+        :key="spectator.id"
       />
       <component
         :is="wrybitMode && wrybitReady && wrybitViews.gameEnd ? wrybitViews.gameEnd : 'GameEnd'"

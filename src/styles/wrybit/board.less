@@ -194,17 +194,24 @@
   background-size: 16px;
 }
 
+// The three basic tiles use the recognizable classic tile art instead of the tiny sprite
+// symbols: at table distance a city or an ocean must read at a glance, not as a generic glyph.
 .board-space-tile--ocean {
-  background: url(./assets/board_icons.png) -79px -29px no-repeat;
+  background: url(./assets/tiles/ocean.png) center / contain no-repeat;
   width: 46px;
+  height: 50px;
 }
 
 .board-space-tile--city {
-  background: url(./assets/board_icons.png) -29px -29px no-repeat;
+  background: url(./assets/tiles/city.png) center / contain no-repeat;
+  width: 46px;
+  height: 50px;
 }
 
 .board-space-tile--greenery {
-  background: url(./assets/board_icons.png) -129px -29px no-repeat;
+  background: url(./assets/tiles/greenery.png) center / contain no-repeat;
+  width: 46px;
+  height: 50px;
 }
 
 // Renders a special tile the "card-tile-symbol" way: the normalized 152x152

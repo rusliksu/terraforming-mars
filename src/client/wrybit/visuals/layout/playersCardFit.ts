@@ -6,7 +6,7 @@ import {RowResizeTarget, clampHeight} from '@/client/wrybit/visuals/layout/rowRe
 // Contract with home_cards.less
 export const PLAYERS_TABLE_ZOOM_VARIABLE = '--wrybit-players-table-zoom';
 // Below this the values in the table become hard to read
-export const MIN_PLAYERS_TABLE_ZOOM = 0.7;
+export const MIN_PLAYERS_TABLE_ZOOM = 0.82;
 
 type NaturalSize = {height: number; chrome: number};
 

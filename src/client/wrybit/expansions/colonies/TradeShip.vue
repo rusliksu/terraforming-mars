@@ -14,7 +14,37 @@ import PlayerCube from '@/client/wrybit/visuals/common/PlayerCube.vue';
 
 const props = withDefaults(defineProps<{color: Color, size?: number}>(), {size: 28});
 const personal = computed(() => (RESERVED_PLAYER_COLORS as ReadonlyArray<Color>).includes(props.color));
-const shipColor = computed(() => (DEFAULT_PLAYER_COLORS as ReadonlyArray<Color>).includes(props.color) ? props.color : 'neutral');
+
+// Reserved identities have no dedicated shuttle art. They used to fall back to the neutral grey
+// shuttle, which made every personal fleet look unavailable. Map each reserved palette to the
+// nearest classic hull so the whole shuttle stays in colour; the identity cube still carries the
+// exact player colour.
+const RESERVED_SHIP_HULL: Readonly<Record<string, string>> = {
+  gold: 'yellow',
+  emerald: 'green',
+  ginger: 'orange',
+  pearl: 'black',
+  antistress: 'pink',
+  gambit: 'red',
+  turquoise: 'blue',
+  vanger: 'green',
+  serge: 'red',
+  credicor: 'red',
+  rigatone: 'orange',
+  rigatone2: 'orange',
+  hydro: 'blue',
+  saturn: 'purple',
+  saturnrings: 'purple',
+  titan: 'blue',
+  saturnstorm: 'purple',
+  catseye: 'pink',
+};
+const shipColor = computed(() => {
+  if ((DEFAULT_PLAYER_COLORS as ReadonlyArray<Color>).includes(props.color)) {
+    return props.color;
+  }
+  return RESERVED_SHIP_HULL[props.color] ?? 'neutral';
+});
 </script>
 
 <style scoped>

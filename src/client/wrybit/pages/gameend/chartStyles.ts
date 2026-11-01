@@ -2,7 +2,9 @@
 import {Color} from '@/common/Color';
 import {GlobalParameter} from '@/common/GlobalParameter';
 
-// Player colors as line color (black as light grey, otherwise invisible on the dark background)
+// Player colors as line color (black as light grey, otherwise invisible on the dark background).
+// The reserved identities need their own entries: without them every such player used the grey
+// fallback in GameEnd.vue and the whole chart looked monochrome.
 export const PLAYER_CHART_COLORS: Partial<Record<Color, string>> = {
   ['red']: 'rgb(153, 17, 0)',
   ['yellow']: 'rgb(170, 170, 0)',
@@ -12,6 +14,25 @@ export const PLAYER_CHART_COLORS: Partial<Record<Color, string>> = {
   ['purple']: 'rgb(140, 0, 255)',
   ['orange']: 'rgb(236, 113, 12)',
   ['pink']: 'rgb(245, 116, 187)',
+
+  ['gold']: 'rgb(212, 175, 55)',
+  ['emerald']: 'rgb(46, 160, 110)',
+  ['ginger']: 'rgb(193, 68, 14)',
+  ['pearl']: 'rgb(218, 211, 199)',
+  ['antistress']: 'rgb(255, 95, 162)',
+  ['gambit']: 'rgb(215, 38, 61)',
+  ['turquoise']: 'rgb(31, 182, 182)',
+  ['vanger']: 'rgb(76, 175, 80)',
+  ['serge']: 'rgb(139, 26, 26)',
+  ['credicor']: 'rgb(179, 58, 58)',
+  ['rigatone']: 'rgb(255, 122, 0)',
+  ['rigatone2']: 'rgb(255, 159, 28)',
+  ['hydro']: 'rgb(58, 166, 255)',
+  ['saturn']: 'rgb(176, 106, 179)',
+  ['saturnrings']: 'rgb(192, 132, 252)',
+  ['titan']: 'rgb(77, 208, 225)',
+  ['saturnstorm']: 'rgb(156, 39, 176)',
+  ['catseye']: 'rgb(255, 183, 3)',
 
   // Not real player colors
   ['neutral']: '',

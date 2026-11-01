@@ -31,12 +31,6 @@
                 <span v-i18n>Corporate Era</span>
               </label>
 
-              <input type="checkbox" name="rebalanced" id="rebalanced-checkbox" v-model="expansions.rebalanced">
-              <label for="rebalanced-checkbox" class="expansion-button">
-                <div class="create-game-expansion-icon expansion-icon-rebalanced"></div>
-                <span v-i18n>Rebalanced</span>&nbsp;<a :href="wikiUrls.rebalanced" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-              </label>
-
               <input type="checkbox" name="prelude" id="prelude-checkbox" v-model="expansions.prelude">
               <label for="prelude-checkbox" class="expansion-button">
                 <div class="create-game-expansion-icon expansion-icon-prelude"></div>
@@ -134,6 +128,12 @@
               </label>
 
               <div class="create-game-subsection-label" v-i18n>Fan-made</div>
+
+              <input type="checkbox" name="rebalanced" id="rebalanced-checkbox" v-model="expansions.rebalanced">
+              <label for="rebalanced-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-rebalanced"></div>
+                <span v-i18n>Rebalanced</span>&nbsp;<a :href="wikiUrls.rebalanced" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
               <input type="checkbox" name="ares" id="ares-checkbox" v-model="expansions.ares">
               <label for="ares-checkbox" id="ares-label" class="expansion-button">

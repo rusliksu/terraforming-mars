@@ -8,6 +8,7 @@ import {TestPlayer} from '../TestPlayer';
 import {testGame} from '../TestGame';
 import {Server} from '../../src/server/models/ServerModel';
 import {GlobalParameter} from '../../src/common/GlobalParameter';
+import {MAX_AWARDS, MAX_MILESTONES} from '../../src/common/constants';
 import {Phase} from '../../src/common/Phase';
 import {MicroMills} from '../../src/server/cards/base/MicroMills';
 import {EarthCatapult} from '../../src/server/cards/base/EarthCatapult';
@@ -85,6 +86,30 @@ describe('ServerModel', () => {
     expect(models[2]).to.have.property('threshold', undefined);
     expect(models.map((model) => model.scores)).deep.eq(expected);
     expect(game.milestones.map((milestone) => milestone.name)).deep.eq(names);
+  });
+
+  it('keeps values on milestones and awards after every spot is taken', () => {
+    const [game, player] = testGame(2);
+    for (const milestone of game.milestones.slice(0, MAX_MILESTONES)) {
+      game.claimedMilestones.push({milestone, player});
+    }
+    const unclaimedMilestones = Server.getMilestones(game).filter((model) => model.playerName === undefined);
+    expect(unclaimedMilestones).is.not.empty;
+    for (const model of unclaimedMilestones) {
+      // The remaining milestones keep their per-player values so the panel can dim them,
+      // but nobody can claim them anymore.
+      expect(model.scores.map((score) => score.color)).deep.eq(game.players.map((model) => model.color));
+      expect(model.scores.every((score) => !score.claimable)).is.true;
+    }
+
+    for (const award of game.awards.slice(0, MAX_AWARDS)) {
+      game.fundedAwards.push({award, player});
+    }
+    const unfundedAwards = Server.getAwards(game).filter((model) => model.playerName === undefined);
+    expect(unfundedAwards).is.not.empty;
+    for (const model of unfundedAwards) {
+      expect(model.scores.map((score) => score.color)).deep.eq(game.players.map((model) => model.color));
+    }
   });
 
   it('identifies the pending input across reads and replaces its identity for an identical new prompt', () => {

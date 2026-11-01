@@ -38,7 +38,7 @@ import {PlayerId, SpaceId} from '../../common/Types';
 import {cardsToModel, coloniesToModel} from './ModelUtils';
 import {runId} from '../utils/server-ids';
 import {toName} from '../../common/utils/utils';
-import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
+import {MAX_MILESTONES} from '../../common/constants';
 import {getOceanPlacementContext} from './OceanPlacementContext';
 import {projectFinalGreenery} from './finalGreeneryPresentation';
 import {AstraMechanica} from '../cards/promo/AstraMechanica';
@@ -220,13 +220,16 @@ export class Server {
       const claimed = claimedMilestones.find(
         (m) => m.milestone.name === milestone.name,
       );
+      // Unclaimed milestones keep their scores after the last spot is taken: the panel dims them
+      // instead of blanking the values, and they are no longer claimable by then.
+      const closed = claimed === undefined && claimedMilestones.length >= MAX_MILESTONES;
       let scores: Array<MilestoneScore> = [];
       let teamScores: ReturnType<typeof ConglomeratesExpansion.getTeamScores> | undefined = undefined;
-      if (claimed === undefined && claimedMilestones.length < MAX_MILESTONES) {
+      if (claimed === undefined) {
         scores = game.players.map((player) => ({
           color: player.color,
           score: milestone.getScore(player),
-          claimable: milestone.canClaim(player),
+          claimable: !closed && milestone.canClaim(player),
         }));
         if (game.gameOptions.conglomeratesExpansion) {
           teamScores = ConglomeratesExpansion.getTeamScores(
@@ -257,17 +260,14 @@ export class Server {
     for (const award of game.awards) {
       const funded = fundedAwards.find((a) => a.award.name === award.name);
       const scorer = new AwardScorer(game, award);
-      let scores: Array<AwardScore> = [];
-      let teamScores: ReturnType<typeof ConglomeratesExpansion.getTeamScores> | undefined = undefined;
-      if (fundedAwards.length < MAX_AWARDS || funded !== undefined) {
-        scores = game.players.map((player) => ({
-          color: player.color,
-          score: scorer.get(player),
-        }));
-        if (game.gameOptions.conglomeratesExpansion) {
-          teamScores = ConglomeratesExpansion.getTeamScores(game, (player) => scorer.get(player));
-        }
-      }
+      // Every award keeps its scores, funded or not: after the last spot is taken the panel dims
+      // the remaining ones instead of blanking them.
+      const scores: Array<AwardScore> = game.players.map((player) => ({
+        color: player.color,
+        score: scorer.get(player),
+      }));
+      const teamScores = game.gameOptions.conglomeratesExpansion ?
+        ConglomeratesExpansion.getTeamScores(game, (player) => scorer.get(player)) : undefined;
 
       awardModels.push({
         playerName: funded?.player.name,

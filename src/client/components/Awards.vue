@@ -45,6 +45,7 @@
             :showScores="showScores"
             :showDescription="showDescription"
             :conglomeratesExpansion="conglomeratesExpansion"
+            :closed="awardClosed(award)"
           />
         </div>
       </span>
@@ -93,6 +94,10 @@ export default defineComponent({
     };
   },
   methods: {
+    // No spots left: the award can no longer be funded.
+    awardClosed(award: FundedAwardModel): boolean {
+      return award.playerName === undefined && this.fundedAwards.length >= AWARD_COSTS.length;
+    },
     toggleList() {
       this.showAwardDetails = !this.showAwardDetails;
     },

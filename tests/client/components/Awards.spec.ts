@@ -24,6 +24,20 @@ function createAward({id = 1, funded = false, color = 'red'}: {id?: number, fund
 const learnerModeOn: Readonly<Preferences> = {...PreferencesManager.INSTANCE.values(), learner_mode: true};
 
 describe('Awards', () => {
+  it('dims awards that can no longer be funded but keeps their values', () => {
+    const funded = AWARD_COSTS.map((_, i) => createAward({id: i + 1, funded: true}));
+    const open = {...createAward({id: 1, funded: false}), name: 'Scientist' as AwardName,
+      scores: [{color: 'blue' as Color, score: 4}]};
+    const wrapper = mount(Awards, {
+      ...globalConfig,
+      props: {awards: [...funded, open]},
+    });
+
+    const closed = wrapper.findAll('.ma-block--closed');
+    expect(closed).to.have.lengthOf(1);
+    expect(closed[0].text()).to.include('4');
+  });
+
   it('shows passed awards', () => {
     const awards = [
       createAward({id: 1, funded: true}),

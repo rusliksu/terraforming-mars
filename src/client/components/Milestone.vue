@@ -1,5 +1,5 @@
 <template>
-  <div class="ma-block">
+  <div class="ma-block" :class="{'ma-block--closed': closed}">
     <div class="ma-player" v-if="milestone.playerName">
       <i :title="milestone.playerName" :class="playerCubeCss(milestone.color)"></i>
     </div>
@@ -67,6 +67,11 @@ export default defineComponent({
     },
     showDescription: {
       type: Boolean,
+    },
+    // No spots left for this milestone: it can no longer be claimed, so it renders dimmed.
+    closed: {
+      type: Boolean,
+      default: false,
     },
   },
   mounted() {

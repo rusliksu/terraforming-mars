@@ -25,7 +25,7 @@ describe('Wrybit card help and player timer', () => {
   it('keeps recorded clocks still, follows snapshots and clears the live ticker', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(1_000_000);
-    const timer = fakePublicPlayerModel({timer: {sumElapsed: 10_000, startedAt: 995_000, running: true, afterFirstAction: true}}).timer;
+    const timer = fakePublicPlayerModel({timer: {sumElapsed: 10_000, startedAt: 995_000, running: true}}).timer;
     const wrapper = mount(PlayerTimer, {...globalConfig, props: {timer, live: false}});
     try {
       expect(wrapper.text()).eq('00:10');

@@ -15,6 +15,7 @@ All notable changes to the custom Terraforming Mars server are recorded here.
 - Player table rows and resource/tag icons are larger and easier to scan.
 - Narrow player table keeps VP/TR/cards/actions plus compact goods and played-tag strips instead of showing only resource numbers; the timer stays visible next to a passed status.
 - Reserved player fleets use a coloured hull instead of the neutral grey shuttle; the bottom Fleets area lists only ships that have not launched.
+- Player-table rows for light reserved identities (pearl, gold, saturn ...) switch the text inside the row to the persona's classic dark tone, so the white counters and the muted corporation name no longer disappear on the light surface.
 - Removed the alarming "Not enough space" tooltip from the player table toggles.
 - Basic ocean, city and greenery tiles use the classic Terraforming Mars tile art instead of tiny sprite glyphs.
 - Finished-game victory-point/global-parameter charts use reserved player colours instead of the grey fallback.

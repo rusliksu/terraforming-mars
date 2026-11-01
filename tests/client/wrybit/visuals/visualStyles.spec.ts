@@ -13,9 +13,14 @@ describe('Wrybit compiled visual styles', () => {
     const stylesheet = parse(css);
     function declaration(selector: string, property: string): string | undefined {
       let value: string | undefined;
-      stylesheet.walkRules(selector, (rule) => rule.walkDecls(property, (decl) => {
-        value = decl.value;
-      }));
+      // Grouped selectors (one declaration block for several selectors) must match too
+      stylesheet.walkRules((rule) => {
+        if (rule.selector.split(',').some((part) => part.trim() === selector)) {
+          rule.walkDecls(property, (decl) => {
+            value = decl.value;
+          });
+        }
+      });
       return value;
     }
     expect(declaration('.wrybit-ui .track-bonus-chip--done', 'opacity')).eq('0.5');
@@ -27,6 +32,12 @@ describe('Wrybit compiled visual styles', () => {
     expect(declaration('.wrybit-ui .player-cube--top', '--wrybit-lie')).eq('1');
     expect(declaration('.wrybit-ui .board-outer-spaces--corners', 'pointer-events')).eq('none');
     expect(declaration('.wrybit-ui .board-outer-spaces--corners .board-outer-group', 'pointer-events')).eq('auto');
+    // Light reserved personas keep their classic dark text inside the player-table row
+    expect(declaration('.wrybit-ui .players-table-row--pearl .players-table-name', 'color')).eq('#102027');
+    expect(declaration('.wrybit-ui .players-table-row--pearl .players-table-corporation', 'color')).eq('#102027');
+    expect(declaration('.wrybit-ui .players-table-row--gold .players-table-counter', 'color')).eq('#000000');
+    expect(declaration('.wrybit-ui .players-table-row--saturn .players-table-name', 'color')).eq('#2b1d08');
+    expect(declaration('.wrybit-ui .players-table-row--saturnrings .players-table-name', 'color')).eq('#241a0b');
     stylesheet.walkDecls((decl) => {
       for (const match of decl.value.matchAll(/url\(['"]?([^'")]+)['"]?\)/g)) {
         expect(match[1].replace(/^\.\//, '')).matches(/^assets\//);

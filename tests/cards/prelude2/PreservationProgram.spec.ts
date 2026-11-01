@@ -79,6 +79,27 @@ describe('PreservationProgram', () => {
     expect(player.preservationProgram).is.false;
   });
 
+  it('grants the full 5 TR when an earlier TR was gained this generation', () => {
+    game.phase = Phase.ACTION;
+
+    player.increaseTerraformRating();
+    expect(player.terraformRating).eq(21);
+
+    card.play(player);
+
+    expect(player.terraformRating).eq(26);
+    expect(player.preservationProgram).is.false;
+  });
+
+  it('grants the full 5 TR when played outside the action phase', () => {
+    // The effect only applies to each generation's action phase, so the TR
+    // from the card itself is not skipped during the prelude phase.
+    card.play(player);
+
+    expect(player.terraformRating).eq(25);
+    expect(player.preservationProgram).is.true;
+  });
+
   it('Reds pay for the TR when this card is played', () => {
     testRedsCosts(() => player.canPlay(card), player, 0, 15);
   });

@@ -317,6 +317,7 @@ describe('Player', () => {
       cardDiscount: 7,
       fleetSize: 99,
       tradesThisGeneration: 100,
+      trThisGeneration: 0,
       colonyTradeOffset: 101,
       colonyTradeDiscount: 102,
       colonyVictoryPoints: 104,

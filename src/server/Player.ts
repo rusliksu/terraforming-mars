@@ -185,6 +185,7 @@ export class Player implements IPlayer {
   // cards that provide 'next card' discounts. This will clear between turns.
   public removedFromPlayCards: Array<IProjectCard> = [];
   public preservationProgram = false;
+  public trThisGeneration = 0;
   public underworldData: UnderworldPlayerData = UnderworldExpansion.initializePlayer();
   public deltaProjectData?: DeltaProjectPlayerModel;
   public standardProjectsThisGeneration: Set<CardName> = new Set();
@@ -353,7 +354,12 @@ export class Player implements IPlayer {
   }
 
   public increaseTerraformRating(steps: number = 1, opts: {log?: boolean, from?: From} = {}) {
-    if (this.preservationProgram === true && this.game.phase === Phase.ACTION) {
+    const inActionPhase = this.game.phase === Phase.ACTION;
+    const isFirstTrThisGeneration = this.trThisGeneration === 0;
+    if (inActionPhase) {
+      this.trThisGeneration += steps;
+    }
+    if (this.preservationProgram === true && inActionPhase && isFirstTrThisGeneration) {
       steps--;
       this.game.log('${0} for ${1} is blocking 1 TR', (b) => b.cardName(CardName.PRESERVATION_PROGRAM).player(this));
       this.preservationProgram = false;
@@ -1965,6 +1971,7 @@ export class Player implements IPlayer {
       // Luna Trade Federation
       canUseTitaniumAsMegacredits: this.canUseTitaniumAsMegacredits,
       preservationProgram: this.preservationProgram,
+      trThisGeneration: this.trThisGeneration,
       // This generation / this round
       actionsTakenThisRound: this.actionsTakenThisRound,
       availableActionsThisRound: this.availableActionsThisRound,
@@ -2113,6 +2120,8 @@ export class Player implements IPlayer {
     player.draftedCards = cardsFromJSON(d.draftedCards);
     player.autopass = d.autoPass ?? false;
     player.preservationProgram = d.preservationProgram ?? false;
+    // Games serialized before this field existed don't have it.
+    player.trThisGeneration = d.trThisGeneration ?? 0;
 
     player.timer = Timer.deserialize(d.timer);
     player.underworldData = d.underworldData;

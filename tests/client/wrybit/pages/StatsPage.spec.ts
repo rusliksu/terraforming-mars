@@ -6,6 +6,7 @@ import {globalConfig} from '@tests/client/components/getLocalVue';
 const snapshot = {
   projectionVersion: 1,
   source: 'elo',
+  ratings: [{displayName: 'Alice', elo: 1520, games: 2, wins: 1, top3: 2, averageVictoryPoints: 85}],
   games: [{
     id: 'game-1',
     date: '2026-06-04T05:42:25Z',
@@ -39,6 +40,7 @@ describe('Wrybit StatsPage', () => {
       expect(wrapper.text()).contains('Players');
       expect(wrapper.text()).contains('Corporations');
       expect(wrapper.text()).contains('Records');
+      expect(wrapper.text()).contains('Elo rating');
     } finally {
       wrapper.unmount();
     }

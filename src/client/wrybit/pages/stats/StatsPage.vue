@@ -72,6 +72,7 @@
           <StatsOverview v-else-if="view.tab === 'overview'" :games="filteredGames" :results="results" :chartWidth="chartWidth" />
           <StatsGamesView v-else-if="view.tab === 'games'" :games="filteredGames" />
           <StatsPlayersView v-else-if="view.tab === 'players'" :results="results" :names="names" />
+          <StatsEloView v-else-if="view.tab === 'elo'" :ratings="ratings" />
           <StatsRecordsView v-else-if="view.tab === 'records'" :results="results" />
           <StatsCombinationsView v-else-if="view.tab === 'combinations'" :results="results" />
           <StatsEntityList v-else :key="view.tab" :kind="view.tab" :results="results" />
@@ -85,7 +86,7 @@
 <script lang="ts">
 import {computed, defineComponent} from 'vue';
 import {describeFailure, failureOf} from './requestFailure';
-import {toStatsGames} from './statsApi';
+import {StatsRating, toStatsGames, toStatsRatings} from './statsApi';
 import {paths} from '@/common/app/paths';
 import {Color} from '@/common/Color';
 import {StatsGame} from './StatsGame';
@@ -101,6 +102,7 @@ import StatsOverview from './StatsOverview.vue';
 import StatsSkeleton from './StatsSkeleton.vue';
 import StatsGamesView from './StatsGamesView.vue';
 import StatsPlayersView from './StatsPlayersView.vue';
+import StatsEloView from './StatsEloView.vue';
 import StatsRecordsView from './StatsRecordsView.vue';
 import StatsEntityList from './StatsEntityList.vue';
 import StatsTopView from './StatsTopView.vue';
@@ -118,6 +120,7 @@ const NARROW_WIDTH = 900;
 
 type DataModel = {
   games: Array<StatsGame>;
+  ratings: Array<StatsRating>;
   status: 'loading' | 'error' | 'done';
   failureText: string;
   filters: StatsFilters;
@@ -131,7 +134,7 @@ type DataModel = {
 // Structure, filters and tiles as in the card list, so it feels like part of the app.
 export default defineComponent({
   name: 'StatsPage',
-  components: {CardListFilterGroup, PageTitle, PageToolbar, StatsOverview, StatsSkeleton, StatsGamesView, StatsPlayersView, StatsRecordsView, StatsCombinationsView, StatsTopView, StatsEntityList, StatsEntityDetail, StatsCardZoom},
+  components: {CardListFilterGroup, PageTitle, PageToolbar, StatsOverview, StatsSkeleton, StatsGamesView, StatsPlayersView, StatsEloView, StatsRecordsView, StatsCombinationsView, StatsTopView, StatsEntityList, StatsEntityDetail, StatsCardZoom},
   provide() {
     // Player color the same everywhere: the color someone played most often
     return {
@@ -143,6 +146,7 @@ export default defineComponent({
   data(): DataModel {
     return {
       games: [],
+      ratings: [],
       status: 'loading',
       failureText: '',
       filters: emptyFilters([]),
@@ -240,6 +244,7 @@ export default defineComponent({
         }
         const snapshot = await response.json();
         this.games = toStatsGames(snapshot);
+        this.ratings = toStatsRatings(snapshot);
         this.filters = emptyFilters(this.groups);
         this.status = 'done';
       } catch (error) {

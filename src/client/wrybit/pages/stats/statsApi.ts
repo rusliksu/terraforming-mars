@@ -10,6 +10,28 @@ function boardNameOf(map: string | undefined): BoardName | undefined {
   return map !== undefined && BOARDS.includes(map) ? map as BoardName : undefined;
 }
 
+/** One row of the public rating table: the numbers the ELO page shows. */
+export type StatsRating = {
+  displayName: string;
+  elo: number;
+  games: number;
+  wins: number;
+  top3?: number;
+  averageVictoryPoints?: number;
+};
+
+/** Public rating table of the snapshot; an older server without ratings yields an empty table. */
+export function toStatsRatings(snapshot: WrybitUiStatsSnapshot): Array<StatsRating> {
+  return (snapshot.ratings ?? []).map((rating) => ({
+    displayName: rating.displayName,
+    elo: rating.elo,
+    games: rating.games,
+    wins: rating.wins,
+    top3: rating.top3,
+    averageVictoryPoints: rating.averageVictoryPoints,
+  }));
+}
+
 /** Convert the narrow public projection into the source stats page model. Unknown details stay undefined. */
 export function toStatsGames(snapshot: WrybitUiStatsSnapshot): Array<StatsGame> {
   return snapshot.games.map((game: WrybitUiStatsGame): StatsGame => {

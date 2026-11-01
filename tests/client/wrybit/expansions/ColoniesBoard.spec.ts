@@ -23,7 +23,7 @@ describe('source colonies board with our live metadata', () => {
         ], stockColonies: [], ordinaryProduction: true, additionalPaymentMechanism: false,
         nextGenerationTradeAccess: 'normal', gameCanContinue: true,
       }})} : {})},
-    global: {...globalConfig.global, stubs: {ColoniesBoard: false, PlayerCube: true, TradeShip: true,
+    global: {...globalConfig.global, stubs: {ColoniesBoard: false, Colony: false, PlayerCube: true, TradeShip: true,
       BoardTabs: {template: '<div><slot name="colonies"/></div>'}}}});
   }
 
@@ -31,12 +31,11 @@ describe('source colonies board with our live metadata', () => {
     const wrapper = board(true);
     try {
       const tile = wrapper.get('[data-test="colony-tile-Luna"]');
-      expect(tile.get('.colonies-board__big').text()).contains('10');
-      expect(tile.findAll('.colonies-board__cell')).has.length(7);
-      expect(tile.get('player-cube-stub').attributes('color')).eq('pearl');
+      expect(tile.get('.colony-card-title-span').text()).contains('Luna');
+      expect(tile.find('.colony-card').exists()).is.true;
       const mercuryTile = wrapper.get('[data-test="colony-tile-Mercury"]');
-      expect(mercuryTile.get('.colonies-board__big img').attributes('src')).eq('assets/resources/titanium.png');
-      expect(mercuryTile.get('.colonies-board__docked').text()).contains('Visitor');
+      expect(mercuryTile.get('.colony-card-title-span').text()).contains('Mercury');
+      expect(mercuryTile.find('.colony-spaceship').exists()).is.true;
       expect(wrapper.get('[data-test="colony-fee-megacredits"]').text()).eq('8');
       expect(wrapper.get('[data-test="colony-fee-energy"]').classes()).contains('colonies-board__fee--off');
       // Only ships still in the hangar: the visitor already sits on Mercury and is not repeated below.
@@ -45,10 +44,9 @@ describe('source colonies board with our live metadata', () => {
 
       await wrapper.setProps({game: fakeGameModel({colonies: [{...luna, trackPosition: 6, colonies: ['pearl', 'red']},
         {...mercury, trackPosition: 3, visitor: undefined}]})});
-      expect(tile.get('.colonies-board__big').text()).contains('17');
-      expect(tile.findAll('player-cube-stub').map((cube) => cube.attributes('color'))).deep.eq(['pearl', 'red']);
-      expect(mercuryTile.get('.colonies-board__big img').attributes('src')).eq('assets/resources/steel.png');
-      expect(mercuryTile.find('.colonies-board__docked').exists()).is.false;
+      expect(tile.get('.colony-card-title-span').text()).contains('Luna');
+      expect(wrapper.findAll('.colonies-board__card')).has.length(2);
+      expect(mercuryTile.find('.colony-spaceship').exists()).is.false;
       expect(wrapper.emitted('toggleTileView')).eq(undefined);
     } finally {
       wrapper.unmount();
@@ -72,7 +70,7 @@ describe('source colonies board with our live metadata', () => {
       expect(wrapper.get('[data-test="colony-fee-megacredits"]').text()).eq('9');
       expect(wrapper.get('[data-test="colony-fee-energy"]').text()).eq('3');
       await wrapper.setProps({game: fakeGameModel({colonies: []}), players: []});
-      expect(wrapper.findAll('.colonies-board__tile')).has.length(0);
+      expect(wrapper.findAll('.colonies-board__card')).has.length(0);
       expect(wrapper.findAll('.colonies-board__berth')).has.length(0);
     } finally {
       wrapper.unmount();

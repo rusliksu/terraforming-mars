@@ -94,6 +94,7 @@ import {PlayerViewModel, ViewModel} from '@/common/models/PlayerModel';
 import {applyFetchedPlayerView, isGameShellEnabled, restoreGameShellAppState, subscribeGameShellAppState} from '@/client/shell';
 import {SimpleGameModel} from '@/common/models/SimpleGameModel';
 import {SpectatorModel} from '@/common/models/SpectatorModel';
+import {shouldReplaceSpectator} from '@/client/utils/spectatorUpdate';
 import {isPlayerId, isSpectatorId} from '@/common/Types';
 import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogElementCompatibility';
 import {getLoadErrorMessage} from '@/client/utils/loadErrorMessage';
@@ -361,8 +362,11 @@ export default defineComponent({
               this.applyPlayerView(playerView);
             }
           } else if (path === paths.SPECTATOR) {
-            app.spectator = model as SpectatorModel;
-            app.playerkey++;
+            const spectatorView = model as SpectatorModel;
+            if (shouldReplaceSpectator(app.spectator, spectatorView)) {
+              app.spectator = spectatorView;
+              app.playerkey++;
+            }
           }
           if (
             model.game.phase === 'end' &&

@@ -25,6 +25,7 @@ All notable changes to the custom Terraforming Mars server are recorded here.
 - Spectator polling now applies a new model only when the game actually changed; unchanged responses no longer repaint the board, table and log every second. The live benchmark stayed at 60 FPS (p99 frame 16.9 ms) with only three initial long tasks instead of periodic 100–130 ms spikes.
 - Spectator pages no longer create vertical page scroll; the fixed one-screen shell now covers both player and spectator views.
 - Colonies are rendered as the familiar classic colony cards in a two-column card grid, with the compact fleet hangar below.
+- Keyboard-shortcut caps are larger in game buttons/tabs and in the interface help.
 - Mobile player header no longer shows the legal footer over the menu, and the desktop layout switch is hidden on phones.
 
 ## [2026-10-29] - Production UI release

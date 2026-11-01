@@ -308,13 +308,13 @@ describe('Game', () => {
     const messages = (): Array<string> => game.gameLog.map(formatMessage);
 
     game.increaseTemperature(player, 2);
-    expect(messages()).to.include('blue raised the temperature 2 step(s)');
+    expect(messages()).to.include('blue raised the :i:temperature: 2 step(s)');
 
     game.increaseOxygenLevel(player, 1);
-    expect(messages()).to.include('blue raised the oxygen level 1 step(s)');
+    expect(messages()).to.include('blue raised the :i:oxygen: level 1 step(s)');
 
     game.increaseVenusScaleLevel(player, 3);
-    expect(messages()).to.include('blue raised the Venus scale 3 step(s)');
+    expect(messages()).to.include('blue raised the :i:venus: scale 3 step(s)');
   });
 
   it('Venus moves 1% per step above 30% on Amazonis Planitia', () => {

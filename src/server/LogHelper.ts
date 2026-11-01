@@ -55,15 +55,15 @@ export class LogHelper {
   }
 
   static logVenusIncrease(player: IPlayer, steps: number) {
-    player.game.log('${0} raised the Venus scale ${1} step(s)', (b) => b.player(player).number(steps));
+    player.game.log('${0} raised the :i:venus: scale ${1} step(s)', (b) => b.player(player).number(steps));
   }
 
   static logTemperatureIncrease(player: IPlayer, steps: number) {
-    player.game.log('${0} raised the temperature ${1} step(s)', (b) => b.player(player).number(steps));
+    player.game.log('${0} raised the :i:temperature: ${1} step(s)', (b) => b.player(player).number(steps));
   }
 
   static logOxygenIncrease(player: IPlayer, steps: number) {
-    player.game.log('${0} raised the oxygen level ${1} step(s)', (b) => b.player(player).number(steps));
+    player.game.log('${0} raised the :i:oxygen: level ${1} step(s)', (b) => b.player(player).number(steps));
   }
 
   static logDiscardedCards(logger: Logger, cards: ReadonlyArray<ICard> | ReadonlyArray<CardName>) {

@@ -27,6 +27,7 @@
             :milestone="milestone"
             :showScores="showScores"
             :showDescription="showDescription"
+            :closed="milestoneClosed(milestone)"
           />
         </div>
       </span>

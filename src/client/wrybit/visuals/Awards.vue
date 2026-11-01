@@ -42,6 +42,7 @@
             :showScores="showScores"
             :showDescription="showDescription"
             :conglomeratesExpansion="conglomeratesExpansion"
+            :closed="awardClosed(award)"
           />
         </div>
       </span>

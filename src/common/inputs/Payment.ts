@@ -128,7 +128,7 @@ export namespace Payment {
         return parts.join(' ');
       }
     }
-    return '0';
+    return `0${ICONS.megacredits}`;
   }
 }
 

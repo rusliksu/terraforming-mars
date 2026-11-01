@@ -97,7 +97,7 @@ const hasBackground = computed(() => [
    a stray card overlay cannot create page scrolling. This belongs to the shell, not to the
    scoped LESS partial (which is nested under .wrybit-ui). */
 .topmost-player-home.wrybit-ui:has(#player-home.player-home--fixed),
-.topmost-player-home.wrybit-ui:has(#spectator-home.player-home--fixed) {
+.topmost-spectator-home.wrybit-ui:has(#spectator-home.player-home--fixed) {
   height: 100vh;
   overflow: hidden;
 }

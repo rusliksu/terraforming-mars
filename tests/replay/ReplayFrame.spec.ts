@@ -45,9 +45,9 @@ describe('Replay frame projection', () => {
     expect(actionMessages[0].actionStart).eq(true);
     expect(actionMessages.map(formatMessage)).deep.eq([
       'blue used a card',
-      'blue raised the oxygen level 1 step(s)',
-      'blue raised the temperature 1 step(s)',
-      'blue raised the Venus scale 1 step(s)',
+      'blue raised the :i:oxygen: level 1 step(s)',
+      'blue raised the :i:temperature: 1 step(s)',
+      'blue raised the :i:venus: scale 1 step(s)',
     ]);
     // Each increase records its own effect on the log line it writes; the replay reads them per action.
     expect(actionMessages.flatMap((message) => message.replayGlobalEffects ?? [])).deep.eq(effects);

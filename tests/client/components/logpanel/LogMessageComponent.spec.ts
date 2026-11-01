@@ -89,6 +89,26 @@ describe('LogMessageComponent', () => {
     expect(wrapper.find('.markdown-resource.resource_icon--megacredits').exists()).is.true;
     expect(wrapper.text()).contains('[ -2 -14 ]');
   });
+  it('renders global-parameter icons in a message', () => {
+    const message = new LogMessage(
+      LogMessageType.DEFAULT,
+      '${0} raised the :i:temperature:, the :i:oxygen: level, an :i:ocean:, and the :i:venus: scale',
+      [{type: LogMessageDataType.PLAYER, value: 'blue'}],
+    );
+    const wrapper = mount(LogMessageComponent, {
+      ...globalConfig,
+      props: {
+        message,
+        viewModel: fakeViewModel(),
+      },
+    });
+
+    expect(wrapper.find('.markdown-icon.markdown-icon-temperature').exists()).is.true;
+    expect(wrapper.find('.markdown-icon.markdown-icon-oxygen').exists()).is.true;
+    expect(wrapper.find('.markdown-icon.markdown-icon-ocean').exists()).is.true;
+    expect(wrapper.find('.markdown-icon.markdown-icon-venus').exists()).is.true;
+  });
+
   it('marks irreversible undo messages', () => {
     const message = new LogMessage(LogMessageType.IRREVERSIBLE_UNDO, 'Test message', []);
     const wrapper = shallowMount(LogMessageComponent, {

@@ -19,6 +19,7 @@ All notable changes to the custom Terraforming Mars server are recorded here.
 - Basic ocean, city and greenery tiles use the classic Terraforming Mars tile art instead of tiny sprite glyphs.
 - Finished-game victory-point/global-parameter charts use reserved player colours instead of the grey fallback.
 - The winner total in the results table uses a dark fallback on the gold surface, and the Rigatone persona pattern no longer crosses the score cells.
+- Non-winner total cells have a stronger dark backdrop, keeping the gold score readable on bright reserved-colour rows.
 - Spectator log updates no longer remount the game view on every poll; new lines fade in in place, preserving scroll and selection.
 - Mobile player header no longer shows the legal footer over the menu, and the desktop layout switch is hidden on phones.
 

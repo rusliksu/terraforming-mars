@@ -151,6 +151,8 @@ export default defineComponent({
       return this.player.color === this.playerView.thisPlayer?.color;
     },
     rowClasses(): Array<string> {
+      // The classic translucent class gives the row the persona surface and the matching text
+      // tone; light reserved identities (pearl, gold, ...) override that tone inside the table.
       const classes = ['players-table-row', 'players-table-row--player', 'players-table-row--' + this.player.color, 'player_translucent_bg_color_' + this.player.color];
       if (this.isThisPlayer) {
         classes.push('players-table-row--me');

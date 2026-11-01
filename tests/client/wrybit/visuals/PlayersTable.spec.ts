@@ -32,7 +32,11 @@ describe('Wrybit player table with our public data', () => {
       expect(wrapper.get('[data-test="discount-all"]').text()).eq('*');
       expect(wrapper.get('[data-test="vp"]').text()).eq('?');
       expect(wrapper.get('.players-table-name-marker').text()).eq('BOT');
-      expect(wrapper.get('.players-table-row--player').classes()).contains('player_translucent_bg_color_turquoise');
+      // The classic translucent class supplies the persona surface and the matching text tone for
+      // reserved identities; the table switches only the text colour for the light personas.
+      const rowClasses = wrapper.get('.players-table-row--player').classes();
+      expect(rowClasses).contains('players-table-row--turquoise');
+      expect(rowClasses).contains('player_translucent_bg_color_turquoise');
       const refreshed = {...player, conglomeratesData: {...player.conglomeratesData, coordination: 8},
         conditionalDiscounts: [], tags: {...player.tags, [Tag.GALACTIC]: 3}};
       await wrapper.setProps({rows: [{...row, player: refreshed}], playerView: {...playerView, players: [refreshed]}});

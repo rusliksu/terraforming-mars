@@ -137,6 +137,62 @@ each(@players, {
   }
 });
 
+// Reserved identities with a light persona surface: the classic bar prints their text in a dark
+// tone, while the table palette above is tuned for the muted default tints and forces white.
+// Keep the persona surface untouched and switch only the text inside the row.
+.players-table-light-identity(@text) {
+  .players-table-name,
+  .players-table-counter,
+  .players-table-tag-strip-item,
+  .players-table-tag-strip-count {
+    color: @text;
+  }
+
+  .players-table-corporation {
+    color: @text;
+    opacity: 0.78;
+  }
+
+  .players-table-counter--zero,
+  .players-table-tag-strip-count--zero {
+    color: @text;
+    opacity: 0.45;
+  }
+
+  // No-production badge has no dark surface of its own: it needs the dark text and border
+  .players-table-goods-production--none {
+    color: @text;
+    opacity: 0.5;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+  }
+
+  // The status plaque keeps its dark translucent surface, so its label stays light; the active
+  // variant still uses its own black-on-light pair.
+  .player-action-status-container:not(.player-action-status-container--active) {
+    color: #e6e1e1;
+  }
+
+  .escape-velocity-clock,
+  .escape-velocity-clock__text small {
+    color: @text;
+  }
+
+  .escape-velocity-clock__bar {
+    background: rgba(0, 0, 0, 0.18);
+  }
+
+  // The own row ring is white; on a light surface it needs a dark outline to stay visible
+  &.players-table-row--me {
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.35);
+  }
+}
+
+.players-table-row--gold { .players-table-light-identity(#000000); }
+.players-table-row--pearl { .players-table-light-identity(#102027); }
+.players-table-row--vanger { .players-table-light-identity(#001f00); }
+.players-table-row--saturn { .players-table-light-identity(#2b1d08); }
+.players-table-row--saturnrings { .players-table-light-identity(#241a0b); }
+
 // When the tag columns are auto-hidden, the same row grows a compact strip of tag icons.
 // The strip is a grid item spanning all columns, so the fixed-height row becomes auto-sized.
 .players-table-row:has(> .players-table-tag-strip),

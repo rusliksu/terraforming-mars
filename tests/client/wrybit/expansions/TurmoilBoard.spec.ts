@@ -14,7 +14,7 @@ describe('source committee board over our public turmoil model', () => {
     const party = {name: PartyName.GREENS, partyLeader: 'blue' as const, delegates: [{color: 'blue' as const, number: 7}, {color: 'red' as const, number: 7}]};
     const turmoil: TurmoilModel = {ruling: undefined, dominant: undefined, chairman: undefined, parties: [party],
       lobby: [], reserve: [], distant: undefined, coming: undefined, current: undefined, politicalAgendas: undefined, policyActionUsers: []};
-    const wrapper = shallowMount(TurmoilBoard, {props: {turmoil, generation: 2, moreParties: false},
+    const wrapper = shallowMount(TurmoilBoard, {props: {turmoil, generation: 2, moreParties: false, betterMars: false},
       global: {...globalConfig.global, stubs: {DelegateFigure: true, TurmoilEventCard: true}}});
     try {
       const overflow = () => wrapper.get('[data-test="overflow-Greens"]');

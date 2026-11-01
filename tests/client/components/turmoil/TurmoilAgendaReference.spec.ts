@@ -22,7 +22,7 @@ describe('TurmoilAgendaReference', () => {
     ];
     const wrapper = mount(TurmoilAgendaReference, {
       ...globalConfig,
-      props: {parties: currentParties, rulingParty: PartyName.GREENS, agendaStyle: 'PartyLeaders', morePartiesExpansion: true},
+      props: {parties: currentParties, rulingParty: PartyName.GREENS, agendaStyle: 'PartyLeaders', morePartiesExpansion: true, betterMarsExpansion: false},
     });
     expect(wrapper.findAll('button .party-name').map((party) => party.text())).to.deep.eq([
       'Mars First', 'Scientists', 'Unity', 'Kelvinists', 'Reds', 'Greens',
@@ -61,7 +61,7 @@ describe('TurmoilAgendaReference', () => {
   it('shows the ruling party options and switches only between parties in play', async () => {
     const wrapper = mount(TurmoilAgendaReference, {
       ...globalConfig,
-      props: {parties, rulingParty: PartyName.SCIENTISTS, agendaStyle: 'Chairman', morePartiesExpansion: false},
+      props: {parties, rulingParty: PartyName.SCIENTISTS, agendaStyle: 'Chairman', morePartiesExpansion: false, betterMarsExpansion: false},
     });
     expect(wrapper.findAll('button .party-name').map((button) => button.text())).to.deep.eq(['Scientists', 'Greens']);
     expect(wrapper.findAll('[data-agenda-id]').map((option) => option.attributes('data-agenda-id')))
@@ -82,7 +82,7 @@ describe('TurmoilAgendaReference', () => {
   it('uses More Parties descriptions and updates when a selected party leaves play', async () => {
     const wrapper = mount(TurmoilAgendaReference, {
       ...globalConfig,
-      props: {parties, agendaStyle: 'Chairman', morePartiesExpansion: true},
+      props: {parties, agendaStyle: 'Chairman', morePartiesExpansion: true, betterMarsExpansion: false},
     });
     expect(wrapper.text()).to.contain('All players are considered having 2 more science tags');
     expect(wrapper.text()).not.to.contain('Pay 10 M€ to draw 3 cards');
@@ -104,7 +104,7 @@ describe('TurmoilAgendaReference', () => {
   it('keeps the current policy overview for ordinary Turmoil and opens the full More Parties reference', async () => {
     const wrapper = mount(TurmoilAgendaReference, {
       ...globalConfig,
-      props: {parties, rulingParty: PartyName.GREENS, agendaStyle: 'Random', morePartiesExpansion: false},
+      props: {parties, rulingParty: PartyName.GREENS, agendaStyle: 'Random', morePartiesExpansion: false, betterMarsExpansion: false},
     });
     expect(wrapper.findAll('[data-agenda-id]').map((option) => option.attributes('data-agenda-id')))
       .to.deep.eq(['sp01', 'gp04']);
@@ -126,7 +126,7 @@ describe('TurmoilAgendaReference', () => {
   it('renders nothing without parties', () => {
     const wrapper = mount(TurmoilAgendaReference, {
       ...globalConfig,
-      props: {parties: [], agendaStyle: 'Chairman', morePartiesExpansion: false},
+      props: {parties: [], agendaStyle: 'Chairman', morePartiesExpansion: false, betterMarsExpansion: false},
     });
     expect(wrapper.find('.agenda-reference').exists()).is.false;
   });

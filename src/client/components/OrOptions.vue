@@ -106,7 +106,7 @@ export default defineComponent({
         asTabs: this.asTabs, playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
         displayedOptions: this.displayedOptions, selectedOption: this.selectedOption, selectedIdx: this.selectedIdx,
         selectedChoice: this.inputfactory?.getChoice(),
-        partyCards: turmoil === undefined ? [] : turmoil.parties.map((party) => partyCardDetails(turmoil, party, this.playerView.game.gameOptions.expansions.moreParties)),
+        partyCards: turmoil === undefined ? [] : turmoil.parties.map((party) => partyCardDetails(turmoil, party, this.playerView.game.gameOptions.expansions.moreParties, this.playerView.game.gameOptions.expansions.betterMars)),
         radioElementName: this.radioElementName, childHost: this.childHost, footerHost: this.footerHost,
         select: (option) => {
           this.selectedOption = option;

@@ -1,6 +1,7 @@
 import {PartyName} from '../../common/turmoil/PartyName';
 import {IParty} from './parties/IParty';
 import {MarsFirst} from './parties/MarsFirst';
+import {MarsFirstBetterMars} from './parties/MarsFirstBetterMars';
 import {Scientists} from './parties/Scientists';
 import {Unity} from './parties/Unity';
 import {Kelvinists} from './parties/Kelvinists';
@@ -62,6 +63,13 @@ export const ALL_PARTIES = {
   [PartyName.TRANSHUMANISTS]: Transhumanists,
 } satisfies Record<PartyName, PartyFactory>;
 
+// Better Mars: the 6 official parties, with Mars First's building-tag bonus also counting Mars
+// tags. More Parties keeps its own table below, whose Mars First rework already does that.
+export const BETTER_MARS_PARTIES: Record<PartyName, PartyFactory> = {
+  ...ALL_PARTIES,
+  [PartyName.MARS]: MarsFirstBetterMars,
+};
+
 // The full pool of 12 parties available in a moreParties game: the 6 official ones get their
 // "Political Agendas" rework (different bonus/policy content; falls back to the vanilla class
 // for any not yet reworked), and the 6 new parties use their real content directly.
@@ -86,11 +94,23 @@ function isPartyCompatible(name: PartyName, options: GameOptions): boolean {
   return name !== PartyName.SPOME || options.moonExpansion;
 }
 
+// Selects the party classes for a game: More Parties' 12-party pool, Better Mars' Mars First
+// variant, or the untouched official set.
+function getPartyTable(gameOptions: GameOptions): Record<PartyName, PartyFactory> {
+  if (gameOptions.morePartiesExpansion) {
+    return MORE_PARTIES_ALL;
+  }
+  return gameOptions.betterMarsExpansion ? BETTER_MARS_PARTIES : ALL_PARTIES;
+}
+
+const STANDARD_PARTY_ORDER: ReadonlyArray<PartyName> = [
+  PartyName.MARS, PartyName.SCIENTISTS, PartyName.UNITY, PartyName.GREENS, PartyName.REDS, PartyName.KELVINISTS,
+];
+
 function createParties(gameOptions: GameOptions): ReadonlyArray<IParty> {
   if (!gameOptions.morePartiesExpansion) {
-    return [
-      new MarsFirst(), new Scientists(), new Unity(), new Greens(), new Reds(), new Kelvinists(),
-    ];
+    const table = getPartyTable(gameOptions);
+    return STANDARD_PARTY_ORDER.map((name) => new table[name]());
   }
   // More Parties: the board only has room for 6 party slots, so 6 of the 12 available parties
   // (the 6 official ones plus Populists, Spome, Empower, Bureaucrats, Centrists and
@@ -709,7 +729,7 @@ export class Turmoil {
     const chairman = deserializeDelegateOrUndefined(d.chairman, players);
     // Reconstruct the exact persisted set of parties -- never recompute it via createParties(),
     // which would re-randomize a More Parties game's 6-of-12 selection on every load.
-    const partyTable = gameOptions.morePartiesExpansion ? MORE_PARTIES_ALL : ALL_PARTIES;
+    const partyTable = getPartyTable(gameOptions);
     const parties = d.parties.map((sp) => new partyTable[sp.name]());
     const turmoil = new Turmoil(parties, d.rulingParty, chairman || 'NEUTRAL', d.dominantParty, dealer);
 

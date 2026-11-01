@@ -177,8 +177,8 @@
     <section v-show="visibleAgendaIds.length > 0">
       <h2 v-i18n>Agendas</h2>
       <div class="player_home_colony_cont">
-        <div class="player_home_colony" v-for="id in visibleAgendaIds" :key="id" v-memo="[id, expansions.moreParties]">
-          <TurmoilAgendaContainer :agendaId="id" :morePartiesExpansion="expansions.moreParties" />
+        <div class="player_home_colony" v-for="id in visibleAgendaIds" :key="id" v-memo="[id, expansions.moreParties, expansions.betterMars]">
+          <TurmoilAgendaContainer :agendaId="id" :morePartiesExpansion="expansions.moreParties" :betterMarsExpansion="expansions.betterMars" />
         </div>
       </div>
     </section>
@@ -186,8 +186,8 @@
     <section v-show="visibleNewPartyAgendaIds.length > 0">
       <h2 v-i18n>More Parties Agendas</h2>
       <div class="player_home_colony_cont">
-        <div class="player_home_colony" v-for="id in visibleNewPartyAgendaIds" :key="id" v-memo="[id, expansions.moreParties]">
-          <TurmoilAgendaContainer :agendaId="id" :morePartiesExpansion="expansions.moreParties" />
+        <div class="player_home_colony" v-for="id in visibleNewPartyAgendaIds" :key="id" v-memo="[id, expansions.moreParties, expansions.betterMars]">
+          <TurmoilAgendaContainer :agendaId="id" :morePartiesExpansion="expansions.moreParties" :betterMarsExpansion="expansions.betterMars" />
         </div>
       </div>
     </section>

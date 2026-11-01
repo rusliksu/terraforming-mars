@@ -25,7 +25,7 @@
       <div id="logpanel-scrollable" class="panel-body" @scroll="handleScroll">
         <p v-if="searchQuery.trim() && filteredMessages.length === 0" role="status" v-i18n>No matching logs in this view.</p>
         <ul v-if="messages">
-          <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @spaceClicked="$emit('spaceClicked', $event)"/>
+          <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @aiRate="rateAi(message, $event)" @spaceClicked="$emit('spaceClicked', $event)" />
         </ul>
       </div>
       <button
@@ -38,10 +38,10 @@
         @click="showLatestLogs"
       >
         <svg class="log-latest-button-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
-          <path d="M12 5v14M19 12l-7 7-7-7"/>
+          <path d="M12 5v14M19 12l-7 7-7-7" />
         </svg>
       </button>
-      <div class='debugid'>(debugid {{step}})</div>
+      <div class="debugid">(debugid {{ step }})</div>
     </div>
     <div class="log-player-filters">
       <template v-if="players.length > 1">
@@ -66,7 +66,9 @@
         >{{ player.name }}</button>
       </template>
     </div>
-    <LogMessageInspector ref="messageInspector" :viewModel="viewModel"/>
+    <LogMessageInspector ref="messageInspector" :viewModel="viewModel" />
+    <AiDecisionDialog />
+    <AiAnalysisWelcome :player-view="viewModel" />
   </div>
 </template>
 
@@ -87,6 +89,10 @@ import LogGenerationList from '@/client/components/logpanel/LogGenerationList.vu
 import {SoundManager} from '@/client/utils/SoundManager';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {logSearchText} from '@/client/components/logpanel/logSearchText';
+import AiDecisionDialog from '@/client/components/logpanel/aiAnalysis/AiDecisionDialog.vue';
+import AiAnalysisWelcome from '@/client/components/logpanel/aiAnalysis/AiAnalysisWelcome.vue';
+import {decisionSummaries, loadAiFeedback, openAiDecision, targetOf, AiLogTarget} from '@/client/components/logpanel/aiAnalysis/aiFeedbackState';
+import {AiFeedbackRating} from '@/common/ai/AiFeedback';
 
 let logAbortController: AbortController | undefined;
 
@@ -147,11 +153,37 @@ export default defineComponent({
     LogMessageComponent,
     LogMessageInspector,
     LogGenerationList,
+    AiDecisionDialog,
+    AiAnalysisWelcome,
   },
   emits: ['spaceClicked'],
   methods: {
+    aiTargets(): ReadonlyArray<AiLogTarget> {
+      return this.messages.map(targetOf).filter((target): target is AiLogTarget => target !== undefined);
+    },
     messageClicked(message: LogMessage) {
+      if (this.viewModel.game?.gameOptions?.aiAnalysis === true) {
+        const target = targetOf(message);
+        if (target !== undefined) {
+          this.openRating(target);
+          return;
+        }
+      }
       this.typedRefs.messageInspector.show(message);
+    },
+    rateAi(message: LogMessage, rating: AiFeedbackRating) {
+      if (this.viewModel.game?.gameOptions?.aiAnalysis !== true) {
+        return;
+      }
+      const target = targetOf(message);
+      if (target !== undefined) {
+        this.openRating(target, rating);
+      }
+    },
+    openRating(target: AiLogTarget, rating?: AiFeedbackRating) {
+      const summaries = decisionSummaries(this.messages);
+      const decision = target.decisionId === undefined ? undefined : summaries.get(target.decisionId);
+      openAiDecision(target, decision, this.viewModel, rating, this.aiTargets(), summaries);
     },
     refreshCurrentView(): void {
       if (this.selectedRecentLimit !== undefined) {
@@ -397,6 +429,9 @@ export default defineComponent({
     },
   },
   mounted() {
+    if (this.viewModel.game?.gameOptions?.aiAnalysis === true && this.id !== undefined) {
+      void loadAiFeedback(this.id);
+    }
     const restoredState = this.id === undefined ? undefined : logPanelViewStates.get(this.id);
     if (restoredState === undefined) {
       this.selectedRecentLimit = 100;

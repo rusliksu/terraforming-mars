@@ -35,6 +35,7 @@ function newGameConfigForTest(): NewGameConfig {
       handicap: 0,
       first: true,
       isBot: false,
+      discordId: '100000000000000001',
     }],
     expansions: {
       ...DEFAULT_EXPANSIONS,
@@ -100,8 +101,14 @@ function newGameConfigForTest(): NewGameConfig {
 }
 
 function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
+  const playersWithDiscordIds = players.map((player, index) => {
+    if (player.isBot === true || player.aiLevel !== undefined || player.discordId !== undefined) {
+      return player;
+    }
+    return {...player, discordId: '1000000000000000' + index};
+  });
   return {
-    players,
+    players: playersWithDiscordIds,
     expansions: {
       ...DEFAULT_EXPANSIONS,
       corpera: true,
@@ -255,6 +262,104 @@ describe('ApiCreateGame', () => {
     expect(game!.gameOptions.undoStepOption).is.true;
     expect(game!.gameOptions.boardSelection).deep.eq(boardOptions(RandomBoardOption.OFFICIAL));
     expect(boardOptions(RandomBoardOption.OFFICIAL)).contains(game!.gameOptions.boardName);
+  });
+
+  async function postNewGameConfig(config: NewGameConfig): Promise<void> {
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitString(JSON.stringify(config));
+      req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+  }
+
+  it('allows guest games without a session', async () => {
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false}]);
+    delete config.players[0].discordId;
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.players[0].user).is.undefined;
+    expect(game!.gameOptions.requiresDiscordLogin).is.false;
+  });
+
+  it('treats an empty discord ID as a guest seat', async () => {
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false}]);
+    config.players[0].discordId = '';
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.players[0].user).is.undefined;
+  });
+
+  it('expands a random board option instead of failing on an unknown board', async () => {
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false}]);
+    config.boards = [RandomBoardOption.OFFICIAL] as unknown as BoardName[];
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(boardOptions(RandomBoardOption.OFFICIAL)).includes(game!.gameOptions.boardName);
+  });
+
+  it('requires a session when the game requires Discord login', async () => {
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false, discordId: '123456789012345678'}]);
+    config.requiresDiscordLogin = true;
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.unauthorized);
+    expect(res.content).eq('Unauthorized');
+  });
+
+  it('creates a protected game and binds seats when logged in', async () => {
+    scaffolding.ctx.user = {id: 'test-user', username: 'test', discriminator: '0000'};
+    const discordId = '123456789012345678';
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false, discordId}]);
+    config.requiresDiscordLogin = true;
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.gameOptions.requiresDiscordLogin).is.true;
+    expect(game!.players[0].user).eq(discordId);
+  });
+
+  it('binds human players to their Discord IDs', async () => {
+    const discordId = '123456789012345678';
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false, discordId}]);
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.players[0].user).eq(discordId);
+  });
+
+  it('rejects a missing Discord ID when the game requires Discord login', async () => {
+    scaffolding.ctx.user = {id: 'test-user', username: 'test', discriminator: '0000'};
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false}]);
+    config.requiresDiscordLogin = true;
+    delete config.players[0].discordId;
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('missing Discord ID for player 1');
+  });
+
+  it('rejects an invalid Discord ID for a human player', async () => {
+    const config = newGameConfig([{name: 'Player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false, discordId: 'not-a-snowflake'}]);
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('invalid Discord ID for player 1');
+  });
+
+  it('rejects duplicate Discord IDs', async () => {
+    const config = newGameConfig([
+      {name: 'One', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false, discordId: '123456789012345678'},
+      {name: 'Two', color: 'red', beginner: false, handicap: 0, first: false, isBot: false, discordId: '123456789012345678'},
+    ]);
+    await postNewGameConfig(config);
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('duplicate Discord ID for player 2');
   });
 
   it('does not create bot takeover capabilities', async () => {
@@ -862,7 +967,7 @@ describe('ApiCreateGame', () => {
   it('red rover solo game', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitString(JSON.stringify({players: [{name: 'a player', color: 'red'}]}));
+      scaffolding.req.emitString(JSON.stringify({players: [{name: 'a player', color: 'red', discordId: '100000000000000001'}]}));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -879,7 +984,7 @@ describe('ApiCreateGame', () => {
     await Promise.all(([emit, post]));
   }
 
-  const twoPlayers = [{name: 'a', color: 'red'}, {name: 'b', color: 'blue'}];
+  const twoPlayers = [{name: 'a', color: 'red', discordId: '100000000000000001'}, {name: 'b', color: 'blue', discordId: '100000000000000002'}];
 
   it('rejects a custom corporation list smaller than players × starting corporations', async () => {
     await postConfig({
@@ -923,6 +1028,36 @@ describe('ApiCreateGame', () => {
     });
     expect(res.statusCode).eq(statusCode.badRequest);
     expect(res.content).contains('at least 6 CEOs');
+  });
+
+  const customMA = {
+    milestones: ['Terraformer', 'Gardener', 'Builder', 'Mayor', 'Planner'],
+    awards: ['Banker', 'Scientist', 'Thermalist', 'Miner', 'Celebrity'],
+  };
+
+  it('uses custom milestones and awards', async () => {
+    const config = newGameConfigForTest();
+    // One-player games ignore milestones and awards.
+    // Discord seats are unique per game, so the second seat keeps no Discord identity.
+    const players = [config.players[0], {...config.players[0], name: 'Robot 2', color: 'red', first: false, discordId: undefined}];
+    await postConfig({...config, players, randomMA: RandomMAOptionType.MANUAL, customMA});
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.milestones.map((m) => m.name)).deep.eq(customMA.milestones);
+    expect(game!.awards.map((a) => a.name)).deep.eq(customMA.awards);
+  });
+
+  it('rejects custom milestones and awards unless they are manual', async () => {
+    await postConfig({...newGameConfigForTest(), randomMA: RandomMAOptionType.LIMITED, customMA});
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('customMA requires randomMA');
+  });
+
+  it('rejects custom milestones and awards of the wrong size', async () => {
+    await postConfig({...newGameConfigForTest(), randomMA: RandomMAOptionType.MANUAL, customMA: {...customMA, awards: ['Banker']}});
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('customMA must have 5 awards');
   });
 
   async function createdEscapeVelocity(escapeVelocity: object) {
@@ -973,10 +1108,11 @@ describe('ApiCreateGame', () => {
 
   // Issues one create-game POST against `handler`, using fresh request/response objects,
   // reusing `scaffolding.ctx` (and therefore its ip and clock) across calls.
-  function postGame(handler: ApiCreateGame, request: MockRequest, response: MockResponse) {
-    const post = handler.post(request, response, scaffolding.ctx);
+  function postGame(handler: ApiCreateGame, request: MockRequest, response: MockResponse, config: object = newGameConfigForTest()) {
+    request.method = 'POST';
+    const post = handler.processRequest(request, response, scaffolding.ctx);
     const emit = Promise.resolve().then(() => {
-      request.emitString(JSON.stringify({players: [{name: 'a player', color: 'red'}]}));
+      request.emitString(JSON.stringify(config));
       request.emitter.emit('end');
     });
     return Promise.all([emit, post]);
@@ -1004,6 +1140,20 @@ describe('ApiCreateGame', () => {
     await postGame(apiCreateGame, req2, res2);
     expect(res2.statusCode).eq(statusCode.tooManyRequests);
     expect(res2.content).eq('Quota exceeded');
+  });
+
+  it('a rejected game does not count against the quota', async () => {
+    const apiCreateGame = new ApiCreateGame([{limit: 1, perMs: 120_000}]);
+
+    const req1 = new MockRequest();
+    const res1 = new MockResponse();
+    await postGame(apiCreateGame, req1, res1, {...newGameConfigForTest(), boards: []});
+    expect(res1.statusCode).eq(statusCode.badRequest);
+
+    const req2 = new MockRequest();
+    const res2 = new MockResponse();
+    await postGame(apiCreateGame, req2, res2);
+    expect(res2.statusCode).eq(statusCode.ok);
   });
 
   it('two quota handlers do not block while both are under their limits', async () => {
@@ -1045,6 +1195,36 @@ describe('ApiCreateGame', () => {
     expect(res2.content).eq('Quota exceeded');
   });
 
+  // Pre-'boards' create-game payload: a single 'board' value and no 'boards' array.
+  function legacyGameConfig(board: unknown): NewGameConfig {
+    const config = {...newGameConfigForTest()} as unknown as Record<string, unknown>;
+    delete config.boards;
+    config.board = board;
+    return config as unknown as NewGameConfig;
+  }
+
+  it('normalizes a legacy single-board request into boards', async () => {
+    await postConfig(legacyGameConfig(BoardName.HELLAS));
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.gameOptions.boardName).eq(BoardName.HELLAS);
+    expect(game!.gameOptions.boardSelection).deep.eq([BoardName.HELLAS]);
+  });
+
+  it('expands a legacy random-official board request', async () => {
+    await postConfig(legacyGameConfig(RandomBoardOption.OFFICIAL));
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(boardOptions(RandomBoardOption.OFFICIAL)).include(game!.gameOptions.boardName);
+  });
+
+  it('rejects a legacy request naming an unknown board', async () => {
+    await postConfig(legacyGameConfig('not a board'));
+    expect(res.statusCode).eq(statusCode.badRequest);
+  });
+
   it('elapsed time restores a blocked quota', async () => {
     const apiCreateGame = new ApiCreateGame([{limit: 1, perMs: 120_000}]);
     const clock = scaffolding.ctx.clock as FakeClock;
@@ -1065,5 +1245,11 @@ describe('ApiCreateGame', () => {
     const res3 = new MockResponse();
     await postGame(apiCreateGame, req3, res3);
     expect(res3.statusCode).not.eq(statusCode.tooManyRequests);
+  });
+
+  it('rejects an empty board list', async () => {
+    await postConfig({...newGameConfigForTest(), boards: []});
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('Must select at least one board');
   });
 });

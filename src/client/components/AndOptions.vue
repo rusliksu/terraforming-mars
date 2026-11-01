@@ -1,34 +1,40 @@
 <template>
-  <div class='wf-options'>
+  <component v-if="andPresentation !== undefined" :is="andPresentation" :binding="presentationBinding" v-bind="$attrs" />
+  <div v-else class="wf-options" v-bind="$attrs">
     <div v-if="showtitle" class="wf-title">{{ $t(playerinput.title) }}</div>
-    <PlayerInputFactory v-for="(option, idx) in (playerinput.options || [])"
-      :key="idx"
-      ref="childInputs"
-      :playerView="playerView"
-      :playerinput="option"
-      :onsave="playerFactorySaved(idx)"
-      :showsave="false"
-      :showtitle="true" />
+    <PresentationHost v-for="(host, idx) in childHosts" :key="idx" :hosts="host" />
     <div v-if="showsave" class="wf-action">
-      <AppButton :title="playerinput.buttonLabel" type="submit" size="normal" @click="saveData" :disabled="!canSave()"/>
+      <AppButton :title="playerinput.buttonLabel" type="submit" size="normal" @click="saveData()" :disabled="!canSave()" />
     </div>
   </div>
+  <InputPortal v-for="(option, idx) in playerinput.options" :key="idx" :target="childHosts[idx].target.value">
+    <PlayerInputFactory ref="childInputs" :playerView="playerView" :playerinput="option"
+      :onsave="playerFactorySaved(idx)" :showsave="false" :showtitle="true" />
+  </InputPortal>
 </template>
 
 <script lang="ts">
 
-import {defineComponent} from 'vue';
+import {computed, defineComponent, provide} from 'vue';
+import {COMPOSITE_PRESENTATION, createCompositePresentation} from '@/client/wrybit/inputs/compositePresentation';
+import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
+import {AndOptionsBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
+import {afterSave, useSaveSession, withSaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+import type {InputCollector, MaybePromise, SaveAttempt, SaveOutcome} from '@/client/wrybit/inputs/saveAttempt';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
 import {AndOptionsModel} from '@/common/models/PlayerInputModel';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {AndOptionsResponse, InputResponse} from '@/common/inputs/InputResponse';
 
-interface DataModel {
-  responded: Array<InputResponse | undefined>,
-}
-
 export default defineComponent({
   name: 'AndOptions',
+  inheritAttrs: false,
+  setup(props) {
+    provide(COMPOSITE_PRESENTATION, createCompositePresentation(computed(() => props.playerinput)));
+    return {andPresentation: useInputPresentation('and'), childHosts: props.playerinput.options.map(() => createInputHosts()), saveSession: useSaveSession()};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -51,17 +57,19 @@ export default defineComponent({
   },
   components: {
     AppButton,
+    InputPortal,
+    PresentationHost,
   },
-  data(): DataModel {
-    return {
-      responded: this.playerinput.options.map(() => undefined),
-    };
+  computed: {
+    presentationBinding(): AndOptionsBinding {
+      return {playerView: this.playerView, playerinput: this.playerinput, showtitle: this.showtitle, showsave: this.showsave,
+        childHosts: this.childHosts, canSave: this.canSave(), save: () => this.saveData()};
+    },
   },
   methods: {
-    playerFactorySaved(idx: number) {
-      return (out: InputResponse) => {
-        this.responded[idx] = out;
-      };
+    playerFactorySaved(_idx: number) {
+      // A child may update independently; only collectResponse commits an aggregate.
+      return (_out: InputResponse) => {};
     },
     canSave(): boolean {
       const refs = this.$refs.childInputs as Array<{canSave?: () => boolean}> | undefined;
@@ -77,22 +85,39 @@ export default defineComponent({
       }
       return true;
     },
-    saveData() {
-      if (this.canSave() === false) {
-        alert('Not all options selected');
-        return;
-      }
-      const refs = this.$refs.childInputs as Array<{saveData?: () => void}> | undefined;
-      if (refs) {
-        for (const child of refs) {
-          if (child.saveData instanceof Function) {
-            child.saveData();
-          }
+    saveData(attempt?: SaveAttempt, respond?: (response: AndOptionsResponse) => void): MaybePromise<SaveOutcome> {
+      const reply = respond ?? this.onsave;
+      return withSaveAttempt(this.saveSession, attempt, (current) => {
+        if (this.canSave() === false) {
+          alert('Not all options selected');
+          return 'invalid';
         }
-      }
-      this.onsave({
-        type: 'and',
-        responses: this.responded as Array<InputResponse>,
+        const refs = this.$refs.childInputs as Array<InputCollector> | undefined;
+        if ((refs?.length ?? 0) !== this.playerinput.options.length) {
+          return 'invalid';
+        }
+        const responses: Array<InputResponse> = [];
+        const collect = (index: number): MaybePromise<SaveOutcome> => {
+          if (!current.isCurrent()) {
+            return 'cancelled';
+          }
+          if (index === this.playerinput.options.length) {
+            reply({type: 'and', responses});
+            return 'saved';
+          }
+          const child = refs?.[index];
+          if (child === undefined) {
+            return 'invalid';
+          }
+          return afterSave(child.collectResponse(current), (collected) => {
+            if (collected.outcome !== 'saved') {
+              return collected.outcome;
+            }
+            responses.push(collected.response);
+            return collect(index + 1);
+          });
+        };
+        return collect(0);
       });
     },
   },

@@ -45,6 +45,7 @@ describe('PlayerHome', () => {
     const players = multiplayer ? [thisPlayer, fakePublicPlayerModel({id: 'p-red-id' as any, color: 'red', name: 'red'})] : [thisPlayer];
     return shallowMount(PlayerHome, {
       ...globalConfig,
+      global: {...globalConfig.global, stubs: {InputHost: false}},
       parentComponent: {
         methods: {
           getVisibilityState: () => true,
@@ -90,6 +91,20 @@ describe('PlayerHome', () => {
       expect(PreferencesManager.INSTANCE.values().experimental_layout).is.false;
       expect(viewport.content).eq('width=1260, user-scalable=1');
       expect(wrapper.getComponent(WaitingFor).vm).eq(input);
+    } finally {
+      wrapper.unmount();
+      viewport.remove();
+    }
+  });
+
+  it('keeps the classic canvas when a responsive page left the device viewport behind', () => {
+    const viewport = document.createElement('meta');
+    viewport.name = 'viewport';
+    viewport.content = 'width=device-width, initial-scale=1, viewport-fit=cover';
+    document.head.append(viewport);
+    const wrapper = mountPlayerHome();
+    try {
+      expect(viewport.content).eq('width=1260, user-scalable=1');
     } finally {
       wrapper.unmount();
       viewport.remove();

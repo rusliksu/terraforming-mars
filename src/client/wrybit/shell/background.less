@@ -1,0 +1,82 @@
+// Adapted from Wrybit 988235122ffd61d8d1190e90beb2247afd252c00, src/styles/app_background.less (GPL-3.0).
+.wrybit-ui {
+  --app-background-saturation: 0.8;
+  --app-background-brightness: 0.6;
+
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+
+  .app-background {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: #000;
+    pointer-events: none;
+  }
+
+  .app-background__picture,
+  .app-background__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .app-background__image {
+    object-fit: cover;
+    filter: saturate(var(--app-background-saturation)) brightness(var(--app-background-brightness));
+  }
+
+  .app-background-credit {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: fit-content;
+    max-width: calc(100% - 120px);
+    padding: 8px 12px;
+    font-size: 14px;
+    line-height: 1.3;
+    color: #ddd;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      color: #fff;
+      text-decoration: underline;
+    }
+  }
+
+  .app-background-credit__text {
+    display: block;
+  }
+
+  .app-background-credit__part {
+    white-space: nowrap;
+  }
+
+  #player-home,
+  #spectator-home,
+  #game-end,
+  #create-game,
+  #game-home,
+  #card-list,
+  #games-overview,
+  #load-game,
+  .start-screen {
+    background: transparent;
+  }
+}
+
+.preferences_remove_background .wrybit-ui {
+  .app-background:not(.app-background--always) {
+    background: #222;
+
+    .app-background__picture {
+      display: none;
+    }
+  }
+
+  .app-background-credit:not(.app-background-credit--always) {
+    display: none;
+  }
+}

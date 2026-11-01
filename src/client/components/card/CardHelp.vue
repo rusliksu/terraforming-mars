@@ -16,6 +16,7 @@ import {defineComponent} from 'vue';
 import {CardName} from '@/common/cards/CardName';
 import PopupPanel from '@/client/components/common/PopupPanel.vue';
 import {renderMarkdown} from '@/client/markdown/markdown';
+import {CARD_HELP_TEXT} from '@/client/cards/CardHelpText';
 
 export default defineComponent({
   name: 'CardHelp',
@@ -29,7 +30,8 @@ export default defineComponent({
     },
     helpText: {
       type: String,
-      required: true,
+      required: false,
+      default: undefined,
     },
     hovering: {
       type: Boolean,
@@ -44,7 +46,7 @@ export default defineComponent({
   },
   computed: {
     renderedHelpText(): string {
-      return renderMarkdown(this.helpText);
+      return renderMarkdown(this.helpText ?? CARD_HELP_TEXT[this.name] ?? '');
     },
   },
   methods: {

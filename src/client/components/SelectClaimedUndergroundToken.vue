@@ -1,25 +1,29 @@
 <template>
-  <div class="wf-component wf-options">
+  <component v-if="undergroundPresentation !== undefined" :is="undergroundPresentation" :binding="presentationBinding" />
+  <div v-else class="wf-component wf-options">
     <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
     <div class="underground-tokens">
       <label v-for="(token, idx) in playerinput.tokens" :key="idx">
-         <!-- disabled="selected.length >= playerinput.count -->
-        <input type="checkbox" :name="String(idx)" v-model="selected" :value="idx" >
+        <!-- disabled="selected.length >= playerinput.count -->
+        <input type="checkbox" :name="String(idx)" v-model="selected" :value="idx">
         <UndergroundToken
           :token="token"
           :key="idx"
           location="tag-count"
-          />
-          <br>
+        />
+        <br>
       </label>
     </div>
     <div v-if="showsave === true" class="nofloat">
-      <AppButton @click="saveData" :title="playerinput.buttonLabel" />
+      <AppButton @click="saveData()" :title="playerinput.buttonLabel" />
     </div>
   </div>
 </template>
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent} from 'vue';
+import {UndergroundChoiceBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {SelectClaimedUndergroundTokenModel} from '@/common/models/PlayerInputModel';
 import {SelectClaimedUndergroundTokenResponse} from '@/common/inputs/InputResponse';
@@ -32,6 +36,9 @@ type DataModel = {
 
 export default defineComponent({
   name: 'SelectClaimedUndergroundToken',
+  setup() {
+    return {undergroundPresentation: useInputPresentation('claimedUndergroundToken')};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -61,6 +68,14 @@ export default defineComponent({
     AppButton,
     UndergroundToken,
   },
+  computed: {
+    presentationBinding(): UndergroundChoiceBinding {
+      return {playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
+        selected: this.selected, select: (indices) => {
+          this.selected = indices;
+        }, save: () => this.saveData()};
+    },
+  },
   methods: {
     canSave() {
       if (this.selected.length > this.playerinput.max) {
@@ -71,8 +86,9 @@ export default defineComponent({
       }
       return true;
     },
-    saveData() {
-      this.onsave({type: 'claimedUndergroundToken', selected: this.selected});
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectClaimedUndergroundTokenResponse) => void) {
+      const reply = respond ?? this.onsave;
+      reply({type: 'claimedUndergroundToken', selected: this.selected});
     },
   },
 });

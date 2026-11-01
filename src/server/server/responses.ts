@@ -6,6 +6,7 @@ import {statusCode} from '../../common/http/statusCode';
 import {isProduction} from '../utils/server';
 import {AppError} from './AppError';
 import {AppErrorResponse} from '@/common/app/AppErrorId';
+import {reportRouteError} from './routeErrorReporting';
 
 export function badRequest(req: Request, res: Response, err?: string): void {
   console.warn('bad request', req.url);
@@ -75,6 +76,7 @@ export function internalServerError(
   req: Request,
   res: Response,
   err: unknown): void {
+  reportRouteError(err, req);
   console.warn('internal server error: ', req.url, err);
   res.writeHead(statusCode.internalServerError);
   res.write(internalServerErrorMessage(err));
@@ -92,6 +94,13 @@ function internalServerErrorMessage(err: unknown): string {
     return 'Internal server error: ' + escape(err);
   }
   return 'Internal server error: unknown error';
+}
+
+export function unauthorized(req: Request, res: Response): void {
+  console.warn('Unauthorized', req.method, req.url);
+  res.writeHead(statusCode.unauthorized);
+  res.write('Unauthorized');
+  res.end();
 }
 
 export function notAuthorized(req: Request, res: Response): void {

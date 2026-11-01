@@ -1,0 +1,210 @@
+// Two-column layout of the player view: game action on the left, Mars board on the right.
+// Below the breakpoint the previous single-column order stays (board on top).
+
+// From this width, board (~670px) and a usable left column fit side by side
+@player-home-columns-min-width: 1400px;
+// Distance of the sticky board from the top of the window
+@player-home-sticky-top: 10px;
+// Gap between columns larger than between blocks within a column (20px) – law of proximity;
+// the board's overhang (see below) adds to it visually. The drag handle sits centered in this gap.
+@player-home-columns-gap: 24px;
+@player-home-resizer-width: 12px;
+// Default left/right split; the drag handle overrides it via CSS variable (columnResize.ts)
+@player-home-main-share: 60fr;
+@player-home-board-share: 40fr;
+// How far board elements stick out beyond .board-cont on the left and right
+@player-home-board-overhang-left: 40px;
+@player-home-board-overhang-right: 24px;
+// Log below the board as tall as the scaled-down hover preview card (project card 308px, zoom from log.less)
+@player-home-card-height: @log-card-preview-height; // project card incl. border (log.less)
+@player-home-log-height: floor(@player-home-card-height * @log-card-preview-zoom);
+
+@media only screen and (min-width: @player-home-columns-min-width) {
+  .player-home-columns {
+    display: grid;
+    grid-template-columns:
+      minmax(0, var(--wrybit-player-home-main-share, @player-home-main-share))
+      @player-home-resizer-width
+      minmax(0, var(--wrybit-player-home-board-share, @player-home-board-share));
+    grid-template-areas: "main resizer board";
+    column-gap: ((@player-home-columns-gap - @player-home-resizer-width) / 2);
+    align-items: start;
+  }
+
+  // The black TopBar duplicates the own player bar in the players overview; in the two-column layout
+  // it is dropped. The Terraformed banner in the container stays.
+  .top-bar-container {
+    margin-top: 0;
+  }
+
+  .top-bar {
+    display: none;
+  }
+
+  // Setup phase with collapsed board (SetupBoardToggle.vue): only the selection, full width
+  .player-home-columns.player-home-columns--board-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "main";
+    // Room for the icon group at the top right (sidebar_toolbar.less), which otherwise sits over the board
+    padding-right: @toolbar-occupied-width + @player-home-columns-gap;
+
+    // Direct child: more specific than the fixed layout (player_home_fixed.less), which shows the column as a flexbox
+    > .player-home-columns__board,
+    > .player-home-columns__resizer {
+      display: none;
+    }
+  }
+
+  // Drag handle between the columns: distributes the width (columnResize.ts); double-click resets
+  .player-home-columns__resizer {
+    // Line over the full column height with a grip in the middle, fades in near the mouse (resize_handle.less)
+    .resize-handle(vertical);
+    grid-area: resizer;
+    position: sticky;
+    top: @player-home-sticky-top;
+    height: calc(100vh - 2 * @player-home-sticky-top);
+
+    // sticky forms its own stacking context: raise above the left column while dragging, otherwise it hides the indicator
+    &.resize-handle--active,
+    &:focus-visible {
+      z-index: 200;
+    }
+  }
+
+  // Split in percent just below/above the pointer while dragging (height: columnResize.ts),
+  // with keyboard focus at the middle of the grip
+  .player-home-columns__resizer-label {
+    .glass-surface();
+    position: absolute;
+    left: 50%;
+    top: var(--wrybit-resizer-label-y, 50%);
+    z-index: 120;
+    transform: translate(-50%, -50%);
+    padding: 4px 10px;
+    font: 600 14px system-ui, sans-serif;
+    color: #fff;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+
+  .player-home-columns__resizer.resize-handle--active .player-home-columns__resizer-label,
+  .player-home-columns__resizer:focus-visible .player-home-columns__resizer-label {
+    opacity: 1;
+  }
+
+  .player-home-columns__main {
+    grid-area: main;
+    // Prevents wide content (card rows) from blowing up the column
+    min-width: 0;
+
+    // Player list as a table (players_table.less) instead of the classic bars
+    .players-overview {
+      display: block;
+      max-width: 100%;
+
+      > .player-info {
+        display: none !important; // players_overview.less sets display with !important
+      }
+
+      .players-table {
+        display: block;
+      }
+    }
+  }
+
+  .player-home-columns__board {
+    grid-area: board;
+    // Board stays visible while scrolling through actions and cards
+    position: sticky;
+    top: @player-home-sticky-top;
+    max-height: calc(100vh - @player-home-sticky-top);
+    overflow: hidden auto;
+    // No left padding: the gap to the left column comes from the drag handle, and rightColumnFit.ts moves
+    // Mars centered over the table so the colony/spaceport spaces on the left still have room
+    padding: 0 @player-home-board-overhang-right 0 0;
+  }
+
+  // An opponent's played cards ("show") as a modal over the right column (board + log),
+  // instead of a block above the player bars. The container is click-through; only the open modal catches clicks.
+  .player-home-columns__main .other_player {
+    // Position and frosted-glass look like all overlays of the right column (column_overlay.less)
+    .column-overlay-position();
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+
+    // Dissolve v-for wrappers so the open modal can fill the column height directly
+    > div {
+      display: contents;
+    }
+
+    // OtherPlayer root; hidden ones have display: none inline via v-show, which wins
+    > div > div {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      pointer-events: auto;
+      overflow: hidden; // header follows the rounded corners
+      .column-overlay-surface();
+    }
+
+    .other_player_cont {
+      flex: 1;
+      min-height: 0;
+      max-height: none;
+      margin: 0;
+      padding: 10px 0 0 20px;
+      background: transparent; // wrapper's frosted glass shows through
+    }
+  }
+
+  // Halve the space above Mars and add it below: the board itself already has free space at the top,
+  // at the bottom the O2 gauge and ocean counter would otherwise reach into the log tabs (values before zoom)
+  .player-home-columns__mars .board-cont {
+    margin-top: 0;
+    margin-bottom: 28px;
+    // Base zoom: board never wider than the column (rightColumnFit.ts), overridden from level 1
+    zoom: var(--wrybit-board-fit-zoom, 1);
+  }
+
+  // Milestones & awards live as a tab in the log box (LogPanel.vue), not below Mars
+  .player-home-columns__mars .player_home_block--milestones-and-awards {
+    display: none;
+  }
+
+  // Levels depending on free height (set by rightColumnFit.ts):
+  // 1) Mars as wide as the column (milestones & awards sit in the log box)
+  .player-home-columns__board--mars-wide .board-cont {
+    zoom: var(--wrybit-board-wide-zoom, 1);
+  }
+
+  .player-home-columns__log {
+    // Width 0 + min-width 100%: log fills the column but doesn't determine its width (the board does)
+    width: 0;
+    min-width: 100%;
+    margin-bottom: 0;
+
+    // .or-tab-panel: as specific as the base rule in log.less, which is loaded later.
+    // Full column width (to the edge like board and table), without the single-column layout's cap
+    .log-panel.or-tab-panel {
+      height: @player-home-log-height;
+      max-height: @player-home-log-height;
+      max-width: none;
+    }
+  }
+
+  // 2) Log card at full size, log as tall as a card
+  .player-home-columns__board--log-full {
+    .player-home-columns__log .log-panel.or-tab-panel {
+      height: @player-home-card-height;
+      max-height: @player-home-card-height;
+    }
+
+    .card-panel--floating {
+      --wrybit-log-card-preview-zoom: 1;
+    }
+  }
+}

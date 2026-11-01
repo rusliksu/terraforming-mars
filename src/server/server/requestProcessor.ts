@@ -7,8 +7,11 @@ import {SessionId} from '../auth/Session';
 import {GameLoader} from '../database/GameLoader';
 import {InputError} from '../inputs/InputError';
 import {ApiSurrender} from '../routes/ApiSurrender';
+import {ApiAiFeedback} from '../routes/ApiAiFeedback';
 import {ApiCloneableGame} from '../routes/ApiCloneableGame';
 import {ApiCreateGame} from '../routes/ApiCreateGame';
+import {ApiDeleteGame} from '../routes/ApiDeleteGame';
+import {ApiBoardPreview} from '../routes/ApiBoardPreview';
 import {ApiCustomCardLibrary} from '../routes/ApiCustomCardLibrary';
 import {ApiCustomCardLibraryReview} from '../routes/ApiCustomCardLibraryReview';
 import {ApiGame} from '../routes/ApiGame';
@@ -27,6 +30,7 @@ import {ApiReplay} from '../routes/ApiReplay';
 import {ApiSpectator} from '../routes/ApiSpectator';
 import {ApiStats} from '../routes/ApiStats';
 import {ApiWaitingFor} from '../routes/ApiWaitingFor';
+import {ApiWrybitStats} from '../routes/ApiWrybitStats';
 import {Autopass} from '../routes/Autopass';
 import {DiscordAuth} from '../routes/DiscordAuth';
 import {GameHandler} from '../routes/Game';
@@ -35,7 +39,10 @@ import {Context, IHandler} from '../routes/IHandler';
 import {Load} from '../routes/Load';
 import {LoadGame} from '../routes/LoadGame';
 import {Login} from '../routes/Login';
+import {PlayerBootstrapV2} from '../routes/PlayerBootstrapV2';
 import {PlayerInput} from '../routes/PlayerInput';
+import {PlayerInputV2} from '../routes/PlayerInputV2';
+import {PlayerUndoV2} from '../routes/PlayerUndoV2';
 import {Reset} from '../routes/Reset';
 import {ServeApp} from '../routes/ServeApp';
 import {ServeAsset} from '../routes/ServeAsset';
@@ -104,8 +111,11 @@ const handlers: Map<string, IHandler> = new Map(
     ['', ServeApp.INSTANCE],
     [paths.ADMIN, ServeApp.INSTANCE],
     [paths.API_SURRENDER, ApiSurrender.INSTANCE],
+    [paths.API_AI_FEEDBACK, ApiAiFeedback.INSTANCE],
     [paths.API_CLONEABLEGAME, ApiCloneableGame.INSTANCE],
     [paths.API_CREATEGAME, ApiCreateGame.INSTANCE],
+    [paths.API_DELETE_GAME, ApiDeleteGame.INSTANCE],
+    [paths.API_BOARD_PREVIEW, ApiBoardPreview.INSTANCE],
     [paths.API_GAME, ApiGame.INSTANCE],
     [paths.API_GAME_HISTORY, ApiGameHistory.INSTANCE],
     [paths.API_GAME_LOGS, ApiGameLogs.INSTANCE],
@@ -118,6 +128,7 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_STATS, ApiStats.INSTANCE],
     [paths.API_SPECTATOR, ApiSpectator.INSTANCE],
     [paths.API_WAITING_FOR, ApiWaitingFor.INSTANCE],
+    [paths.API_WRYBIT_STATS, ApiWrybitStats.INSTANCE],
     [paths.AUTOPASS, Autopass.INSTANCE],
     [paths.CARD_LIBRARY, ServeApp.INSTANCE],
     [paths.CARDS, ServeApp.INSTANCE],
@@ -147,10 +158,14 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.NEW_GAME, ServeApp.INSTANCE],
     [paths.PLAYER, ServeApp.INSTANCE],
     [paths.PLAYER_INPUT, PlayerInput.INSTANCE],
+    [paths.PLAYER_INPUT_V2, PlayerInputV2.INSTANCE],
+    [paths.PLAYER_BOOTSTRAP_V2, PlayerBootstrapV2.INSTANCE],
+    [paths.PLAYER_UNDO_V2, PlayerUndoV2.INSTANCE],
     [paths.API_PROFILE, ApiProfile.INSTANCE],
     [paths.RESET, Reset.INSTANCE],
     [paths.REPLAY, ServeApp.INSTANCE],
     [paths.SPECTATOR, ServeApp.INSTANCE],
+    [paths.STATS, ServeApp.INSTANCE],
     ['styles.css', ServeAsset.INSTANCE],
     [paths.THE_END, ServeApp.INSTANCE],
   ],
@@ -165,6 +180,14 @@ function getHandler(pathname: string): IHandler | undefined {
     return ServeAsset.INSTANCE;
   }
   if (pathname.startsWith('chunks/')) {
+    return ServeAsset.INSTANCE;
+  }
+  // Dynamic ELO snapshots are public assets, but they are not under /assets/:
+  // route them explicitly to ServeAsset so /elo/data.json does not fall through
+  // to the generic 404 handler.
+  if (pathname === 'elo' || pathname === 'solo' || pathname === 'elo-data.json' || pathname === 'solo-records.json' ||
+      pathname === 'elo-data' || pathname === 'solo-records' || pathname === 'elo-data/' || pathname === 'solo-records/' ||
+      pathname.startsWith('elo/') || pathname.startsWith('solo/')) {
     return ServeAsset.INSTANCE;
   }
   return undefined;

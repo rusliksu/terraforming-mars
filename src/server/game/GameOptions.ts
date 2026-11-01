@@ -10,6 +10,7 @@ import {EscapeVelocityOptions} from '../../common/game/NewGameConfig';
 import {CustomBoardDefinition} from '../../common/boards/CustomBoardDefinition';
 import {SimpleCustomBoardDefinition} from '../../common/boards/SimpleCustomBoardDefinition';
 import {GlobalParametersConfig} from '../../common/GlobalParameterConfig';
+import {CustomMA} from '../../common/ma/CustomMA';
 
 export type GameOptions = {
   /** Marks the expanded card pool; absent in pre-port saves. */
@@ -31,10 +32,14 @@ export type GameOptions = {
   // Configuration
   undoOption: boolean;
   undoStepOption: boolean;
+  /** Analysis game (only with AI players): the log shows every AI decision for rating. */
+  aiAnalysis: boolean;
   showTimers: boolean;
   fastModeOption: boolean;
   showOtherPlayersVP: boolean;
   privateHands: boolean;
+  /** When true, guest seats cannot submit input; every human seat must be bound to a Discord account. */
+  requiresDiscordLogin?: boolean;
   noEloGame: boolean;
   turnBasedGame: boolean;
 
@@ -99,6 +104,8 @@ export type GameOptions = {
   customColoniesList: ReadonlyArray<ColonyName>;
   customPreludes: ReadonlyArray<CardName>;
   customCeos: ReadonlyArray<CardName>;
+  /** Preselected milestones and awards, used instead of the board's. Only valid when randomMA is MANUAL. */
+  customMA?: CustomMA;
   startingCeos: number;
   startingPreludes: number;
   /** Moon must be completed to end the game */
@@ -134,6 +141,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   customCeos: [],
   customColoniesList: [],
   customCorporationsList: [],
+  customMA: undefined,
   customPreludes: [],
   draftVariant: false,
   escapeVelocity: undefined,
@@ -179,6 +187,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   moonStandardProjectVariant1: false,
   pathfindersExpansion: false,
   privateHands: true,
+  requiresDiscordLogin: false,
   politicalAgendasExtension: 'Standard',
   preludeDraftVariant: false,
   ceosDraftVariant: false,
@@ -218,6 +227,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   conglomeratesTeamAssignments: undefined,
   undoOption: false,
   undoStepOption: false,
+  aiAnalysis: false,
   venusNextExtension: false,
   twoCorpsVariant: false,
 };

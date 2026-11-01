@@ -1,40 +1,52 @@
 <template>
-    <div class="cards-filter">
-        <h2 v-i18n>{{ title }}</h2>
-        <div class="cards-filter-results-cont" v-if="selected.length">
-            <div class="cards-filter-result" v-for="cardName in selected" :key="cardName">
-                <label>{{ cardName }}
-                  <i class="create-game-expansion-icon expansion-icon-prelude" title="This card is a prelude" v-if="isPrelude(cardName)"></i>
-                  <i class="create-game-expansion-icon expansion-icon-ceo" title="This card is a CEO" v-if="isCEO(cardName)"></i>
-                  <template v-for="expansion of expansions(cardName)" :key="expansion">
-                    <i :class="`create-game-expansion-icon expansion-icon-${expansion}`" :title="expansion"></i>
-                  </template>
-                </label>
-                <AppButton size="small" type="close" @click="removeCard(cardName)" />
-            </div>
+  <div>
+    <component v-if="presentation !== undefined" :is="presentation" :binding="presentationBinding" />
+    <div v-else class="cards-filter">
+      <h2 v-i18n>{{ title }}</h2>
+      <div class="cards-filter-results-cont" v-if="selected.length">
+        <div class="cards-filter-result" v-for="cardName in selected" :key="cardName">
+          <label>{{ cardName }}
+            <i class="create-game-expansion-icon expansion-icon-prelude" title="This card is a prelude" v-if="isPrelude(cardName)"></i>
+            <i class="create-game-expansion-icon expansion-icon-ceo" title="This card is a CEO" v-if="isCEO(cardName)"></i>
+            <template v-for="expansion in expansions(cardName)" :key="expansion">
+              <i :class="`create-game-expansion-icon expansion-icon-${expansion}`" :title="expansion"></i>
+            </template>
+          </label>
+          <AppButton size="small" type="close" @click="removeCard(cardName)" />
         </div>
-        <div class="cards-filter-input">
-            <div>
-                <input ref="filter" class="form-input" :placeholder="$t(hint)" v-model="searchTerm" >
-            </div>
-            <div class="cards-filter-suggest" v-if="searchMatches.length">
-                <div class="cards-filter-suggest-item" v-for="cardName in searchMatches" :key="cardName">
-                    <a href="#" @click.prevent="addCard(cardName)">
-                      {{ cardName }}
-                      <i class="create-game-expansion-icon expansion-icon-prelude" title="This card is a Prelude" v-if="isPrelude(cardName)"></i>
-                      <i class="create-game-expansion-icon expansion-icon-ceo" title="This card is a CEO" v-if="isCEO(cardName)"></i>
-                      <template v-for="expansion of expansions(cardName)" :key="expansion">
-                        <i :class="`create-game-expansion-icon expansion-icon-${expansion}`" :title="expansion"></i>
-                      </template>
-                    </a>
-                </div>
-            </div>
+      </div>
+      <div class="cards-filter-input">
+        <div>
+          <PresentationHost :hosts="inputHost" />
         </div>
+        <div class="cards-filter-suggest" v-if="searchMatches.length">
+          <div class="cards-filter-suggest-item" v-for="cardName in searchMatches" :key="cardName">
+            <a href="#" @click.prevent="addCard(cardName)">
+              {{ cardName }}
+              <i class="create-game-expansion-icon expansion-icon-prelude" title="This card is a Prelude" v-if="isPrelude(cardName)"></i>
+              <i class="create-game-expansion-icon expansion-icon-ceo" title="This card is a CEO" v-if="isCEO(cardName)"></i>
+              <template v-for="expansion in expansions(cardName)" :key="expansion">
+                <i :class="`create-game-expansion-icon expansion-icon-${expansion}`" :title="expansion"></i>
+              </template>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
+    <InputPortal :target="inputHost.target.value">
+      <input ref="filter" :class="presentation === undefined ? 'form-input' : 'create-game-text-input'"
+        :placeholder="$t(hint)" v-model="searchTerm" @keydown="onFilterKeydown">
+    </InputPortal>
+  </div>
 </template>
 
 <script lang="ts">
-import {defineComponent} from 'vue';
+import {computed, defineComponent} from 'vue';
+import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
+import {useCreateControls} from '@/client/wrybit/create/presentation';
+import type {CardsFilterBinding} from '@/client/wrybit/create/cardsFilter';
 import {CardName} from '@/common/cards/CardName';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {byType, getCard, getCards} from '@/client/cards/ClientCardManifest';
@@ -55,6 +67,7 @@ type CardsFilterModel = {
   selected: Array<CardName>;
   searchMatches: Array<CardName>;
   searchTerm: string;
+  activeIndex: number;
 }
 
 type Refs = {
@@ -63,6 +76,11 @@ type Refs = {
 
 export default defineComponent({
   name: 'CardsFilter',
+  emits: ['cards-list-changed'],
+  setup() {
+    const controls = useCreateControls();
+    return {inputHost: createInputHosts(), presentation: computed(() => controls.value?.cardsFilter)};
+  },
   props: {
     title: {
       type: String,
@@ -78,17 +96,53 @@ export default defineComponent({
       selected: [],
       searchMatches: [],
       searchTerm: '',
+      activeIndex: 0,
     };
   },
   components: {
-    AppButton,
+    AppButton, InputPortal, PresentationHost,
   },
   computed: {
+    presentationBinding(): CardsFilterBinding {
+      return {title: this.title, inputHost: this.inputHost, selected: this.selected, searchMatches: this.searchMatches,
+        activeCard: this.searchMatches[this.activeIndex],
+        highlight: (name) => {
+          const index = this.searchMatches.indexOf(name);
+          if (index >= 0) {
+            this.activeIndex = index;
+          }
+        },
+        add: (name) => {
+          if (this.searchMatches.includes(name)) {
+            this.addCard(name);
+          }
+        },
+        remove: this.removeCard};
+    },
     typedRefs(): Refs {
       return this.$refs as unknown as Refs;
     },
   },
   methods: {
+    onFilterKeydown(event: KeyboardEvent) {
+      if (this.presentation === undefined) {
+        return;
+      }
+      const count = this.searchMatches.length;
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (count > 0) {
+          const step = event.key === 'ArrowDown' ? 1 : -1;
+          this.activeIndex = (this.activeIndex + step + count) % count;
+        }
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        const activeCard = this.searchMatches[this.activeIndex];
+        if (activeCard !== undefined) {
+          this.addCard(activeCard);
+        }
+      }
+    },
     isPrelude(cardName: CardName) {
       return getCard(cardName)?.type === CardType.PRELUDE;
     },
@@ -120,6 +174,7 @@ export default defineComponent({
     },
     searchTerm(value: string) {
       this.searchMatches = [];
+      this.activeIndex = 0;
 
       // Allows multiple simultaneous entries
       // This is case sensitive, as opposed to the standard search

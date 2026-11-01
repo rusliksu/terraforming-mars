@@ -1,0 +1,113 @@
+// Balance of the initial selection (SetupSummary.vue): figures side by side, small label on top, value below.
+// Sits as a card below the selection columns; the start button (slot) on its right.
+
+@setup-summary-label-size: 12px;
+@setup-summary-value-size: 22px;
+@setup-summary-item-gap: 28px; // clearly more between figures than between label and value
+@setup-summary-negative: #ff7a6b; // not enough M€ (purchase too expensive, Remaining < 0)
+@setup-summary-coin-size: 34px;
+@setup-summary-open: #ffb36b; // Status: something is still missing
+
+.setup-summary {
+  .frosted-surface();
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: @setup-summary-item-gap;
+  padding: 12px 16px 12px 20px;
+  border: 1px solid @or-tabs-border;
+  border-radius: @or-tabs-radius;
+  background: @or-tabs-panel-background;
+}
+
+// Figures fill the card and wrap when space is short; the button stays to their right
+.setup-summary-values {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px @setup-summary-item-gap;
+  margin: 0;
+}
+
+.setup-summary-actions {
+  flex: none;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.setup-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  dt {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: @setup-summary-label-size;
+    font-weight: normal;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  dd {
+    margin: 0;
+    color: #fff;
+    font-size: @setup-summary-value-size;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+
+    // State colors: nested here so they reliably override the white base color
+    &.setup-summary-value--negative {
+      color: @setup-summary-negative;
+    }
+
+    &.setup-summary-status--open {
+      color: @setup-summary-open;
+    }
+
+    &.setup-summary-status--ready {
+      color: @button-success;
+    }
+  }
+}
+
+// Status takes the rest of the row and may wrap (long notices)
+.setup-summary-item--status {
+  flex: 1 1 180px;
+
+  dd {
+    font-size: 16px;
+    font-weight: normal;
+    white-space: normal;
+  }
+}
+
+// "Remaining" as a yellow M€ coin, like on the cards and in the player area
+.setup-summary-coin {
+  display: inline-block;
+  min-width: @setup-summary-coin-size;
+  height: @setup-summary-coin-size;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 7px;
+  background-image: url("assets/resources/megacredit.png");
+  background-size: 100% 100%;
+  filter: drop-shadow(0 0 1px black);
+  color: #000;
+  font-family: Prototype, sans-serif;
+  font-size: 20px;
+  font-weight: normal;
+  line-height: @setup-summary-coin-size;
+  text-align: center;
+}
+
+// Too few M€: coin outlined in red, number red
+.setup-summary-coin--negative {
+  outline: 2px solid @setup-summary-negative;
+  color: #b3160a;
+}

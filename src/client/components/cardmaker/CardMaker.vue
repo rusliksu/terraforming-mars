@@ -141,19 +141,19 @@
             <span v-i18n>Raise/lower a global parameter</span>
           </label>
           <div v-if="fx.useGlobal" class="card-maker-globals">
-            <label>{{ 'Temperature' }}
+            <label>Temperature
               <select v-model.number="fx.temperature">
                 <option :value="undefined">—</option>
                 <option v-for="s in TEMPERATURE_STEPS" :key="s" :value="s">{{ s > 0 ? '+' + s : s }}</option>
               </select>
             </label>
-            <label>{{ 'Oxygen' }}
+            <label>Oxygen
               <select v-model.number="fx.oxygen">
                 <option :value="undefined">—</option>
                 <option v-for="s in OXYGEN_STEPS" :key="s" :value="s">{{ s > 0 ? '+' + s : s }}</option>
               </select>
             </label>
-            <label>{{ 'Venus' }}
+            <label>Venus
               <select v-model.number="fx.venus">
                 <option :value="undefined">—</option>
                 <option v-for="s in VENUS_STEPS" :key="s" :value="s">{{ s > 0 ? '+' + s : s }}</option>
@@ -173,7 +173,7 @@
             </select>
             <span v-i18n>on</span>
             <select v-model="fx.placementOn">
-              <option value="">{{ '(no restriction)' }}</option>
+              <option value="">(no restriction)</option>
               <option v-for="p in PLACEMENT_TYPES" :key="p" :value="p">{{ p }}</option>
             </select>
           </div>
@@ -205,7 +205,7 @@
                 {{ itemLabel(item) }}
                 <button type="button" @click="row.splice(ii, 1)" title="Remove icon">✕</button>
               </span>
-              <span v-if="row.length === 0" class="card-maker-note">{{ '(empty row -- drag icons here)' }}</span>
+              <span v-if="row.length === 0" class="card-maker-note">(empty row -- drag icons here)</span>
             </div>
             <div class="card-maker-add-item">
               <select v-model="rowDrafts[ri].kind">
@@ -297,7 +297,7 @@
       <div class="card-maker-preview">
         <h3 v-i18n>Preview</h3>
         <div class="card-maker-preview-zoom">
-          <Card :card="previewCardModel" :key="previewKey" auto-tall/>
+          <Card :card="previewCardModel" :key="previewKey" auto-tall />
         </div>
       </div>
     </div>
@@ -1212,11 +1212,33 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 @media (max-width: 700px) {
   .card-maker {
     padding: 12px;
+
+    // Keep the page title clear of the floating optional-layout switch.
+    h1 {
+      max-width: calc(100% - 100px);
+      font-size: 30px;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
     .card-maker-controls,
     .card-maker-preview { width: 100%; min-width: 0; }
-    .card-maker-preview { overflow-x: auto; position: static; }
+    .card-maker-preview { overflow-x: hidden; position: static; }
     .card-maker-actions { flex-wrap: wrap; }
     input, select, textarea { min-width: 0; max-width: 100%; box-sizing: border-box; }
+
+    // Fit the enlarged preview into the phone column instead of making a
+    // horizontal scroller. 1.18 keeps the 278px native card inside the
+    // 336px content box at 360px; the narrower fallback covers 320px phones.
+    .card-maker-preview-zoom {
+      zoom: 1.18;
+      width: fit-content;
+      max-width: 100%;
+    }
+  }
+}
+@media (max-width: 380px) {
+  .card-maker .card-maker-preview-zoom {
+    zoom: 1;
   }
 }
 </style>

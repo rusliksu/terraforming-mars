@@ -1,0 +1,38 @@
+// Full width of the container, so the measurement knows how much room there is; the board centered in it
+.scaled-board {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+// The scales extend past the board left and right: include the room so the scaling covers them
+.scaled-board-content {
+  padding: 0 24px;
+}
+
+// Planet alone: the section of the planet, nothing sticks out
+.scaled-board--planet .scaled-board-content {
+  overflow: hidden;
+  padding: 0;
+}
+
+// Large maps (Amazonis Planitia) keep their own hex outline. They must still
+// drop the scales, outer colony spaces and tile-toggle chrome: a preview is
+// only the playable board, not a full game board with its side panels.
+.scaled-board--preview {
+  .global-numbers,
+  .board-outer-spaces,
+  .hide-tile-button-container {
+    display: none;
+  }
+
+  .board-cont--large {
+    width: auto;
+    height: auto;
+    background: none;
+  }
+
+  .board-cont--large .board {
+    margin: 0;
+  }
+}

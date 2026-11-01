@@ -146,6 +146,7 @@
 	"${0} converted plants into a greenery": "${0} konverterte planter til et skogområde",
 	"${0} traded with ${1}": "${0} handlet med ${1}",
 	"${0} used ${1} standard project": "${0} brukte standardprosjektet ${1}",
+	"${0} used ${1} standard project [ ${2} ]": "${0} brukte standardprosjektet ${1} [ ${2} ]",
 	"${0} used ${1} standard project,sold ${2} card(s)": "${0} brukte standardprosjektet ${1}, solgte ${2} kort",
 	"${0} built a colony on ${1}": "${0} bygde en koloni på ${1}",
 	"${0} bought ${1} card(s)": "${0} kjøpte ${1} kort",

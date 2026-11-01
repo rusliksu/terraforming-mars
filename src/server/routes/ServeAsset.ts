@@ -65,6 +65,41 @@ export class ServeAsset extends Handler {
 
     // Remove leading slash and query parameters.
     const path = req.url.substring(1).split('?')[0];
+    // The ELO page uses relative data URLs, so it must live under a trailing slash.
+    // /solo has never had its own page; the public rating table is the closest useful
+    // destination, and this keeps old bookmarks from ending on a 404.
+    if (path === 'elo-data/' || path === 'solo-records/') {
+      res.statusCode = 301;
+      res.setHeader('Location', path === 'elo-data/' ? '/elo-data' : '/solo-records');
+      res.end();
+      return;
+    }
+    if ((path === 'elo' || path === 'solo' || path.startsWith('solo/')) &&
+        path !== 'solo/elo-data' && path !== 'solo/elo-data/' &&
+        path !== 'solo/solo-records' && path !== 'solo/solo-records/') {
+      res.statusCode = 301;
+      res.setHeader('Location', '/elo/');
+      res.end();
+      return;
+    }
+    // The ELO page treats these as optional additions. Keep the browser console
+    // clean when the deployment has no solo/stats snapshot yet.
+    if (path === 'elo/solo-records.json' || path === 'solo-records.json' || path === 'solo-records' ||
+        path === 'solo/solo-records' || path === 'solo/solo-records/' || path === 'elo/stats.json') {
+      const optionalFile = resolveEloAssetPath(path);
+      if (optionalFile !== undefined && !this.fileApi.existsSync(optionalFile)) {
+        const body = path.endsWith('solo-records.json') || path === 'solo-records' ||
+          path === 'solo/solo-records' || path === 'solo/solo-records/' ? '{"records":[]}' : '{}';
+        res.writeHead(200, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'Content-Length': Buffer.byteLength(body),
+        });
+        res.end(body);
+        return;
+      }
+    }
+
     const dynamicEloAsset = isDynamicEloAssetPath(path);
 
     const supportedEncodings = this.supportedEncodings(req);
@@ -207,6 +242,10 @@ export class ServeAsset extends Handler {
     }
 
     switch (urlPath) {
+    case 'elo/':
+    case 'elo/index.html':
+      return {file: 'elo/index.html'};
+
     case 'assets/index.html':
     case 'assets/Prototype.ttf':
     case 'assets/Prototype-ru.ttf':
@@ -254,7 +293,8 @@ export class ServeAsset extends Handler {
         }
       }
 
-      if (urlPath.endsWith('.png') || urlPath.endsWith('.jpg') || urlPath.endsWith('.json') || urlPath.endsWith('.svg')) {
+      if (urlPath.endsWith('.png') || urlPath.endsWith('.jpg') || urlPath.endsWith('.json') || urlPath.endsWith('.svg') ||
+          urlPath.endsWith('.avif') || urlPath.endsWith('.webp')) {
         const assetsRoot = path.resolve('./assets');
         const resolvedFile = path.resolve(path.normalize(urlPath));
 

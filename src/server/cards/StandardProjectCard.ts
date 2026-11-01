@@ -78,7 +78,16 @@ export abstract class StandardProjectCard extends Card implements IStandardProje
   }
 
   public canAct(player: IPlayer): boolean {
-    return player.canAfford(this.canPlayOptions(player));
+    // Warnings reflect the current game state, so recompute them every time.
+    this.clearWarnings();
+    return this.bespokeCanAct(player) && player.canAfford(this.canPlayOptions(player));
+  }
+
+  /**
+   * Override to add card-specific checks or warnings. Affordability is handled by `canAct`.
+   */
+  protected bespokeCanAct(_player: IPlayer): boolean {
+    return true;
   }
 
   public canPayWith(_player: IPlayer): StandardProjectCanPayWith {
@@ -87,12 +96,17 @@ export abstract class StandardProjectCard extends Card implements IStandardProje
 
   public payAndExecute(player: IPlayer, payment: Payment): void {
     player.pay(payment);
-    this.projectPlayed(player);
+    this.projectPlayed(player, payment);
     this.actionEssence(player);
   }
 
-  protected projectPlayed(player: IPlayer) {
-    player.game.log('${0} used ${1} standard project', (b) => b.player(player).card(this));
+  protected projectPlayed(player: IPlayer, payment: Payment) {
+    if (this.cost === 0) {
+      player.game.log('${0} used ${1} standard project', (b) => b.player(player).card(this));
+    } else {
+      player.game.log('${0} used ${1} standard project [ ${2} ]', (b) =>
+        b.player(player).card(this).string(Payment.toLogString(payment)));
+    }
     // standardProjectsThisGeneration does not include Sell Patents.
     if (this.name !== CardName.SELL_PATENTS_STANDARD_PROJECT) {
       player.standardProjectsThisGeneration.add(this.name);

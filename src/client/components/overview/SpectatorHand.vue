@@ -8,7 +8,7 @@
       <div class="player_home_block">
         <div class="sortable-cards">
           <div v-for="card in cardsInHand()" :key="card.name" class="cardbox">
-            <Card :card="card"/>
+            <Card :card="card" />
           </div>
         </div>
       </div>

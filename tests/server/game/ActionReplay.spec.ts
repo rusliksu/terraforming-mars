@@ -17,6 +17,9 @@ import {Comet} from '../../../src/server/cards/base/Comet';
 import {GiantIceAsteroid} from '../../../src/server/cards/base/GiantIceAsteroid';
 import {ProjectEden} from '../../../src/server/cards/prelude2/ProjectEden';
 import {HiTechLab} from '../../../src/server/cards/promo/HiTechLab';
+import {InSpire} from '../../../src/server/cards/pathfinders/InSpire';
+import {Satellites} from '../../../src/server/cards/base/Satellites';
+import {cast} from '../../../src/common/utils/utils';
 import {testGame} from '../../TestGame';
 import {hasRevealedHiddenInformation} from '../../../src/server/game/hasRevealedHiddenInformation';
 
@@ -298,5 +301,60 @@ describe('ActionReplay', () => {
     expect(hasRevealedHiddenInformation(replayed, beforeReveal, replayedPlayer, {
       restoredPromptCardsAreKnown: true,
     })).is.true;
+  });
+
+  it('keeps resources banked on InSpire when stepping back the card that paid them out', () => {
+    const [rawGame, player] = testGame(2, {skipInitialCardSelection: true});
+    const game = rawGame as Game;
+    game.generation = 2;
+    game.phase = Phase.ACTION;
+    game.activePlayer = player;
+    player.megaCredits = 100;
+
+    const inSpire = new InSpire();
+    inSpire.data = {titanium: 1};
+    player.playedCards.push(inSpire);
+    player.cardsInHand.push(new Satellites());
+    player.takeAction(false);
+
+    const accept = (input: InputResponse) => {
+      const entry = prepareActionReplayEntry(game, player.id, input);
+      expect(entry).not.eq(undefined);
+      player.process(input);
+      recordAcceptedActionReplayEntry(game, entry!);
+    };
+
+    const actionPrompt = player.getWaitingFor()?.toModel(player);
+    if (actionPrompt?.type !== 'or') {
+      throw new Error('Expected action prompt');
+    }
+    const playCardIndex = actionPrompt.options.findIndex((option) => option.type === 'projectCard');
+    expect(playCardIndex).gte(0);
+    accept({
+      type: 'or',
+      index: playCardIndex,
+      response: {
+        type: 'projectCard',
+        card: CardName.SATELLITES,
+        payment: Payment.of({megacredits: 10}),
+      },
+    });
+
+    const inspirePrompt = player.getWaitingFor()?.toModel(player);
+    if (inspirePrompt?.type !== 'or') {
+      throw new Error('Expected InSpire choice');
+    }
+    expect(inspirePrompt.options.map((option) => option.title))
+      .deep.eq(['Add titanium to InSpire', 'Take titanium from InSpire']);
+    accept({type: 'or', index: 1, response: {type: 'option'}});
+    expect(player.titanium).eq(1);
+    expect(inSpire.data).deep.eq({titanium: 0});
+
+    const rewound = stepBackActionInput(game, player.id);
+    const rewoundPlayer = rewound.getPlayerById(player.id);
+    const rewoundInSpire = cast(rewoundPlayer.playedCards.get(CardName.IN_SPIRE), InSpire);
+
+    expect(rewoundInSpire.data).deep.eq({titanium: 1});
+    expect(rewoundPlayer.titanium).eq(0);
   });
 });

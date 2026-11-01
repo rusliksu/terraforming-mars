@@ -1,5 +1,5 @@
 import {mount, shallowMount} from '@vue/test-utils';
-import {globalConfig} from '../getLocalVue';
+import {creationTransport, globalConfig} from './creationTestConfig';
 import {expect} from 'chai';
 import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
 import {CreateGameSettingsStorage} from '@/client/components/create/CreateGameSettingsStorage';
@@ -483,6 +483,7 @@ describe('CreateGameForm', () => {
       global: {
         ...globalConfig.global,
         stubs: {
+          ...creationTransport,
           ColoniesFilter: false,
         },
       },
@@ -1613,5 +1614,55 @@ describe('CreateGameForm', () => {
       penaltyPeriodMinutes: 2,
       penaltyVPPerPeriod: 1,
     });
+  });
+
+  it('serializes AI seats and forces a training game', async () => {
+    const {config} = await serializeTwoPlayerGameSettings((model) => {
+      model.players[1].aiLevel = 'hard';
+    });
+    // The form may shuffle the seat order, so look the AI seat up instead of assuming an index.
+    const aiSeat = config?.players.find((player) => player.aiLevel === 'hard');
+    expect(aiSeat).is.not.undefined;
+    expect(config?.noEloGame).is.true;
+  });
+
+  it('blocks a table made only of AI players', () => {
+    const errors = validateTwoPlayerGame((model) => {
+      model.players[0].aiLevel = 'normal';
+      model.players[1].aiLevel = 'normal';
+    });
+    expect(errors.allAiPlayers).is.true;
+  });
+
+  it('toggleAiPlayer fills a name, enables the seat and forces no ELO', () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const model = wrapper.vm as any;
+    model.playersCount = 2;
+    model.players[1].name = '';
+    model.toggleAiPlayer(model.players[1], 1, {target: {checked: true}});
+    expect(model.players[1].aiLevel).eq('normal');
+    expect(model.players[1].name).eq('AI 2');
+    expect(model.noEloGame).is.true;
+    expect(model.hasAiPlayers).is.true;
+    // Turning the switch off drops the generated name so the form falls back to the colour default.
+    model.toggleAiPlayer(model.players[1], 1, {target: {checked: false}});
+    expect(model.players[1].aiLevel).is.undefined;
+    expect(model.players[1].name).eq('');
+  });
+
+  it('keeps a hand-written player name when the AI switch is turned off', () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const model = wrapper.vm as any;
+    model.playersCount = 2;
+    model.players[1].name = 'Robo';
+    model.toggleAiPlayer(model.players[1], 1, {target: {checked: true}});
+    expect(model.players[1].name).eq('Robo');
+    model.toggleAiPlayer(model.players[1], 1, {target: {checked: false}});
+    expect(model.players[1].name).eq('Robo');
+    expect(model.players[1].aiLevel).is.undefined;
   });
 });

@@ -7,12 +7,26 @@ import {Response} from '../Response';
 import {getUserAgent} from './auditRequest';
 import {RouteError} from './RouteError';
 import {IPlayer} from '../IPlayer';
+import {IGame} from '../IGame';
 
 export class ApiPlayer extends Handler {
   public static readonly INSTANCE = new ApiPlayer();
 
   private constructor() {
     super();
+  }
+
+  private recordDeniedView(req: Request, ctx: Context, game: IGame, player: IPlayer): void {
+    ctx.accessAudit.record({
+      event: 'player_view_denied',
+      method: req.method ?? '',
+      path: 'api/player',
+      gameId: game.id,
+      participantId: player.id,
+      participantKind: 'player',
+      clientIp: ctx.clientIp,
+      userAgent: getUserAgent(req),
+    });
   }
 
   public override async get(req: Request, res: Response, ctx: Context): Promise<void> {
@@ -28,17 +42,14 @@ export class ApiPlayer extends Handler {
       console.warn(`unable to find player ${playerId}`, err);
       throw RouteError.notFound();
     }
-    if (!this.isUser(player.user, ctx) && !this.hasServerIdAccess(ctx)) {
-      ctx.accessAudit.record({
-        event: 'player_view_denied',
-        method: req.method ?? '',
-        path: 'api/player',
-        gameId: game.id,
-        participantId: playerId,
-        participantKind: 'player',
-        clientIp: ctx.clientIp,
-        userAgent: getUserAgent(req),
-      });
+    const serverIdAccess = this.hasServerIdAccess(ctx);
+    if (player.user !== undefined && ctx.user === undefined && !serverIdAccess) {
+      this.recordDeniedView(req, ctx, game, player);
+      responses.unauthorized(req, res);
+      return;
+    }
+    if (!this.isUser(player.user, ctx) && !serverIdAccess) {
+      this.recordDeniedView(req, ctx, game, player);
       responses.notAuthorized(req, res);
       return;
     }

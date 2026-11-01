@@ -1,0 +1,428 @@
+.card-container {
+  .card-production-box {
+    font-family: Prototype, sans-serif;
+    font-weight: normal;
+    text-shadow: none;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    padding: 4px;
+    margin: 0 4px;
+    border-top: 2px solid #dddddd;
+    border-left: 2px solid #dddddd;
+    border-bottom: 2px solid #898989;
+    border-right: 2px solid #898989;
+    box-shadow: @outline-shadow;
+    background-image: url(../assets/misc/production.png);
+    background-size: cover;
+    .card-production-box-row {
+      display: flex;
+      flex-flow: row;
+      margin-top: 2px;
+      margin-bottom: 2px;
+      .card-production-box-row-item {
+        align-self: center;
+        .card-item-container {
+          margin: 0 !important;
+        }
+      }
+    }
+  }
+  .card-production-box--req {
+    transform: scale(0.8);
+    padding: 0px;
+  }
+  .card-rows {
+    display: flex;
+    flex-flow: column;
+    margin-top: 8px;
+    align-items: center;
+    .card-row {
+      // background: gold;
+      margin: 4px 0px;
+      display: flex;
+      flex-flow: row;
+      align-items: center;
+    }
+    .card-row:empty {
+      margin: 0;
+    }
+  }
+  .card-description {
+    margin-top: 8px;
+    color: @text_dark;
+    font-size: 11px;
+    line-height: 12px;
+    font-weight: normal;
+  }
+  .card-description-aligned {
+    width: 60%;
+  }
+  .card-description-align--left {
+    align-self: flex-start;
+  }
+  .card-description-align--right {
+    align-self: flex-end;
+  }
+  .card-points {
+    position: absolute;
+    font-family: Prototype, sans-serif;
+    font-weight: normal;
+    color: black;
+    bottom: 3px;
+    right: 3px;
+    width: 80px;
+    height: 42px;
+    line-height: 42px;
+    text-align: center;
+    border-radius: 12px;
+    border-top: 2px solid #dddddd;
+    border-left: 2px solid #dddddd;
+    border-bottom: 2px solid #898989;
+    border-right: 2px solid #898989;
+    background: linear-gradient(#cc8b00, #805700, #805700);
+    box-shadow: @outline-shadow;
+    .card-item-container{
+      margin: 0px;
+    }
+    .card-points-item-first {
+      display: flex;
+    }
+  }
+  .card-points-big {
+    font-size: 36px;
+    text-shadow: 0 0 5px darkorange;
+  }
+  .card-points-normal {
+    display: flex;
+    justify-content: center;
+    font-size: 28px;
+    text-shadow: 0 0 2px darkorange;
+    >div{
+      margin-left: 4px;
+    }
+  }
+  .card-points-vermin {
+    width: 128px;
+    font-size: 18px;
+  }
+  .card-plate {
+    width: 130px;
+    text-shadow: none;
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: bold;
+    line-height: 17px;
+    display: inline-block;
+    vertical-align: middle;
+    padding: 4px 0px;
+    margin-right: 5px;
+    border-radius: 14px;
+    background: linear-gradient(90deg, #f3a10e 0%, #fdea25 45%, #fdea25 55%, #f3a10e 100%);
+    filter: drop-shadow(0px 0px 1px black);
+    box-shadow: 2px 2px 1px;
+    &--narrow {
+      width: 110px;
+    }
+  }
+  .card-text-size--XS {
+    font-size: @font_size_tiny;
+  }
+  .card-text-size--S {
+    font-size: @font_size_small;
+  }
+  .card-text-size--M {
+    font-size: @font_size_normal;
+  }
+  .card-text-size--L {
+    font-size: @font_size_big;
+  }
+  .card-text-uppercase {
+    text-transform: uppercase;
+    line-height: normal;
+  }
+  .card-text-bold {
+    font-weight: bold;
+  }
+  .card-text-normal {
+    font-size: 11px;
+    line-height: 12px;
+    font-weight: normal;
+  }
+  .card-nbsp {
+    visibility: hidden;
+    width: 10px;
+  }
+  .card-vspace {
+    visibility: hidden;
+    width: 100%;
+  }
+  .card-vspace--small {
+    height: 8px;
+  }
+  .card-vspace--medium {
+    height: 16px;
+  }
+  .card-vspace--large {
+    height: 24px;
+  }
+  .card-survey-mission {
+    background-image: url(../assets/pathfinders/survey-mission.png);
+    width: 65px;
+    height: 52px;
+    background-size: 65px 52px;
+    background-repeat: no-repeat;
+  }
+
+  /* tiles */
+  // Spacing only. Pair with a tile class (e.g. city-tile) for the image and a tile-size--* class for dimensions.
+  .card-tile {
+    margin-left: 4px;
+    margin-right: 4px;
+    background-repeat: no-repeat;
+  }
+  .card-tile-canvas {
+    background-image: url(../assets/tiles/special.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+  }
+  .card-tile-capital {
+    background-image: url(../assets/tiles/city.png);
+    filter: none;
+    width: 40px;
+    height: 47px;
+    background-size: 40px 47px;
+  }
+  /* symbols for tiles */
+  .card-tile-symbol {
+    background-size: 44px;
+    width: 40px;
+    height: 47px;
+  }
+  .card-tile-symbol-commercial-district {
+    background-image: url(../assets/tiles/special_tile_icons/commercial_district.png);
+  }
+  .card-tile-symbol-deimos-down {
+    background-image: url(../assets/tiles/special_tile_icons/deimos.png);
+  }
+  .card-tile-symbol-great-dam {
+    background-image: url(../assets/tiles/special_tile_icons/great_dam.png);
+  }
+  .card-tile-symbol-ecological-zone {
+    background-image: url(../assets/tiles/special_tile_icons/ecological_zone.png);
+  }
+  .card-tile-symbol-industrial-center {
+    background-image: url(../assets/tiles/special_tile_icons/industrial_center.png);
+  }
+  .card-tile-symbol-magnetic-field-generators {
+    background-image: url(../assets/tiles/special_tile_icons/magnetic_field_gen.png);
+  }
+  .card-tile-symbol-mining {
+    background-image: url(../assets/tiles/special_tile_icons/mining_area.png);
+  }
+  .card-tile-symbol-mohole-area {
+    background-image: url(../assets/tiles/special_tile_icons/mohole_area.png);
+  }
+  .card-tile-symbol-lava-flows {
+    background-image: url(../assets/tiles/special_tile_icons/lava_flows.png);
+  }
+  .card-tile-symbol-restricted-area {
+    background-image: url(../assets/tiles/special_tile_icons/restricted_area.png);
+  }
+  .card-tile-symbol-natural-preserve {
+    background-image: url(../assets/tiles/special_tile_icons/natural_preserve.png);
+  }
+  .card-tile-symbol-nuclear-zone {
+    background-image: url(../assets/tiles/special_tile_icons/nuclear_zone.png);
+  }
+  // The special-tile overlays are normalized to a centered 152x152 canvas.
+  .card-tile-symbol-commercial-district,
+  .card-tile-symbol-deimos-down,
+  .card-tile-symbol-great-dam,
+  .card-tile-symbol-ecological-zone,
+  .card-tile-symbol-industrial-center,
+  .card-tile-symbol-magnetic-field-generators,
+  .card-tile-symbol-mining,
+  .card-tile-symbol-mohole-area,
+  .card-tile-symbol-lava-flows,
+  .card-tile-symbol-restricted-area,
+  .card-tile-symbol-natural-preserve,
+  .card-tile-symbol-nuclear-zone {
+    background-position: center;
+  }
+  .card-tile-new-holland {
+    background-image: url(../assets/tiles/new_holland.png);
+    filter: none;
+    width: 47px;
+    height: 59px;
+    background-size: 47px 59px;
+  }
+  .greenery-tile {
+    background-image: url(../assets/tiles/greenery_no_O2.png);
+  }
+  .greenery-tile-oxygen {
+    background-image: url(../assets/tiles/greenery.png);
+  }
+  .tile-size--S {
+    width: 30px;
+    height: 32px;
+    background-size: 30px 32px;
+  }
+  .tile-size--S-square {
+    width: 32px;
+    height: 32px;
+    background-size: 32px 32px;
+  }
+  .tile-size--M {
+    width: 40px;
+    height: 47px;
+    background-size: 40px 47px;
+  }
+  .tile-size--M-square {
+    width: 46px;
+    height: 47px;
+    background-size: 46px 47px;
+  }
+  .tile-size--L {
+    width: 48px;
+    height: 56px;
+    background-size: 48px 56px;
+  }
+  .tile-size--L-square {
+    width: 54px;
+    height: 56px;
+    background-size: 54px 56px;
+  }
+  .tile-size--req {
+    width: 30px;
+    height: 34px;
+    background-size: 30px 34px;
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+  .tile-size--req-square {
+    width: 34px;
+    height: 34px;
+    background-size: 34px 34px;
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+  .card-ocean--S {
+    width: 30px !important;
+    height: 32px !important;
+    background-size: 30px 32px !important;
+    vertical-align: middle !important;
+    box-shadow: none !important;
+    background-repeat: no-repeat;
+  }
+  .card-venus--S {
+    width: 48px !important;
+    height: 32px !important;
+    background-size: 48px 32px !important;
+    vertical-align: middle !important;
+    box-shadow: none !important;
+    background-repeat: no-repeat;
+  }
+  .card-tr {
+    background-image: url(../assets/resources/tr.png);
+    width: 55px;
+    height: 40px;
+    background-size: 55px 40px;
+    position: relative;
+  }
+  .card-tr--S {
+    background-image: url(../assets/resources/tr.png);
+    width: 42px !important;
+    height: 32px !important;
+    background-size: 42px 32px !important;
+    vertical-align: middle !important;
+    box-shadow: none !important;
+    background-repeat: no-repeat;
+    .card-x {
+      position: absolute;
+      color: #000000;
+      font-size: 57px;
+      left: 5px;
+      top: 2px;
+    }
+  }
+  .card-tr--XS {
+    .card-tr--req();
+  }
+  .card-tr--req {
+    background-image: url(../assets/resources/tr.png);
+    width: 45px !important;
+    height: 34px !important;
+    background-size: 45px 34px !important;
+    vertical-align: middle !important;
+    box-shadow: none !important;
+    background-repeat: no-repeat;
+  }
+  .card-delegate {
+    .wrybit-card-delegate-base();
+  }
+  .card-delegate-red {
+    filter: drop-shadow(0px 1px 1px darkred) drop-shadow(0px -1px 1px red) drop-shadow(0px 0px 2px black);
+  }
+  .card-party-leader {
+    display: inline-block;
+    background-image: url(../assets/misc/delegate.png);
+    width: 24px;
+    height: 30px;
+    background-size: 24px 30px;
+    vertical-align: middle;
+    filter: drop-shadow(0px 0px 1px black);
+    background-color: @grey_900;
+    padding: 3px;
+    background-repeat: no-repeat;
+    background-position: 3px;
+    border-radius: 15px 15px 2px 2px;
+  }
+  .card-party-leader--req {
+    display: inline-block;
+    background-image: url(../assets/misc/delegate.png);
+    width: 24px;
+    height: 30px;
+    background-size: 24px 30px;
+    vertical-align: middle;
+    filter: drop-shadow(0px 0px 1px black);
+    background-color: @grey_900;
+    padding: 3px;
+    background-repeat: no-repeat;
+    background-position: 3px;
+    border-radius: 15px 15px 2px 2px;
+  }
+  .card-chairman {
+    display: inline-block;
+    background-image: url(../assets/misc/chairman.png);
+    width: 24px;
+    height: 30px;
+    background-size: 24px 30px;
+    vertical-align: middle;
+    filter: drop-shadow(0px 0px 1px black);
+    background-color: @grey_900;
+    padding: 3px;
+    background-repeat: no-repeat;
+    background-position: 3px;
+    border-radius: 15px 15px 2px 2px;
+  }
+  .card-chairman--req {
+    display: inline-block;
+    background-image: url(../assets/misc/chairman.png);
+    width: 24px;
+    height: 30px;
+    background-size: 24px 30px;
+    vertical-align: middle;
+    filter: drop-shadow(0px 0px 1px black);
+    background-color: @grey_900;
+    padding: 3px;
+    background-repeat: no-repeat;
+    background-position: 3px;
+    border-radius: 15px 15px 2px 2px;
+  }
+  .card-chairman-red {
+    filter: drop-shadow(1px 0px 1px #c33) drop-shadow(-1px 0px 1px #c33) drop-shadow(0px 1px 1px #c33) drop-shadow(0px -1px 1px #c33) !important;
+  }
+}

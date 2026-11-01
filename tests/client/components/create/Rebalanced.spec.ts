@@ -1,6 +1,6 @@
 import {shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
-import {globalConfig} from '../getLocalVue';
+import {globalConfig} from './creationTestConfig';
 import {fakeGameOptionsModel} from '../testHelpers';
 import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
 import PreludesFilter from '@/client/components/create/PreludesFilter.vue';

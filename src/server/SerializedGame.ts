@@ -96,6 +96,8 @@ export type SerializedGame = {
     tradeEmbargo?: boolean;
     turmoil?: SerializedTurmoil;
     undoCount: number;
+    /** Analysis games: running number of AI decisions (absent in saves from before the AI port). */
+    aiDecisionCount?: number;
     underworldData: UnderworldData;
     conglomerates?: ConglomeratesData;
     venusPhase2Data: SerializedVenusPhase2Data | undefined;

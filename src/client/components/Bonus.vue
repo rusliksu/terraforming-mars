@@ -1,5 +1,5 @@
 <template>
-  <div class='board-space-bonuses'>
+  <div class="board-space-bonuses">
     <i
       v-for="(item, idx) in items"
       :key="idx"

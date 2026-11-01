@@ -1,5 +1,5 @@
 import {shallowMount} from '@vue/test-utils';
-import {globalConfig} from '../getLocalVue';
+import {globalConfig} from './creationTestConfig';
 import {expect} from 'chai';
 import CardsFilter from '@/client/components/create/CardsFilter.vue';
 import {CardName} from '@/common/cards/CardName';

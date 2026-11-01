@@ -1,0 +1,339 @@
+// ---------- Base grid: filter column on the left, results on the right ----------
+.card-list-layout {
+  display: grid;
+  grid-template-columns: @card-list-filters-width minmax(0, 1fr);
+  gap: @create-game-gap-column;
+  align-items: start;
+  padding: @create-game-page-padding;
+}
+
+.card-list-filters {
+  position: sticky;
+  top: calc(var(--wrybit-card-list-header) + @create-game-gap-card);
+  display: flex;
+  flex-direction: column;
+  gap: @create-game-gap-card;
+  max-height: calc(100vh - var(--wrybit-card-list-header) - 2 * @create-game-gap-card);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  // Do not clip the tiles' shadows and focus rings
+  padding: 2px 4px 2px 2px;
+}
+
+// Frosted-glass tile like the cards in "Create game"
+.card-list-group {
+  .create-game-card();
+  margin-bottom: 0;
+}
+
+.card-list-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+
+  h2 {
+    font-size: 16px;
+  }
+}
+
+.card-list-link {
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  color: @create-game-dim;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+// ---------- Tiles of the filter groups ----------
+.card-list-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: @create-game-gap-inner;
+}
+
+// Same tile as in "Create game", selection in 20 % purple with a checkmark flag
+.card-list-chip {
+  .create-game-chip();
+  color: #eee;
+  font: inherit;
+  text-align: left;
+
+  // No matches with the other filters: stays selectable but recedes
+  &--empty {
+    opacity: 0.4;
+  }
+}
+
+.card-list-chip-label {
+  white-space: nowrap;
+}
+
+// Space for the checkmark flag
+.card-list-count {
+  .create-game-count();
+  margin-left: auto;
+  margin-right: 6px;
+}
+
+// Icons only (tags, resources): equal-width tiles in a grid, count below
+.card-list-chips--icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+
+  .card-list-chip {
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 2px 4px;
+  }
+
+  .card-list-count {
+    margin: 0;
+    padding: 0 5px;
+  }
+}
+
+.card-list-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: @card-list-icon-size;
+  height: @card-list-icon-size;
+  margin: 0;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+// Base game has no icon: letter instead of image
+.card-list-icon.expansion-icon-base::before {
+  content: "B";
+  display: grid;
+  place-items: center;
+  height: 100%;
+  border-radius: 50%;
+  background: @create-game-chip-hover;
+  font-weight: bold;
+}
+
+.card-list-chips--chips .card-list-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.card-list-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+// ---------- Price range: two stacked sliders on one track ----------
+@card-list-range-thumb: 20px;
+
+.card-list-cost-range {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-list-cost-range-track {
+  position: relative;
+  flex: 1;
+  height: @card-list-range-thumb;
+
+  // Gray base track
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 4px;
+    margin-top: -2px;
+    border-radius: 2px;
+    background: @create-game-chip-hover;
+  }
+
+  input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    background: none;
+    appearance: none;
+    // Only the thumbs catch clicks so both sliders remain usable
+    pointer-events: none;
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: @card-list-range-thumb;
+      height: @card-list-range-thumb;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: @bg_action;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    &::-moz-range-thumb {
+      width: @card-list-range-thumb;
+      height: @card-list-range-thumb;
+      box-sizing: border-box;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: @bg_action;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    &:focus-visible::-webkit-slider-thumb {
+      outline: 2px solid @highlight-gold;
+      outline-offset: 2px;
+    }
+  }
+}
+
+// Selected range in the active color
+.card-list-cost-range-fill {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 2px;
+  background: @bg_action;
+}
+
+.card-list-cost-range-values {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: @create-game-dim;
+}
+
+// Price as a yellow M€ coin as on the cards
+.card-list-cost-range-coin {
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  background: url(../assets/resources/megacredit.png) center / contain no-repeat;
+  color: #000;
+  font-weight: bold;
+}
+
+// ---------- Summary at the top of the filter column ----------
+.card-list-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-list-summary-total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+
+  strong {
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  span {
+    color: @create-game-dim;
+  }
+
+  .card-list-link {
+    margin-left: auto;
+  }
+}
+
+.card-list-active {
+  display: flex;
+  flex-wrap: wrap;
+  gap: @create-game-gap-inner;
+}
+
+.card-list-active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 4px 0 8px;
+  border: 1px solid lighten(@selection-color, 12%);
+  border-radius: @create-game-radius-small;
+  background: fade(@selection-color, @selection-tint-opacity);
+  font-size: 13px;
+
+  .card-list-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  button {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: @create-game-chip-hover;
+    color: #fff;
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+  }
+}
+
+// ---------- More filters ----------
+.card-list-more {
+  summary {
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  &[open] summary {
+    margin-bottom: 12px;
+  }
+
+  // Resource group sits here without its own tile
+  .card-list-group {
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .card-list-group-head h2,
+  h3 {
+    font-size: 13px;
+    color: @create-game-dim;
+  }
+}
+
+.card-list-more-body {
+  display: flex;
+  flex-direction: column;
+  gap: @create-game-gap-card;
+}
+
+.card-list-more-row h3 {
+  margin-bottom: @create-game-gap-inner;
+}

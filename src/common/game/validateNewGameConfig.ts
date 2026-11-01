@@ -7,7 +7,9 @@ import {NewGameConfig} from './NewGameConfig';
 import {Expansion} from '../cards/GameModule';
 import {Message} from '../logs/Message';
 import {LogMessageDataType} from '../logs/LogMessageDataType';
+import {aiUnsupportedReasons} from '../ai/aiSupport';
 import {BoardName} from '../boards/BoardName';
+import {validateCustomMA} from '../ma/CustomMA';
 
 const REVISED_COUNT_ALGORITHM = false;
 
@@ -28,6 +30,11 @@ export type ValidationErrors = {
   prelude2WithoutPrelude: boolean;
   deltaProjectWithoutPrelude: boolean;
   notEnoughCorporations: number;
+  allAiPlayers: boolean;
+  aiUnsupportedExpansions: Array<string>;
+  modularMAInDevelopment: boolean;
+  /** Why customMA is invalid, or empty when it's valid. */
+  invalidCustomMA: string;
 };
 
 function mustSelectAtLeast(message: string, required: number): Message {
@@ -98,6 +105,28 @@ export const validationDetails: Record<keyof ValidationErrors, {blocking: boolea
     blocking: true,
     message: (errors) => mustSelectAtLeast('Must select at least ${0} corporations', errors.notEnoughCorporations),
   },
+  allAiPlayers: {
+    blocking: true,
+    message: 'At least one human player is required: AI seats cannot fill the whole table.',
+  },
+  aiUnsupportedExpansions: {
+    blocking: true,
+    message: (errors) => ({
+      message: 'AI players do not support: ${0}.',
+      data: [{type: LogMessageDataType.RAW_STRING, value: errors.aiUnsupportedExpansions.join(', ')}],
+    }),
+  },
+  modularMAInDevelopment: {
+    blocking: false,
+    message: 'The Official Random Milestones and Awards are still in active development. Please don\'t report anything unless it breaks the game. These are always fully random.',
+  },
+  invalidCustomMA: {
+    blocking: true,
+    message: (errors) => ({
+      message: 'Manual milestones and awards are invalid: ${0}',
+      data: [{type: LogMessageDataType.RAW_STRING, value: errors.invalidCustomMA}],
+    }),
+  },
 };
 
 export type Helpers = {
@@ -123,7 +152,20 @@ export function validateNewGameConfig(config: NewGameConfig, helpers: Helpers): 
     prelude2WithoutPrelude: false,
     deltaProjectWithoutPrelude: false,
     notEnoughCorporations: 0,
+    allAiPlayers: false,
+    aiUnsupportedExpansions: [],
+    modularMAInDevelopment: false,
+    invalidCustomMA: '',
   };
+
+  const aiSeats = config.players.filter((player) => player.aiLevel !== undefined).length;
+  errors.allAiPlayers = playerCount > 0 && aiSeats === playerCount;
+  if (aiSeats > 0) {
+    errors.aiUnsupportedExpansions = aiUnsupportedReasons({
+      expansions: config.expansions,
+      twoCorpsVariant: config.twoCorpsVariant,
+    });
+  }
 
   if (config.escapeVelocity && hasNegativeEscapeVelocityOption(config.escapeVelocity)) {
     errors.negativeEscapeVelocity = true;
@@ -166,6 +208,10 @@ export function validateNewGameConfig(config: NewGameConfig, helpers: Helpers): 
 
   if (config.expansions.deltaProject && !config.expansions.prelude) {
     errors.deltaProjectWithoutPrelude = true;
+  }
+
+  if (config.modularMA) {
+    errors.modularMAInDevelopment = true;
   }
 
   function isMissingExpansion(name: CardName): boolean {
@@ -217,6 +263,12 @@ export function validateNewGameConfig(config: NewGameConfig, helpers: Helpers): 
       errors.notEnoughCeos = required;
     }
     errors.ceosMissingExpansions = config.customCeos.filter(isMissingExpansion);
+  }
+
+  try {
+    validateCustomMA(config.customMA, config.randomMA, config.expansions.venus);
+  } catch (e) {
+    errors.invalidCustomMA = e instanceof Error ? e.message : String(e);
   }
   return errors;
 }

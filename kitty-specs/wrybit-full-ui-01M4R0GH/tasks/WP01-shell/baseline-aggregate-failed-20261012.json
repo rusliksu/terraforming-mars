@@ -1,0 +1,19 @@
+{
+  "wp_id": "WP01",
+  "captured_at": "2026-10-12T18:58:17Z",
+  "base_branch": "codex/wrybit-full-ui",
+  "base_commit": "fef179c923ba35a61d5312a001725ce6d9ec5027",
+  "test_runner": "custom",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failures": [
+    {
+      "test": "<declared-command>",
+      "error": "    at async Context.<anonymous> (D:\\tm-db\\smartbot-lab\\spec-kitty\\wrybit-owned-repair-tmp\\tmph6pkbviz\\baseline-worktree\\tests\\routes\\PlayerInput.spec.ts:765:5)",
+      "file": "unknown"
+    }
+  ],
+  "source_identity": "DeclaredCommandScopeSource/text"
+}

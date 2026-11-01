@@ -4,6 +4,7 @@
 @import (inline) "../../node_modules/dialog-polyfill/dialog-polyfill.css";
 @import "./variables.less";
 @import "./mixins.less";
+@import "./hotkeys.less";
 
 html,
 body,
@@ -11,6 +12,8 @@ body,
   height: 100%;
   margin: 0px;
 }
+
+@import "./wrybit/game_end_global.less";
 .btn {
   color: @text_action !important;
   background: @bg_action !important;

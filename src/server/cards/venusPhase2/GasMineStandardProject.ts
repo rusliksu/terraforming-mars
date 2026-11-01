@@ -8,7 +8,6 @@ import {Resource} from '../../../common/Resource';
 import {StandardProjectCanPayWith} from '../../../common/cards/Types';
 import {TileType} from '../../../common/TileType';
 import {Size} from '../../../common/cards/render/Size';
-import {LogHelper} from '../../LogHelper';
 
 export class GasMineStandardProject extends StandardProjectCard {
   constructor(properties = {
@@ -47,6 +46,5 @@ export class GasMineStandardProject extends StandardProjectCard {
     player.game.defer(new PlaceGasMineTile(player));
     player.production.add(Resource.HEAT, 1, {log: true});
     player.game.increaseVenusScaleLevel(player, 1);
-    LogHelper.logVenusIncrease(player, 1);
   }
 }

@@ -1,0 +1,230 @@
+// Resource selection as tiles (SelectResource.vue); selection border like on cards (selection_highlight.less)
+
+.resource-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 8px 0 16px;
+}
+
+.resource-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 110px;
+  padding: 14px 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 0.12s, background-color 0.12s;
+
+  // Only with a real mouse: on touch :hover sticks after tapping, the selected tile would appear offset
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-2px);
+      background: rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  &:focus-within {
+    outline: 2px solid @selection-color;
+    outline-offset: 3px;
+  }
+}
+
+.resource-option--selected {
+  .selection-highlight();
+}
+
+// Radio only for keyboard and screen readers
+.resource-option-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.resource-option-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0;
+  background-size: contain;
+}
+
+.resource-option-name {
+  font-size: 15px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+// Simple decision (OrOptions, choiceMenu.ts): same tiles, wider for text
+.choice-options {
+  .resource-options();
+}
+
+.choice-option {
+  .resource-option();
+  width: 260px;
+  min-height: 72px;
+  justify-content: center;
+  padding: 14px 16px;
+  font-size: 16px;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.choice-option--selected {
+  .selection-highlight();
+}
+
+.choice-option-input {
+  .resource-option-input();
+}
+
+// Option with resource (ChoiceOptionTile.vue): icon on top, text, below it your own value before → after
+.choice-option--resource {
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.choice-option-icon {
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  background-size: contain;
+}
+
+// Icon row like on the cards: cost, red action arrow, result. Amount and icon belong together (2px),
+// items of one side are further apart (8px), the arrow separates the sides most clearly (Gestalt: proximity)
+.choice-option-icons {
+  display: flex;
+  // One row like on the card; cost and result must not break apart
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.choice-option-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+// Production: icon in the brown production box like on the cards
+.choice-option-production {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 4px;
+  background: url("assets/misc/production.png") center / cover;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+
+  .choice-option-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+// Gains without a resource: global parameters, TR, ocean, card (choiceResultGains.ts)
+// The thermometer is slim: a narrow box keeps the row short enough for one line
+.choice-option-gain--temperature { width: 22px; background: url("assets/global-parameters/temperature.png") center / contain no-repeat; }
+.choice-option-gain--oxygen { background: url("assets/global-parameters/oxygen.png") center / contain no-repeat; }
+.choice-option-gain--venus { background: url("assets/global-parameters/venus.png") center / contain no-repeat; }
+.choice-option-gain--tr { background: url("assets/resources/tr.png") center / contain no-repeat; }
+.choice-option-gain--ocean { background: url("assets/tiles/ocean.png") center / contain no-repeat; }
+.choice-option-gain--card { background: url("assets/resources/card.png") center / contain no-repeat; }
+
+.choice-option-amount {
+  font-family: Prototype, sans-serif;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.choice-option-amount--gain {
+  color: #9be29b;
+}
+
+.choice-option-amount--loss {
+  color: #ffb4a6;
+}
+
+.choice-option-value {
+  // Value always at the bottom, even if the neighbouring tile's text is one line: values of a row sit on one line
+  margin-top: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  font-family: Prototype, sans-serif;
+  font-size: 20px;
+}
+
+// Red action arrow between paid and gained, the same image as on the cards
+.choice-option-arrow {
+  display: inline-block;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  background: url("assets/misc/arrow.png") center / contain no-repeat;
+}
+
+// Values block with several parts (card count, resource table) stacked
+.choice-option-value:has(.choice-option-table) {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 6px 12px 8px;
+}
+
+.choice-option-card-count {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+}
+
+// One row per affected resource: icon | stock | production; labels once on top.
+// Rows sit closer together than the block to the text above (law of proximity)
+.choice-option-table {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  align-items: center;
+  gap: 4px 12px;
+  text-align: left;
+}
+
+.choice-option-row-icon {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  background-size: contain;
+}
+
+.choice-option-number {
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.choice-option-value-label {
+  font-family: Ubuntu, sans-serif;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+// Value afterwards like on the player tiles (player_options.less): smaller, gain green, loss red
+.choice-option-after {
+  margin-left: 3px;
+  font-size: 15px;
+}
+
+.choice-option-after--gain {
+  color: #9be29b;
+}
+
+.choice-option-after--loss {
+  color: #ffb4a6;
+}

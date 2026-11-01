@@ -1,0 +1,383 @@
+// Player cube in CSS 3D (PlayerCube.vue): translucent ("semi-clear") acrylic like the physical cubes,
+// light from the top left. One component for all places, only the view differs:
+// - iso: standing piece (corner reminder)
+// - slight: seen slightly from above (selected color in the game setup)
+// - top: lying on a flat surface, e.g. on a card (mandatory there: a card is seen from above)
+//
+// Reflections are hard and soft at once, depending on the spot:
+// polished edges catch the light as a fine line, the reflection of the light on the top face has a hard leading
+// edge and fades out softly, a small glint sits at the corner facing the light, light leaving the cube at the bottom
+// right glows softly inside the material. --wrybit-detail (0…1, set from the size) tones all of it down on small cubes.
+// Complex values are escaped (~"…"): Less would otherwise try to evaluate max(), cos(), rgb(… / …) itself.
+
+.player-cube {
+  --wrybit-cube-color: @player_red;
+  --wrybit-cube-size: 20px;
+  --wrybit-cube-tilt: -24deg;
+  --wrybit-cube-turn: 0deg;
+  --wrybit-detail: 1;
+  // Material: translucent acrylic between clear and frosted
+  --wrybit-edge: 0.6;
+  --wrybit-spec: 0.58;
+  --wrybit-spec-soft: 5%;
+  --wrybit-glint: 0.7;
+  --wrybit-inner: 0.34;
+  --wrybit-inner-line: 0.15;
+  --wrybit-exit-glow: 0.9;
+  --wrybit-face-alpha: 34%;
+  --wrybit-back-edge: 0.18;
+  --wrybit-top-light: 38%;
+  --wrybit-top-dark: 10%;
+  // Values actually shown, toned down by size
+  --wrybit-edge-shown: calc(var(--wrybit-edge) * var(--wrybit-detail));
+  --wrybit-spec-shown: calc(var(--wrybit-spec) * (0.4 + 0.6 * var(--wrybit-detail)));
+  --wrybit-spec-soft-shown: calc(var(--wrybit-spec-soft) + (1 - var(--wrybit-detail)) * 16%);
+  --wrybit-glint-shown: calc(var(--wrybit-glint) * (0.25 + 0.75 * var(--wrybit-detail)));
+  --wrybit-inner-line-shown: calc(var(--wrybit-inner-line) * var(--wrybit-detail));
+  --wrybit-back-edge-shown: calc(var(--wrybit-back-edge) * (0.3 + 0.7 * var(--wrybit-detail)));
+  --wrybit-line-blur: calc(0.5px + (1 - var(--wrybit-detail)) * 1px);
+
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--wrybit-cube-size) * 1.5);
+  height: calc(var(--wrybit-cube-size) * 1.5);
+  pointer-events: none;
+
+  // Colored shadow on the surface, offset to the bottom right (away from the light): light refracts through the material
+  &::after {
+    content: "";
+    position: absolute;
+    left: 30%;
+    right: -6%;
+    bottom: 0;
+    height: 34%;
+    border-radius: 50%;
+    background: ~"radial-gradient(closest-side, color-mix(in srgb, color-mix(in srgb, var(--wrybit-cube-color), white 20%), transparent 15%), transparent)";
+    filter: blur(calc(var(--wrybit-cube-size) * 0.06));
+    z-index: 0;
+  }
+}
+
+// Each player color sets the cube color (after the base block, which sets red as the default)
+each(@players, {
+  @c: ~"player_@{value}";
+  .player-cube--@{value} {
+    --wrybit-cube-color: @@c;
+  }
+});
+
+// Reserved identities (custom colors) show a persona token instead of the acrylic body, but the glow under it
+// is still tinted by the player's own color
+each(@reserved-players, {
+  @reserved-c: ~"player_@{value}";
+  .player-cube--@{value} {
+    --wrybit-cube-color: @@reserved-c;
+  }
+});
+
+// Neutral markers (e.g. the solo opponent) share the bronze look, as the old board sprite did
+.player-cube--bronze,
+.player-cube--neutral {
+  --wrybit-cube-color: #b0753d;
+}
+
+.player-cube-body {
+  position: relative;
+  z-index: 1;
+  width: var(--wrybit-cube-size);
+  height: var(--wrybit-cube-size);
+  transform-style: preserve-3d;
+  // Inside: rotate the cube (tilt/turn); outside: a small tilt in screen space, e.g. for the top view
+  transform: ~"rotateX(var(--wrybit-screen-tilt, 0deg)) rotateY(var(--wrybit-screen-turn, 0deg)) rotateX(var(--wrybit-cube-tilt)) rotateY(var(--wrybit-cube-turn))";
+}
+
+.player-cube-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: visible;
+}
+
+// Top face: the brightest one
+.player-cube-face--top {
+  transform: rotateX(90deg) translateZ(calc(var(--wrybit-cube-size) / 2));
+  background:
+    ~"linear-gradient(125deg, transparent 20%, rgb(255 255 255 / var(--wrybit-spec-shown)) calc(20.5% + var(--wrybit-spec-soft-shown)), rgb(255 255 255 / calc(var(--wrybit-spec-shown) * 0.3)) 34%, transparent 52%)",
+    ~"radial-gradient(circle at var(--wrybit-glint-at, 7% 93%), rgb(255 255 255 / var(--wrybit-glint-shown)) 0 2%, transparent calc(4.5% + var(--wrybit-spec-soft-shown)))",
+    ~"linear-gradient(135deg, color-mix(in srgb, color-mix(in srgb, var(--wrybit-cube-color), white var(--wrybit-top-light)), transparent var(--wrybit-face-alpha)), color-mix(in srgb, color-mix(in srgb, var(--wrybit-cube-color), white var(--wrybit-top-dark)), transparent var(--wrybit-face-alpha)))";
+  box-shadow:
+    ~"inset 0 -1px var(--wrybit-line-blur) rgb(255 255 255 / var(--wrybit-edge-shown))",
+    ~"inset 1px 0 var(--wrybit-line-blur) rgb(255 255 255 / calc(var(--wrybit-edge-shown) * 0.8))",
+    ~"inset 0 0 0 1px rgb(255 255 255 / calc(var(--wrybit-edge-shown) * 0.25))",
+    ~"inset 0 0 calc(var(--wrybit-cube-size) * 0.25) rgb(255 255 255 / calc(var(--wrybit-inner) * 0.6))";
+}
+
+// Left face: turned towards the light
+.player-cube-face--left {
+  transform: rotateY(-90deg) translateZ(calc(var(--wrybit-cube-size) / 2));
+  background:
+    ~"radial-gradient(circle at 70% 85%, color-mix(in srgb, color-mix(in srgb, var(--wrybit-cube-color), white 40%), transparent calc(100% - var(--wrybit-exit-glow) * 100%)) 0%, transparent 60%)",
+    ~"linear-gradient(170deg, color-mix(in srgb, color-mix(in srgb, var(--wrybit-cube-color), white 22%), transparent var(--wrybit-face-alpha)), color-mix(in srgb, color-mix(in srgb, var(--wrybit-cube-color), black 8%), transparent var(--wrybit-face-alpha)))";
+  box-shadow:
+    ~"inset -1px 0 var(--wrybit-line-blur) rgb(255 255 255 / calc(var(--wrybit-edge-shown) * 0.9))",
+    ~"inset 0 1px var(--wrybit-line-blur) rgb(255 255 255 / calc(var(--wrybit-edge-shown) * 0.8))";
+}
+
+// Front face: away from the light, this is where it leaves the cube again.
+// Layers: internal reflection of the top face (fine hard line just below the edge), soft vertical internal reflection,
+// light leaving the cube glowing softly at the bottom right, base color
+.player-cube-face--front {
+  transform: translateZ(calc(var(--wrybit-cube-size) / 2));
+  background:
+    ~"linear-gradient(180deg, transparent 12%, rgb(255 255 255 / var(--wrybit-inner-line-shown)) 12.5% 14%, transparent 14.5%)",
+    ~"linear-gradient(90deg, transparent 8%, rgb(255 255 255 / var(--wrybit-inner)) 16%, transparent 32%)",
+    ~"radial-gradient(circle at 78% 82%, color-mix(in srgb, color-mix(in srgb, var(--wrybit-cube-color), white 45%), transparent calc(100% - var(--wrybit-exit-glow) * 100%)) 0%, transparent 62%)",
+    ~"linear-gradient(160deg, color-mix(in srgb, color-mix(in srgb, var(--wrybit-cube-color), black 4%), transparent var(--wrybit-face-alpha)), color-mix(in srgb, color-mix(in srgb, var(--wrybit-cube-color), black 30%), transparent var(--wrybit-face-alpha)))";
+  box-shadow:
+    ~"inset 0 1px var(--wrybit-line-blur) rgb(255 255 255 / var(--wrybit-edge-shown))",
+    ~"inset 1px 0 var(--wrybit-line-blur) rgb(255 255 255 / calc(var(--wrybit-edge-shown) * 0.7))",
+    ~"inset -1px 0 var(--wrybit-line-blur) rgb(255 255 255 / calc(var(--wrybit-edge-shown) * 0.2))";
+}
+
+// Faces turned away: they shine through the material
+.player-cube-face--back,
+.player-cube-face--right,
+.player-cube-face--bottom {
+  background: ~"color-mix(in srgb, var(--wrybit-cube-color), transparent 83%)";
+  box-shadow: ~"inset 0 0 0 1px rgb(255 255 255 / var(--wrybit-back-edge-shown))";
+}
+
+.player-cube-face--back {
+  transform: rotateY(180deg) translateZ(calc(var(--wrybit-cube-size) / 2));
+}
+
+.player-cube-face--right {
+  transform: rotateY(90deg) translateZ(calc(var(--wrybit-cube-size) / 2));
+}
+
+.player-cube-face--bottom {
+  transform: rotateX(-90deg) translateZ(calc(var(--wrybit-cube-size) / 2));
+}
+
+// Glow from within: a colored halo around the visible faces
+.player-cube-face--top,
+.player-cube-face--front,
+.player-cube-face--left {
+  filter: ~"drop-shadow(0 0 calc(var(--wrybit-cube-size) * 0.08) color-mix(in srgb, var(--wrybit-cube-color), transparent 55%))";
+}
+
+// ---------- Ground shadows (top view) ----------
+// Planes at the height of the bottom face, i.e. lying on the surface below the cube. Being part of the 3D scene they
+// get exactly the cube's perspective and rotation. The offset is meant in screen space (away from the light),
+// so it is rotated back against the spin: local = R(spin) · screen offset.
+.player-cube-shadow {
+  --wrybit-shadow-turn: calc(-1 * var(--wrybit-cube-turn));
+  --wrybit-shadow-local-x: calc(var(--wrybit-shadow-x) * cos(var(--wrybit-shadow-turn)) + var(--wrybit-shadow-y) * sin(var(--wrybit-shadow-turn)));
+  --wrybit-shadow-local-y: calc(var(--wrybit-shadow-x) * sin(var(--wrybit-shadow-turn)) - var(--wrybit-shadow-y) * cos(var(--wrybit-shadow-turn)));
+
+  display: none;
+  position: absolute;
+  inset: 0;
+  border-radius: 8%;
+  transform: ~"rotateX(-90deg) translateZ(calc(var(--wrybit-cube-size) / 2 + 0.5px)) translate(var(--wrybit-shadow-local-x), var(--wrybit-shadow-local-y))";
+  pointer-events: none;
+}
+
+// Cast shadow: the cube lies on the surface, so its shadow starts directly at its base and is the base swept away
+// from the light (bottom right). Each layer is a copy of the base moved a step further (--wrybit-shadow-step 0…1): at the base
+// all layers overlap – dark and hard –, towards the tip fewer and blurrier ones – lighter and soft. Tinted with the
+// cube color, because light passes through the translucent cube.
+.player-cube-shadow--cast {
+  --wrybit-shadow-x: calc(var(--wrybit-cube-size) * 0.32 * var(--wrybit-shadow-step));
+  --wrybit-shadow-y: calc(var(--wrybit-cube-size) * 0.38 * var(--wrybit-shadow-step));
+
+  background: ~"color-mix(in srgb, color-mix(in srgb, var(--wrybit-cube-color), black 45%), transparent 80%)";
+  filter: blur(calc(var(--wrybit-cube-size) * (0.01 + 0.07 * var(--wrybit-shadow-step))));
+}
+
+// Rim: very short soft shadow slightly to the left – a soft dark outline that separates the cube from a background
+// of similar color (e.g. a green cube on a green card title)
+.player-cube-shadow--rim {
+  --wrybit-shadow-x: calc(var(--wrybit-cube-size) * -0.05);
+  --wrybit-shadow-y: calc(var(--wrybit-cube-size) * 0.02);
+
+  background: rgba(0, 0, 0, 0.4);
+  filter: blur(calc(var(--wrybit-cube-size) * 0.05));
+}
+
+// ---------- Views ----------
+.player-cube--iso {
+  --wrybit-cube-tilt: -35.26deg;
+  --wrybit-cube-turn: 45deg;
+}
+
+.player-cube--slight {
+  --wrybit-cube-tilt: -24deg;
+  --wrybit-cube-turn: 24deg;
+}
+
+// Top view: the top face points at the viewer, only narrow strips of the sides are visible.
+// --wrybit-cube-turn (spin) turns the cube clockwise in the picture. The lighting is recalculated instead of rotated along:
+// the light stays at the top left (angle 225° in the picture).
+.player-cube--top {
+  --wrybit-cube-tilt: -90deg;
+  --wrybit-screen-tilt: 9deg;
+  --wrybit-screen-turn: 9deg;
+  --wrybit-light-angle: 225deg;
+  // Glint where the top face points to the light, rotated back against the spin
+  --wrybit-glint-at: ~"calc(50% + cos(var(--wrybit-light-angle) + var(--wrybit-cube-turn)) * 40%) calc(50% + sin(var(--wrybit-light-angle) + var(--wrybit-cube-turn)) * 40%)";
+
+  // Blurred surface below the cube: the background looks slightly unsharp through the material.
+  // A flat layer with backdrop-filter, because the 3D faces themselves can't use one; turned along with the cube.
+  &::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--wrybit-cube-size);
+    height: var(--wrybit-cube-size);
+    transform: ~"translate(-50%, -50%) rotate(var(--wrybit-cube-turn))";
+    border-radius: calc(var(--wrybit-cube-size) * 0.08);
+    backdrop-filter: blur(calc(var(--wrybit-cube-size) * 0.07));
+    z-index: 0;
+  }
+
+  // The flat colored shadow of the side views is replaced by the ground shadows below
+  &::after {
+    display: none;
+  }
+
+  .player-cube-shadow {
+    display: block;
+  }
+
+  // Top face: reflection and gradient rotated against the spin so they match the light
+  .player-cube-face--top {
+    background:
+      ~"linear-gradient(calc(125deg + var(--wrybit-cube-turn)), transparent 20%, rgb(255 255 255 / var(--wrybit-spec-shown)) calc(20.5% + var(--wrybit-spec-soft-shown)), rgb(255 255 255 / calc(var(--wrybit-spec-shown) * 0.3)) 34%, transparent 52%)",
+      ~"radial-gradient(circle at var(--wrybit-glint-at), rgb(255 255 255 / var(--wrybit-glint-shown)) 0 2%, transparent calc(4.5% + var(--wrybit-spec-soft-shown)))",
+      ~"linear-gradient(calc(135deg + var(--wrybit-cube-turn)), color-mix(in srgb, color-mix(in srgb, var(--wrybit-cube-color), white var(--wrybit-top-light)), transparent var(--wrybit-face-alpha)), color-mix(in srgb, color-mix(in srgb, var(--wrybit-cube-color), white var(--wrybit-top-dark)), transparent var(--wrybit-face-alpha)))";
+    box-shadow:
+      ~"inset 0 0 0 1px rgb(255 255 255 / calc(var(--wrybit-edge-shown) * 0.55))",
+      ~"inset 0 0 calc(var(--wrybit-cube-size) * 0.25) rgb(255 255 255 / calc(var(--wrybit-inner) * 0.6))";
+  }
+
+  // Sides: brightness from the angle between face normal and light (Lambert)
+  .player-cube-face--front {
+    --wrybit-face-angle: 90deg;
+  }
+
+  .player-cube-face--left {
+    --wrybit-face-angle: 180deg;
+  }
+
+  .player-cube-face--right {
+    --wrybit-face-angle: 0deg;
+  }
+
+  .player-cube-face--back {
+    --wrybit-face-angle: 270deg;
+  }
+
+  .player-cube-face--front,
+  .player-cube-face--left,
+  .player-cube-face--right,
+  .player-cube-face--back {
+    --wrybit-light: ~"cos(var(--wrybit-face-angle) + var(--wrybit-cube-turn) - var(--wrybit-light-angle))";
+    background: ~"color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, var(--wrybit-cube-color), white calc(max(0, var(--wrybit-light)) * 35%)), black calc(max(0, -1 * var(--wrybit-light)) * 42%)), transparent var(--wrybit-face-alpha))";
+    // The edge to the top face catches light when the side points towards the light
+    box-shadow:
+      ~"inset 0 1px var(--wrybit-line-blur) rgb(255 255 255 / calc(var(--wrybit-edge-shown) * max(0.15, var(--wrybit-light))))",
+      ~"inset 0 0 0 1px rgb(255 255 255 / calc(var(--wrybit-edge-shown) * 0.2))";
+  }
+}
+
+// ---------- Animated view change (PlayerCube animated prop) ----------
+// Used in the game setup: the chosen cube tilts up from the top view into the slight view, the previous one tilts back.
+// Custom properties are only interpolated when registered, otherwise the browser just switches them.
+@cube-flip-duration: 750ms;
+@cube-flip-hop: 10px;
+// Slight overshoot: the cube springs a little past its end position, like a real piece settling
+@cube-flip-easing: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+@property --wrybit-cube-tilt {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: -24deg;
+}
+
+@property --wrybit-cube-turn {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@property --wrybit-screen-tilt {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@property --wrybit-screen-turn {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@property --wrybit-cube-size {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 20px;
+}
+
+// 0 = standing (iso/slight), 1 = lying (top): drives everything that can't be interpolated directly
+@property --wrybit-lie {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+.player-cube {
+  --wrybit-lie: 0;
+}
+
+.player-cube--top {
+  --wrybit-lie: 1;
+}
+
+.player-cube--animated {
+  transition-property: --wrybit-cube-tilt, --wrybit-cube-turn, --wrybit-screen-tilt, --wrybit-screen-turn, --wrybit-cube-size, --wrybit-lie;
+  transition-duration: @cube-flip-duration;
+  transition-timing-function: @cube-flip-easing;
+
+  // Hop: an arc over sin(lie · 180°), the cube lifts off briefly while tilting
+  .player-cube-body {
+    translate: ~"0 calc(sin(var(--wrybit-lie) * 180deg) * @{cube-flip-hop} * -1)";
+  }
+
+  // Ground shadows fade with --wrybit-lie instead of switching display
+  .player-cube-shadow {
+    display: block;
+    opacity: ~"clamp(0, var(--wrybit-lie), 1)";
+  }
+
+  &::after {
+    display: block;
+    opacity: ~"clamp(0, 1 - var(--wrybit-lie), 1)";
+  }
+
+  // The face lighting of both views can't be interpolated: switch it exactly halfway through the turn
+  .player-cube-face {
+    transition: background 0s linear (@cube-flip-duration / 2), box-shadow 0s linear (@cube-flip-duration / 2);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    .player-cube-face {
+      transition: none;
+    }
+  }
+}

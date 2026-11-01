@@ -96,13 +96,17 @@ export class InMemoryDatabase implements IDatabase {
 
     return Promise.resolve();
   }
-  markFinished(gameId: GameId): Promise<void> {
-    this.completedGames.set(gameId, new Date(this.clock.now()));
-    return Promise.resolve();
-  }
   deleteGame(gameId: GameId): Promise<void> {
     this.games.delete(gameId);
     this.completedGames.delete(gameId);
+    return Promise.resolve();
+  }
+  deleteOrphanParticipants(): Promise<number> {
+    // Participants live inside the serialized games here, so there are no orphan rows.
+    return Promise.resolve(0);
+  }
+  markFinished(gameId: GameId): Promise<void> {
+    this.completedGames.set(gameId, new Date(this.clock.now()));
     return Promise.resolve();
   }
   getFinishedGameIds(): Promise<Array<GameId>> {
@@ -123,7 +127,7 @@ export class InMemoryDatabase implements IDatabase {
       type: 'InMemoryDatabase',
     });
   }
-  storeParticipants() {
+  storeParticipants(_entry?: GameIdLedger) {
     return Promise.resolve();
   }
   async getParticipants(): Promise<Array<GameIdLedger>> {

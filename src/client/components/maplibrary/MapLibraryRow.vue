@@ -1,7 +1,7 @@
 <template>
   <div class="map-card">
     <div class="map-card-thumb">
-      <MapThumbnail v-if="decoded !== undefined" :definition="decoded" :width="thumbnailWidth" :height="thumbnailHeight"/>
+      <MapThumbnail v-if="decoded !== undefined" :definition="decoded" :width="thumbnailWidth" :height="thumbnailHeight" />
       <div v-else class="map-thumbnail map-thumbnail--error" :style="{width: thumbnailWidth + 'px', height: thumbnailHeight + 'px'}" v-i18n>Can't preview this map</div>
     </div>
 

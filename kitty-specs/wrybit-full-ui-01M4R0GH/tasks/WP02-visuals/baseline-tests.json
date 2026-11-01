@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP02",
+  "captured_at": "2026-10-13T16:53:17Z",
+  "base_branch": "codex/wrybit-full-ui",
+  "base_commit": "d0d788f7dd0f623b12e2cabf64e8cd13bd59792b",
+  "test_runner": "custom",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "DeclaredCommandScopeSource/junit_xml"
+}

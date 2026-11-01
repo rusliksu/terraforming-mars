@@ -9,7 +9,7 @@ describe('ConglomeratesExpansion', () => {
 
     it('are not offered as standard projects when Conglomerates is off', () => {
       const [game] = testGame(4);
-      const names = game.getStandardProjects().map((card) => card.name);
+      const names = game.standardProjects.map((card) => card.name);
       for (const name of TEAM_ACTION_NAMES) {
         expect(names).to.not.include(name);
       }
@@ -17,7 +17,7 @@ describe('ConglomeratesExpansion', () => {
 
     it('are offered as standard projects when Conglomerates is on', () => {
       const [game] = testGame(4, {conglomeratesExpansion: true});
-      const names = game.getStandardProjects().map((card) => card.name);
+      const names = game.standardProjects.map((card) => card.name);
       for (const name of TEAM_ACTION_NAMES) {
         expect(names).to.include(name);
       }
@@ -29,7 +29,7 @@ describe('ConglomeratesExpansion', () => {
       // cost-sort could scatter the 3 Team Actions among unrelated same-cost projects instead
       // of keeping them together as the one related group they actually are.
       const [game] = testGame(4, {conglomeratesExpansion: true, underworldExpansion: true, turmoilExtension: true});
-      const names = game.getStandardProjects().map((card) => card.name);
+      const names = game.standardProjects.map((card) => card.name);
       const indices = TEAM_ACTION_NAMES.map((name) => names.indexOf(name));
       expect(indices.every((i) => i >= 0)).is.true;
       const sortedIndices = [...indices].sort((a, b) => a - b);

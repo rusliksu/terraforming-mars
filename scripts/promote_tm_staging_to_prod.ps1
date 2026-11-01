@@ -179,7 +179,7 @@ normalize_release_permissions() {
   chmod 755 "$runtime_root" "$releases_root" "$shared_root" "$shared_root/elo" "$resolved_candidate" || return 49
   find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type d -exec chmod 755 {} + || return 49
   find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type f -exec chmod 644 {} + || return 49
-  for public_file in package.json package-lock.json; do
+  for public_file in package.json package-lock.json README.md CHANGELOG.md; do
     if [ -f "$resolved_candidate/$public_file" ]; then
       chmod 644 "$resolved_candidate/$public_file" || return 49
     fi
@@ -828,6 +828,8 @@ test -f "$staging_current/elo/index.html"
 test -f "$staging_current/elo/elo-api.js"
 test -f "$staging_current/package.json"
 test -f "$staging_current/package-lock.json"
+test -f "$staging_current/README.md"
+test -f "$staging_current/CHANGELOG.md"
 
 expected_artifact_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("artifactSha256", ""))' "$staging_current/assets/release.json")"
 expected_git_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("gitSha", ""))' "$staging_current/assets/release.json")"
@@ -925,6 +927,8 @@ rsync -a --delete "$staging_current/build/" "$release_dir/build/"
 rsync -a --delete "$staging_current/assets/" "$release_dir/assets/"
 cp "$staging_current/package.json" "$release_dir/package.json"
 cp "$staging_current/package-lock.json" "$release_dir/package-lock.json"
+cp "$staging_current/README.md" "$release_dir/README.md"
+cp "$staging_current/CHANGELOG.md" "$release_dir/CHANGELOG.md"
 mkdir -p "$release_dir/elo"
 for file in $elo_files; do
   cp "$staging_current/elo/$file" "$release_dir/elo/$file"
@@ -939,6 +943,8 @@ mv "$release_dir/build" "$new_release_dir/build"
 mv "$release_dir/assets" "$new_release_dir/assets"
 mv "$release_dir/package.json" "$new_release_dir/package.json"
 mv "$release_dir/package-lock.json" "$new_release_dir/package-lock.json"
+mv "$release_dir/README.md" "$new_release_dir/README.md"
+mv "$release_dir/CHANGELOG.md" "$new_release_dir/CHANGELOG.md"
 python3 - "$new_release_dir/assets/release.json" <<'PY'
 import json
 import pathlib

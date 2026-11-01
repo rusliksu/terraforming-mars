@@ -1,5 +1,5 @@
 <template>
-  <CardRenderItemComponent v-if="isItem(componentData)" :item="componentData"/>
+  <CardRenderItemComponent v-if="isItem(componentData)" :item="componentData" />
   <CardRenderSymbolComponent v-else-if="isSymbol(componentData)" :item="componentData" />
   <CardProductionBoxComponent v-else-if="isProduction(componentData)" :rows="componentData.rows" />
   <CardRenderEffectBoxComponent v-else-if="isEffect(componentData)" :effectData="componentData" />
@@ -11,7 +11,7 @@
 
 <script lang="ts">
 
-import {defineComponent} from 'vue';
+import {defineComponent, PropType} from 'vue';
 import {isDescription as isCardRenderDescription} from '@/common/cards/render/CardRenderDescription';
 import {
   ICardRenderCorpBoxAction,
@@ -39,7 +39,7 @@ export default defineComponent({
   name: 'CardRowComponent',
   props: {
     componentData: {
-      type: Object as () => ItemType,
+      type: [Object, String] as PropType<ItemType>,
       required: true,
     },
   },

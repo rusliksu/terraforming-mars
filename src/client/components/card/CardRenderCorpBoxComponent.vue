@@ -1,14 +1,14 @@
 <template>
-      <div class="card-corporation-box">
-          <div class="card-corporation-label">{{ label }}</div>
-          <div class="card-row" v-for="(row, rowIndex) in rows" :key="rowIndex">
-            <div v-for="(rowData, index) in row" :key="index">
-              <CardRenderItemComponent v-if="isICardRenderItem(rowData)" :item="rowData"/>
-              <CardRenderSymbolComponent v-else-if="isICardRenderSymbol(rowData)" :item="rowData" />
-              <CardRenderEffectBoxComponent v-if="isICardRenderEffect(rowData)" :effectData="rowData" />
-            </div>
-          </div>
+  <div class="card-corporation-box">
+    <div class="card-corporation-label">{{ label }}</div>
+    <div class="card-row" v-for="(row, rowIndex) in rows" :key="rowIndex">
+      <div v-for="(rowData, index) in row" :key="index">
+        <CardRenderItemComponent v-if="isICardRenderItem(rowData)" :item="rowData" />
+        <CardRenderSymbolComponent v-else-if="isICardRenderSymbol(rowData)" :item="rowData" />
+        <CardRenderEffectBoxComponent v-if="isICardRenderEffect(rowData)" :effectData="rowData" />
       </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">

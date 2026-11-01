@@ -9,7 +9,7 @@
       <div v-if="row.locked" class="high-orbit-market-row-lock" v-i18n>Locked this generation</div>
       <div class="high-orbit-market-slots">
         <div v-for="(cardName, slotIdx) in row.slots" :key="slotIdx" class="high-orbit-market-slot">
-          <Card v-if="cardName !== undefined && cardName !== null" :card="{name: cardName, isDisabled: row.locked}"/>
+          <Card v-if="cardName !== undefined && cardName !== null" :card="{name: cardName, isDisabled: row.locked}" />
         </div>
       </div>
     </div>

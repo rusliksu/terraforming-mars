@@ -1,0 +1,977 @@
+.wrybit-mobile-styles() {
+  // Mobile Wrybit layout (WP05). The components render inside .wrybit-ui; html.tm-mobile is
+  // owned by useMobileViewport(). All selectors stay scoped to the optional root.
+
+  @mb-top-height: 52px;
+  @mb-nav-height: 68px;
+  @mb-safe-bottom: env(safe-area-inset-bottom, 0px);
+  @mb-bg: #0d0f14;
+  @mb-surface: rgba(18, 21, 30, 0.94);
+  @mb-raised: #1e2330;
+  @mb-line: #2d3343;
+  @mb-text: #ece9e2;
+  @mb-muted: #a4a9b6;
+  @mb-accent: #6f6cff;
+  @mb-radius: 12px;
+  @mb-gold: #f5c542;
+  @mb-green: #2e7d32;
+  @mb-heat: #b8461f;
+  @mb-sheet-max-width: 560px;
+  @mb-sheet-shadow: 0 -12px 36px rgba(0, 0, 0, 0.8);
+  @mb-carousel-card-half: 124px;
+  @mb-carousel-room-top: 34px;
+  @mb-carousel-room-bottom: 28px;
+  @mb-carousel-dots-height: 26px;
+  @mb-carousel-footer-reserve: 253px;
+  @mb-task-head-height: 61px;
+
+  html.tm-mobile & {
+    // The App-level legal notice is a footer for the start screen; on the player screen it was
+    // rendered over the mobile header. The same notice is available in the game menu/help.
+    // The wrapper itself carries .wrybit-ui, hence &.topmost-player-home.
+    &.topmost-player-home > .notice {
+      display: none;
+    }
+
+    .main-container {
+      margin-left: 0;
+    }
+  }
+
+  #player-home.mb-home {
+    padding: 0;
+  }
+
+  .mb-home {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: @mb-bg;
+    color: @mb-text;
+    font-family: Prototype, sans-serif;
+    box-sizing: border-box;
+  }
+
+  .mb-topbar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: calc(6px + env(safe-area-inset-top)) 94px 0 10px;
+    min-height: @mb-top-height;
+    box-sizing: border-box;
+  }
+
+  .mb-topbar .game-menu {
+    position: static;
+    flex: none;
+  }
+
+  .mb-topbar .game-menu-button {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    padding: 0;
+    border-radius: 10px;
+  }
+
+  .mb-topbar .game-menu-button-label {
+    display: none;
+  }
+
+  .mb-top {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border: 1px solid @mb-line;
+    border-radius: 10px;
+    background: @mb-surface;
+    color: @mb-text;
+    font: inherit;
+    text-align: left;
+    cursor: default;
+  }
+
+  .mb-top-gen {
+    flex: none;
+    font-size: 10px;
+    color: @mb-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    b {
+      display: block;
+      font-size: 13px;
+      color: @mb-text;
+    }
+  }
+
+  .mb-top-globals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px 10px;
+    min-width: 0;
+  }
+
+  .mb-top-global {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+    font-size: 11px;
+
+    img {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
+  .mb-screens {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+  }
+
+  .mb-screen {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    padding: 8px 12px calc(@mb-nav-height + 16px + @mb-safe-bottom);
+    box-sizing: border-box;
+    scrollbar-width: thin;
+  }
+
+  .mb-screen--mars {
+    overflow-y: auto;
+
+    // Desktop-only furniture: the mobile screen has its own quick buttons/bars.
+    .tile-view-toggle,
+    .player_home_block--milestones-and-awards {
+      display: none;
+    }
+
+    .board-tabs {
+      flex: none;
+    }
+  }
+
+  .mb-screen--turn {
+    gap: 12px;
+  }
+
+  .mb-banner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border: 1px solid @mb-line;
+    border-radius: 10px;
+    background: @mb-surface;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .mb-banner--waiting {
+    opacity: 0.65;
+  }
+
+  .mb-banner-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #54d18a;
+    box-shadow: 0 0 8px #54d18a;
+    flex: none;
+  }
+
+  .mb-banner--waiting .mb-banner-dot {
+    background: @mb-muted;
+    box-shadow: none;
+  }
+
+  .mb-banner-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mb-toolbar.sidebar_cont {
+    position: static;
+    width: auto;
+    height: auto;
+    min-height: 66px;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 5px;
+    overflow: hidden;
+    border: 1px solid @mb-line;
+    border-radius: 10px;
+    background: @mb-surface;
+    box-shadow: none;
+    box-sizing: border-box;
+    // The native sidebar is zoomed on touch devices; the mobile toolbar manages its own sizes.
+    zoom: 1 !important;
+  }
+
+  .mb-toolbar .tm,
+  .mb-toolbar .global_params {
+    display: none;
+  }
+
+  .mb-toolbar .preferences_player {
+    display: none !important;
+  }
+
+  // Language and settings stay one tap away; info/help are already in the game menu (top-left).
+  .mb-toolbar .sidebar_item--info,
+  .mb-toolbar a:has(.sidebar_item--help) {
+    display: none !important;
+  }
+
+  .mb-toolbar .sidebar_item {
+    position: static !important;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 40px;
+    height: 52px !important;
+    margin: 0 !important;
+    padding: 3px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    justify-self: center;
+  }
+
+  .mb-toolbar .sidebar_icon {
+    width: 30px !important;
+    height: 30px !important;
+    margin: 0 !important;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  // Cards in the deck and in the discard pile, as on the desktop sidebar: two compact lines
+  // below the fan, not an overlay that hides the icon.
+  .mb-toolbar .goto-cards {
+    align-items: flex-start;
+    padding-top: 2px;
+  }
+
+  .mb-toolbar .sidebar_icon--cards {
+    position: relative;
+    flex: none;
+  }
+
+  .mb-toolbar .deck-size {
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    transform: translateX(-50%);
+    background: transparent;
+    color: @mb-text;
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 9px;
+    line-height: 10px;
+    text-align: center;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+
+
+  .mb-toolbar a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 40px;
+    height: 52px;
+    justify-self: center;
+  }
+
+  .mb-quick {
+    display: flex;
+    gap: 8px;
+
+    button {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1px solid @mb-line;
+      border-radius: 10px;
+      background: @mb-surface;
+      color: @mb-text;
+      font: inherit;
+      font-size: 11px;
+      text-align: left;
+    }
+
+    b {
+      float: right;
+      color: @mb-muted;
+    }
+  }
+
+  .mb-mars-zoom {
+    align-self: flex-end;
+    width: 38px;
+    height: 38px;
+    margin-top: -46px;
+    margin-right: 4px;
+    border: 1px solid @mb-line;
+    border-radius: 10px;
+    background: @mb-surface;
+    color: @mb-text;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mb-game-over {
+    color: @mb-text;
+    font-size: 12px;
+  }
+
+  // Bottom navigation
+  .mb-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 900;
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    height: calc(@mb-nav-height + @mb-safe-bottom);
+    padding: 5px 6px calc(5px + @mb-safe-bottom);
+    box-sizing: border-box;
+    border-top: 1px solid @mb-line;
+    background: @mb-surface;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+
+  .mb-nav-item {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 0 2px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: @mb-muted;
+    font: inherit;
+    font-size: 9px;
+    cursor: pointer;
+  }
+
+  .mb-nav-item--active {
+    color: @mb-text;
+    background: rgba(111, 108, 255, 0.14);
+  }
+
+  .mb-nav-item .mb-glyph {
+    width: 22px;
+    height: 22px;
+  }
+
+  .mb-nav-label {
+    overflow: hidden;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mb-nav-badge {
+    position: absolute;
+    top: 4px;
+    left: calc(50% + 8px);
+    min-width: 15px;
+    height: 15px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: @mb-accent;
+    color: #fff;
+    font-size: 9px;
+    line-height: 15px;
+    text-align: center;
+  }
+
+  .mb-turn-button {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: @mb-accent;
+    color: #fff;
+    box-shadow: 0 0 0 3px rgba(111, 108, 255, 0.22);
+    animation: wrybit-mb-turn-pulse 1.6s infinite;
+  }
+
+  .mb-turn-button--idle {
+    background: @mb-raised;
+    color: @mb-muted;
+    box-shadow: none;
+    animation: none;
+  }
+
+  .mb-turn-count {
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 3px;
+    border-radius: 8px;
+    background: #fff;
+    color: #11151d;
+    font-size: 9px;
+    line-height: 16px;
+    font-weight: bold;
+  }
+
+  @keyframes wrybit-mb-turn-pulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(111, 108, 255, 0.22); }
+    50% { box-shadow: 0 0 0 6px rgba(111, 108, 255, 0.08); }
+  }
+
+  // Players screen
+  .mb-segments {
+    display: flex;
+    gap: 6px;
+    padding: 8px;
+    border: 1px solid @mb-line;
+    border-radius: 10px;
+    background: @mb-surface;
+  }
+
+  .mb-segment {
+    flex: 1;
+    padding: 7px 8px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: @mb-muted;
+    font: inherit;
+    font-size: 11px;
+  }
+
+  .mb-segment--active {
+    background: @mb-raised;
+    color: @mb-text;
+  }
+
+  .mb-ma {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  // Mobile milestone/award table: split layout with a fixed name column and horizontally scrollable values.
+  // It has its own scroll container; mobileFit must not scale the whole table.
+  .mb-ma .ma-table {
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
+    margin: 0 !important;
+    transform: none !important;
+  }
+
+  .mb-ma .ma-table-part--values {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mb-screen--players .players-overview {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+
+  // Log screen
+  .mb-screen--log .log-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    max-height: none;
+  }
+
+  // Hand screen: cards wrap, mobileFit applies the column scale
+  .mb-screen--hand .hand-cards-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mb-screen--hand .hand-cards-panel__cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .mb-screen--hand .card-filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  // Turn screen
+  .mb-screen--turn [data-player-input-host] {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mb-screen--turn .or-tabs,
+  .mb-screen--turn .or-tab-panel,
+  .mb-screen--turn .tab-panel-footer {
+    min-width: 0;
+  }
+
+  .mb-screen--turn .btn-submit {
+    width: 100%;
+    margin: 8px 0;
+  }
+
+  // ---------- Turn menu as a bottom sheet (MobileTurnSheet) ----------
+  .mb-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    background: rgba(5, 6, 10, 0.35);
+  }
+
+  .mb-sheet-backdrop {
+    flex-grow: 1;
+    border: 0;
+    background: transparent;
+  }
+
+  .mb-sheet-drawer {
+    position: relative;
+    width: 100%;
+    max-width: @mb-sheet-max-width;
+    max-height: 82%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mb-sheet-panel {
+    min-height: 0;
+    box-sizing: border-box;
+    padding: 42px 14px calc(22px + @mb-safe-bottom);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0;
+    background: #161a23;
+    box-shadow: @mb-sheet-shadow;
+  }
+
+  .mb-sheet-turn {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 1;
+    transform: translate(-50%, -50%);
+    padding: 0;
+    border: 0;
+    background: transparent;
+
+    .mb-turn-button {
+      margin-top: 0;
+    }
+  }
+
+  .mb-sheet-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .mb-sheet-title {
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .mb-sheet-hint {
+    margin: 0;
+    color: @mb-text;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .mb-sheet-intro {
+    margin: 0;
+  }
+
+  .mb-sheet-confirm {
+    display: flex;
+    gap: 10px;
+  }
+
+  .mb-sheet-confirm-button {
+    flex-grow: 1;
+    height: 48px;
+    margin: 0;
+  }
+
+  .mb-taskbar-back {
+    width: 44px;
+    height: 48px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid @mb-line;
+    background: @mb-raised;
+    color: @mb-text;
+  }
+
+  .mb-sheet-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .mb-section-label {
+      margin: 0;
+    }
+  }
+
+  .mb-section-label {
+    color: @mb-muted;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .mb-waiting-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mb-waiting-player {
+    padding: 8px 14px;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .mb-sheet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mb-sheet-grid .mb-tile {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .mb-sheet-grid .mb-tile-label {
+    font-size: 14px;
+  }
+
+  .mb-sheet-grid,
+  .mb-sheet-end {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .mb-tile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 52px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid @mb-line;
+    background: @mb-raised;
+    color: @mb-text;
+    font: inherit;
+    text-align: left;
+  }
+
+  .mb-tile-icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--mb-tile-tone);
+    background: color-mix(in srgb, var(--mb-tile-tone) 18%, transparent);
+
+    .mb-glyph {
+      width: 22px;
+      height: 22px;
+    }
+  }
+
+  .mb-tile-icon--cards { --mb-tile-tone: #7aa7ff; }
+  .mb-tile-icon--megacredits { --mb-tile-tone: @mb-gold; }
+  .mb-tile-icon--plants { --mb-tile-tone: #5cb85c; }
+  .mb-tile-icon--heat { --mb-tile-tone: #ff7a3d; }
+  .mb-tile-icon--honors { --mb-tile-tone: #d9a2f0; }
+  .mb-tile-icon--colonies { --mb-tile-tone: #5fd0c9; }
+  .mb-tile-icon--neutral { --mb-tile-tone: @mb-muted; }
+
+  .mb-tile-text {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding-right: 12px;
+  }
+
+  .mb-tile-label {
+    overflow-wrap: break-word;
+    font-weight: bold;
+    font-size: 15px;
+  }
+
+  .mb-tile-sub {
+    font-size: 12px;
+    color: @mb-muted;
+  }
+
+  .mb-tile-count {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.14);
+    font-family: Prototype, sans-serif;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+  }
+
+  .mb-tile--success {
+    background: @mb-green;
+    border-color: @mb-green;
+  }
+
+  .mb-tile--heat {
+    background: @mb-heat;
+    border-color: @mb-heat;
+  }
+
+  .mb-tile--highlight {
+    background: #6b5316;
+    border-color: #a07c1d;
+  }
+
+  .mb-tile--success,
+  .mb-tile--heat,
+  .mb-tile--highlight {
+    .mb-tile-sub {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .mb-tile-icon {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.18);
+    }
+  }
+
+  .mb-tile--empty {
+    opacity: 0.45;
+  }
+
+  .mb-sheet-end .mb-tile {
+    justify-content: center;
+    min-height: 48px;
+    background: transparent;
+    text-align: center;
+  }
+
+  .mb-sheet-end .mb-tile--skip {
+    border-color: #24552a;
+    color: #8fd694;
+
+    &:disabled {
+      opacity: 0.35;
+    }
+  }
+
+  .mb-sheet-end .mb-tile--pass {
+    grid-column: 2;
+    border-color: #5a2a24;
+    color: #f0a39a;
+  }
+
+  // ---------- Card carousel (play card) ----------
+  .mb-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 2px 16px 12px;
+  }
+
+  .mb-dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: #3a4152;
+    transition: width 0.2s, background 0.2s;
+  }
+
+  .mb-dot--active {
+    width: 22px;
+    background: @mb-accent;
+  }
+
+  .mb-dot--unavailable {
+    opacity: 0.5;
+  }
+
+  .mb-dots-count {
+    margin-left: 8px;
+    font-size: 12px;
+    color: @mb-muted;
+    font-variant-numeric: tabular-nums;
+  }
+
+  // Columns of the mobile choice/card grids (mobileFit writes --mb-grid-columns)
+  .mb-screen .payments_cont,
+  .mb-screen .wf-component--select-card.choice-block {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  // Card carousel (play card): one card per swipe, the centered card is selected.
+  // Standard projects stay in the wrapping grid above.
+  .mb-screen--turn .payments_cont:has(> label.payments_cards):not(:has(.card-standard-project)) {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    gap: 14px !important;
+    align-items: center;
+    min-height: calc(100dvh - @mb-top-height - @mb-task-head-height - @mb-carousel-dots-height - max(var(--mb-footer-height, @mb-nav-height), @mb-carousel-footer-reserve) - 24px);
+    box-sizing: border-box;
+    margin: 0 -8px;
+    padding: @mb-carousel-room-top calc(50% - @mb-carousel-card-half) @mb-carousel-room-bottom;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    > label.payments_cards {
+      flex-shrink: 0;
+      scroll-snap-align: center;
+    }
+
+    > :not(label) {
+      flex-basis: 100%;
+      flex-shrink: 0;
+    }
+
+    > .choice-section-title {
+      display: none;
+    }
+  }
+
+  .mb-screen--turn .payments_cont > .payments_cards {
+    flex: 0 0 auto;
+  }
+
+  .mb-screen .ma-table {
+    width: 100%;
+  }
+
+  // Keep the mode switch clear of the mobile header and bottom navigation
+  html.tm-mobile & {
+    .wrybit-mode-switch {
+      top: calc(6px + env(safe-area-inset-top));
+      right: 6px;
+      z-index: 950;
+
+      .btn {
+        min-width: 0;
+        height: 34px;
+        padding: 0 8px;
+        font-size: 10px;
+      }
+    }
+  }
+
+  @media (min-width: 900px) and (orientation: landscape) {
+    .mb-topbar {
+      padding-right: 120px;
+    }
+
+    .mb-screen--mars {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(300px, 1fr);
+      align-items: start;
+    }
+
+    .mb-screen--mars > .mb-toolbar,
+    .mb-screen--mars > .mb-banner,
+    .mb-screen--mars > .mb-quick,
+    .mb-screen--mars > .mb-game-over {
+      grid-column: 1 / -1;
+    }
+
+  }
+}

@@ -7,6 +7,8 @@ import {RandomMAOptionType} from '../ma/RandomMAOptionType';
 import {AgendaStyle} from '../turmoil/Types';
 import {GameId} from '../Types';
 import {Expansion} from '../cards/GameModule';
+import {AiLevel} from '../ai/AiLevel';
+import {CustomMA} from '../ma/CustomMA';
 
 export type BoardNameType = BoardName | RandomBoardOption;
 
@@ -29,7 +31,11 @@ export interface NewPlayerModel {
   preludeHandicap?: number;
   first: boolean;
   isBot: boolean;
+  /** Present for computer-controlled players. */
+  aiLevel?: AiLevel;
   profileId?: string;
+  /** Discord user id that controls this human seat. Required on authenticated servers. */
+  discordId?: string;
   telegramID?: string;
   /** Conglomerates only: which team this player is on. Players sharing a value are teammates. */
   team?: number;
@@ -53,6 +59,11 @@ export type NewGameConfig = {
   players: Array<NewPlayerModel>;
   expansions: Record<Expansion, boolean>,
   boards: Array<BoardName>;
+  /**
+   * Legacy single-board selection sent by API callers (and cached clients) that predate
+   * the multi-board 'boards' array. ApiCreateGame normalizes it before creating the game.
+   */
+  board?: BoardNameType;
   /** Opaque map-editor code, required when `boards` includes `BoardName.CUSTOM`. */
   customBoardCode?: string;
   /** Opaque map-editor code overriding the Moon board's own hard-coded default layout. */
@@ -69,9 +80,13 @@ export type NewGameConfig = {
   undoOption: boolean;
   undoStepOption?: boolean;
   showTimers: boolean;
+  /** Analysis game (only with AI players): the log shows the AI's cards and decisions for everyone. */
+  aiAnalysis?: boolean;
   fastModeOption: boolean;
   showOtherPlayersVP: boolean;
   privateHands: boolean;
+  /** When true, every human seat must be bound to a Discord account and players must sign in. */
+  requiresDiscordLogin?: boolean;
   noEloGame: boolean;
   turnBasedGame: boolean;
   botGame: boolean;
@@ -110,4 +125,5 @@ export type NewGameConfig = {
   customCeos: ReadonlyArray<CardName>;
   startingCeos: number;
   startingPreludes: number;
+  customMA?: CustomMA;
 }

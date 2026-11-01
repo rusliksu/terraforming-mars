@@ -1,0 +1,85 @@
+{
+  "_source": "AI-only test batches e11c63350, edf368e77, f8e6f91e0, b0e707ade, bf330fd5b, ec50444ef, 3a7cb8443, 60564b686, dcc8ef0c2",
+  "corporations": {
+    "Cheung Shing MARS": {
+      "plays": 654,
+      "wins": 281,
+      "expectedWins": 244.77
+    },
+    "CrediCor": {
+      "plays": 902,
+      "wins": 327,
+      "expectedWins": 334.0
+    },
+    "Ecoline": {
+      "plays": 785,
+      "wins": 312,
+      "expectedWins": 291.13
+    },
+    "Helion": {
+      "plays": 148,
+      "wins": 38,
+      "expectedWins": 55.7
+    },
+    "Interplanetary Cinematics": {
+      "plays": 648,
+      "wins": 227,
+      "expectedWins": 240.3
+    },
+    "Inventrix": {
+      "plays": 176,
+      "wins": 43,
+      "expectedWins": 66.37
+    },
+    "Mining Guild": {
+      "plays": 455,
+      "wins": 173,
+      "expectedWins": 170.57
+    },
+    "PhoboLog": {
+      "plays": 422,
+      "wins": 112,
+      "expectedWins": 157.3
+    },
+    "Point Luna": {
+      "plays": 752,
+      "wins": 256,
+      "expectedWins": 283.7
+    },
+    "Saturn Systems": {
+      "plays": 920,
+      "wins": 450,
+      "expectedWins": 341.73
+    },
+    "Teractor": {
+      "plays": 555,
+      "wins": 189,
+      "expectedWins": 208.83
+    },
+    "Tharsis Republic": {
+      "plays": 937,
+      "wins": 478,
+      "expectedWins": 351.73
+    },
+    "ThorGate": {
+      "plays": 232,
+      "wins": 77,
+      "expectedWins": 84.73
+    },
+    "United Nations Mars Initiative": {
+      "plays": 81,
+      "wins": 22,
+      "expectedWins": 30.5
+    },
+    "Valley Trust": {
+      "plays": 267,
+      "wins": 100,
+      "expectedWins": 98.8
+    },
+    "Vitor": {
+      "plays": 366,
+      "wins": 122,
+      "expectedWins": 139.83
+    }
+  }
+}

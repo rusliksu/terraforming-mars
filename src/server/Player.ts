@@ -1,9 +1,10 @@
 import {serializeDynamicCards, restoreDynamicCards} from './cards/DynamicCardState';
 import {getAutomationCompatibility} from './bot/AutomationCompatibility';
 import {isLastActivePlayerFinish} from '../common/game/CompletionOutcome';
-import {sendTurnNotice, deleteTurnNotice, deleteTurnNoticeMessage, getStoredTurnNoticeUpdatedAt} from './TelegramBot';
 import * as constants from '../common/constants';
 import {PlayerId} from '../common/Types';
+import {AiLevel, isAiLevel} from '../common/ai/AiLevel';
+import {notifyAiPlayerWaiting} from './ai/aiHook';
 import {MILESTONE_COST, PRODUCTION_MINIMUMS, REDS_RULING_POLICY_COST} from '../common/constants';
 import {cardsFromJSON, ceosFromJSON, corporationCardsFromJSON, newCorporationCard, newProjectCard, preludesFromJSON} from './createCard';
 import {CardName} from '../common/cards/CardName';
@@ -14,7 +15,6 @@ import {IGame} from './IGame';
 import {Game} from './Game';
 import {Payment, PaymentOptions, DEFAULT_PAYMENT_VALUES, paymentTotal} from '../common/inputs/Payment';
 import {SpendableResource, SPENDABLE_RESOURCES, SPENDABLE_CARD_RESOURCES, SpendableCardResource, CARD_FOR_SPENDABLE_RESOURCE} from '../common/inputs/Spendable';
-import {toLogPayment} from './logs/toLogPayment';
 import {IAward} from './awards/IAward';
 import {ICard, isIActionCard, IActionCard} from './cards/ICard';
 import {IMilestone} from './milestones/IMilestone';
@@ -43,7 +43,6 @@ import {TurmoilHandler} from './turmoil/TurmoilHandler';
 import {AllOptions, DrawCards, DrawOptions} from './deferredActions/DrawCards';
 import {Units} from '../common/Units';
 import {MoonExpansion} from './moon/MoonExpansion';
-import {IStandardProjectCard} from './cards/IStandardProjectCard';
 import {ConvertPlants} from './cards/base/standardActions/ConvertPlants';
 import {ConvertHeat} from './cards/base/standardActions/ConvertHeat';
 import {KELVINISTS_POLICY_3} from './turmoil/parties/Kelvinists';
@@ -69,6 +68,7 @@ import {deferEnergyKeep, getEnergyKeepCap} from './cards/robantilles/RobAntilles
 import {CanAffordOptions, CardAction, IPlayer} from './IPlayer';
 import {IPreludeCard} from './cards/prelude/IPreludeCard';
 import {copyAndClear, inplaceRemove, sum, toName} from '../common/utils/utils';
+import {generateRandomId} from './utils/server-ids';
 import {PreludesExpansion} from './preludes/PreludesExpansion';
 import {ChooseCards} from './deferredActions/ChooseCards';
 import {UnderworldPlayerData} from '../common/underworld/UnderworldPlayerData';
@@ -81,7 +81,7 @@ import {TRSource} from '../common/cards/TRSource';
 import {IParty} from './turmoil/parties/IParty';
 import {newStandardDraft} from './Draft';
 import {Message} from '../common/logs/Message';
-import {DiscordId} from './server/auth/discord';
+import type {DiscordId} from './server/auth/discord';
 import {AlliedParty} from '../common/turmoil/Types';
 import {PlayedCards} from './cards/PlayedCards';
 import {From} from './logs/From';
@@ -94,7 +94,22 @@ import {SelectAmount} from './inputs/SelectAmount';
 import {RemoveResourcesFromCard} from './deferredActions/RemoveResourcesFromCard';
 import {Turmoil} from './turmoil/Turmoil';
 
-const THROW_STATE_ERRORS = Boolean(process.env.THROW_STATE_ERRORS);
+type TelegramModule = typeof import('./TelegramBot');
+
+/**
+ * Loads the Telegram adapter lazily. The engine/worker path supplies an
+ * EngineNotifierPort and never reaches this lazy require, keeping the static
+ * import graph free of fs/https/child_process dependencies.
+ */
+function telegramModule(): TelegramModule {
+  return require('./TelegramBot') as TelegramModule;
+}
+
+function throwStateErrors(): boolean {
+  // The worker/engine path must not assume a Node global. Legacy servers still
+  // opt into strict state errors through the environment.
+  return typeof process !== 'undefined' && Boolean(process.env.THROW_STATE_ERRORS);
+}
 const TURN_NOTICE_DELAY_MS = 5000;
 const DEFAULT_TURN_NOTICE_REMINDER_MS = 12 * 60 * 60 * 1000;
 const DEFAULT_GLOBAL_PARAMETER_STEPS = {
@@ -125,6 +140,8 @@ function unrefTimer(timer: ReturnType<typeof setTimeout>): void {
 
 export class Player implements IPlayer {
   public readonly id: PlayerId;
+  /** Strength of a computer-controlled player; undefined for humans. */
+  public aiLevel: AiLevel | undefined = undefined;
   protected waitingFor?: PlayerInput;
   protected waitingForCb?: () => void;
   public game: IGame;
@@ -251,6 +268,7 @@ export class Player implements IPlayer {
   private _pendingTurnNoticeReminderKey?: string;
   private _turnNoticeSentThisRound: boolean = false;
   public inputRequestedAt?: number;
+  public requestId?: string;
   public clock: Clock = new Clock();
 
   public get megaCredits(): number {
@@ -1163,8 +1181,15 @@ export class Player implements IPlayer {
 
     if (selectedCard.type !== CardType.PROXY) {
       this.lastCardPlayed = selectedCard.name;
-      const logPayment = payment === undefined ? undefined : toLogPayment(payment);
-      this.game.log('${0} played ${1}', (b) => b.player(this).card(selectedCard), {payment: logPayment});
+      if (!selectedCard.cost) {
+        this.game.log('${0} played ${1}', (b) => b.player(this).card(selectedCard));
+      } else {
+        this.game.log('${0} played ${1} [ ${2} ]',
+          (b) => b
+            .player(this)
+            .card(selectedCard)
+            .markdown(Payment.toLogString(payment)));
+      }
     }
 
     // Play the card
@@ -1253,10 +1278,6 @@ export class Player implements IPlayer {
     PathfindersExpansion.onCardPlayed(this, card);
   }
 
-  public playActionCard(): PlayerInput {
-    return this.selectCardAction('Perform an action from a played card', this.getPlayableActionCards());
-  }
-
   private getPlayCeoOPGAction(): PlayerInput | undefined {
     const cards = CeoExtension.getUsableOPGCeoCards(this);
     if (cards.length === 0) {
@@ -1292,9 +1313,17 @@ export class Player implements IPlayer {
       this.cardCost += corporationCard.cardCost - constants.CARD_COST;
     }
 
+    // Luna Trade Federation may pay with its starting titanium, which only arrives when the corp is played.
+    // TODO(kberg): Always pay with SelectPaymentDeferred, which pays with M€ when there's no choice,
+    // and log "kept N project cards" in its andThen.
+    let deferredCardCost = 0;
     if (additionalCorp === false && corporationCard.name !== CardName.BEGINNER_CORPORATION) {
       const diff = this.cardsInHand.length * this.cardCost;
-      this.stock.deduct(Resource.MEGACREDITS, diff);
+      if (corporationCard.name === CardName.LUNA_TRADE_FEDERATION) {
+        deferredCardCost = diff;
+      } else {
+        this.stock.deduct(Resource.MEGACREDITS, diff);
+      }
       if (diff > 0) {
         PathfindersExpansion.addToSolBank(this);
       }
@@ -1304,6 +1333,9 @@ export class Player implements IPlayer {
     const numberOfCardInHand = this.cardsInHand.length;
     ColoniesHandler.maybeActivateColonies(this.game, corporationCard);
     this.defer(corporationCard.play(this));
+    if (deferredCardCost > 0) {
+      this.game.defer(new SelectPaymentDeferred(this, deferredCardCost, {title: 'Select how to pay for your project cards'}));
+    }
     if (corporationCard.initialAction !== undefined && corporationCard.initialActionText !== undefined) {
       this.pendingInitialActions.push(corporationCard);
     }
@@ -1433,7 +1465,12 @@ export class Player implements IPlayer {
     } else {
       const baseCost = this.milestoneCost();
       const cost = baseCost + ((milestone.name === 'Briber') ? 12 : 0);
-      const reserveUnits = milestone.name === 'Merchant' ? Units.every(2) : Units.EMPTY;
+      let reserveUnits = Units.EMPTY;
+      if (milestone.name === 'Merchant') {
+        reserveUnits = Units.every(2);
+      } else if (milestone.name === 'Merchant3') {
+        reserveUnits = Units.every(3);
+      }
       this.game.defer(new SelectPaymentDeferred(this, cost, {title: 'Select how to pay for milestone', reserveUnits: reserveUnits})).andThen(() => {
         recordClaim();
       });
@@ -1834,19 +1871,19 @@ export class Player implements IPlayer {
   }
 
   public getStandardProjectOption(): SelectStandardProjectToPlay {
-    const standardProjects: Array<IStandardProjectCard> = this.game.getStandardProjects();
-
     // Conglomerates: each of the 3 Team Actions' Coordination cost climbs by 1 every time
     // *this player* uses it (not their teammate), resetting each generation -- but each
     // card's own icon always shows its unescalated base cost, since that's baked into static
     // render data. Surface the actual current cost here so it's visible before confirming,
-    // not just discovered by trying to pay and coming up short.
+    // not just discovered by trying to pay and coming up short. These cards are recomputed
+    // on every open and only read while this player's menu is being modeled, so writing the
+    // per-player value onto the shared standard-project list is safe.
     const teamActionByCardName: Partial<Record<CardName, keyof TeamActionCosts>> = {
       [CardName.GIVE_PATENT]: 'givePatent',
       [CardName.FACILITY_SHARING]: 'facilitySharing',
       [CardName.TEAM_DONATION]: 'donation',
     };
-    for (const card of standardProjects) {
+    for (const card of this.game.standardProjects) {
       const action = teamActionByCardName[card.name];
       if (action !== undefined) {
         card.additionalProjectCosts = {
@@ -1855,12 +1892,11 @@ export class Player implements IPlayer {
         };
       }
     }
-
     return new SelectStandardProjectToPlay(
       this,
-      standardProjects,
+      this.game.standardProjects,
       {
-        enabled: standardProjects.map((card) => card.canAct(this)),
+        enabled: this.game.standardProjects.map((card) => card.canAct(this)),
         title: 'Standard projects',
         buttonLabel: 'Confirm',
       });
@@ -2131,8 +2167,9 @@ export class Player implements IPlayer {
     }
 
     // Action cards
-    if (this.getPlayableActionCards().length > 0) {
-      action.options.push(this.playActionCard());
+    const playableActionCards = this.getPlayableActionCards();
+    if (playableActionCards.length > 0) {
+      action.options.push(this.selectCardAction('Perform an action from a played card', playableActionCards));
     }
 
     // CEO cards
@@ -2163,7 +2200,9 @@ export class Player implements IPlayer {
     // Administrative Delay (idesOfMars, fan): lets this player end a turn with 0 actions
     // taken, without it counting as passing, for the rest of the generation it was played.
     const administrativeDelayInEffect = this.administrativeDelayActiveGeneration === this.game.generation;
-    if (this.game.players.length > 1 &&
+    // AI players pass instead: ending turns without passing would keep a generation running forever.
+    if (this.aiLevel === undefined &&
+      this.game.players.length > 1 &&
       (this.actionsTakenThisRound > 0 || administrativeDelayInEffect) &&
       !this.game.gameOptions.fastModeOption &&
       this.allOtherPlayersHavePassed() === false) {
@@ -2198,7 +2237,9 @@ export class Player implements IPlayer {
       action.options.push(sellPatents.action(this));
     }
 
-    if (this.game.players.length > 1 &&
+    // Surrender belongs to human seats: an AI player is already the bot.
+    if (this.aiLevel === undefined &&
+      this.game.players.length > 1 &&
       !this.game.botPlayerIds.has(this.id) &&
       !this.game.surrenderedPlayerIds.has(this.id) &&
       (getAutomationCompatibility(this.game.gameOptions).unsupportedFeatures.length === 0 ||
@@ -2207,7 +2248,8 @@ export class Player implements IPlayer {
     }
 
     // Propose undo action only if you have done one action this turn
-    if (this.actionsTakenThisRound > 0 && this.game.gameOptions.undoOption) {
+    // Undo is a human-only control.
+    if (this.aiLevel === undefined && this.actionsTakenThisRound > 0 && this.game.gameOptions.undoOption) {
       action.options.push(new UndoActionOption());
     }
 
@@ -2230,6 +2272,7 @@ export class Player implements IPlayer {
     }
     const waitingFor = this.waitingFor;
     const waitingForCb = this.waitingForCb;
+    const requestId = this.requestId;
     const game = this.game;
     const logStart = game.gameLog.length;
     const previousLogContext = game.logActionContext;
@@ -2243,6 +2286,7 @@ export class Player implements IPlayer {
     }
     this.waitingFor = undefined;
     this.waitingForCb = undefined;
+    this.requestId = undefined;
     try {
       if (!waitingFor.optional) {
         this.timer.stop();
@@ -2251,7 +2295,12 @@ export class Player implements IPlayer {
       this.defer(waitingFor.process(input, this));
       waitingForCb();
       if (this.waitingFor === undefined) {
-        void deleteTurnNotice(this);
+        const notifier = this.game.engine?.notifier;
+        if (notifier !== undefined) {
+          notifier.inputProcessed?.(this);
+        } else if (this.telegramID !== '') {
+          void telegramModule().deleteTurnNotice(this);
+        }
         this._turnNoticeSentThisRound = false;
       }
     } catch (err) {
@@ -2263,6 +2312,8 @@ export class Player implements IPlayer {
         }
       }
       this.setWaitingFor(waitingFor, waitingForCb);
+      // The player is still answering the same request.
+      this.requestId = requestId;
       throw err;
     } finally {
       game.logActionContext = previousLogContext;
@@ -2333,7 +2384,8 @@ export class Player implements IPlayer {
       this.clearPendingTurnNoticeReminderTimer();
     }
 
-    const storedNoticeUpdatedAt = getStoredTurnNoticeUpdatedAt(this, turnNoticeKey);
+    const telegram = telegramModule();
+    const storedNoticeUpdatedAt = telegram.getStoredTurnNoticeUpdatedAt(this, turnNoticeKey);
     const elapsedMs = storedNoticeUpdatedAt === undefined ? 0 : Math.max(0, Date.now() - storedNoticeUpdatedAt);
     const reminderDelayMs = Math.max(0, reminderMs - elapsedMs);
 
@@ -2364,12 +2416,13 @@ export class Player implements IPlayer {
     }
 
     const previousMessageId = this.lastNoticeMessageId;
-    const sent = await sendTurnNotice(this, turnNoticeKey, {reminder: true});
+    const telegram = telegramModule();
+    const sent = await telegram.sendTurnNotice(this, turnNoticeKey, {reminder: true});
     if (sent) {
       this._turnNoticeSentThisRound = true;
       this.lastTurnReminderNoticeKey = turnNoticeKey;
       if (previousMessageId >= 0 && previousMessageId !== this.lastNoticeMessageId) {
-        await deleteTurnNoticeMessage(this, previousMessageId);
+        await telegram.deleteTurnNoticeMessage(this, previousMessageId);
       }
       this.scheduleTurnNoticeReminder(turnNoticeKey);
     }
@@ -2384,7 +2437,7 @@ export class Player implements IPlayer {
     }
     if (this.waitingFor !== undefined) {
       const message = `Overwriting waitingFor ${this.waitingFor.type} with ${input?.type}`;
-      if (THROW_STATE_ERRORS) {
+      if (throwStateErrors()) {
         throw new Error(message);
       } else {
         console.warn(message);
@@ -2395,15 +2448,24 @@ export class Player implements IPlayer {
     }
     this.waitingFor = input;
     this.waitingForCb = cb;
+    this.requestId = generateRandomId('');
     this.inputRequestedAt = this.clock.now();
     this.game.inputsThisRound++;
+    if (this.aiLevel !== undefined) {
+      notifyAiPlayerWaiting(this);
+    }
+    const notifier = this.game.engine?.notifier;
+    if (notifier !== undefined) {
+      notifier.waitingFor?.(this, input);
+      return;
+    }
     if (this._pendingTurnNoticeTimer) {
       clearTimeout(this._pendingTurnNoticeTimer);
       this._pendingTurnNoticeTimer = undefined;
     }
     if (!this.isTelegramTurnNoticeActionable()) {
       if (this.hasActiveTurnNotice(turnNoticeKey)) {
-        void deleteTurnNotice(this);
+        void telegramModule().deleteTurnNotice(this);
       }
       this._turnNoticeSentThisRound = false;
       return;
@@ -2411,7 +2473,8 @@ export class Player implements IPlayer {
     if (this.canSendTelegramTurnNotice() && this._turnNoticeSentThisRound === false) {
       this._pendingTurnNoticeTimer = setTimeout(async () => {
         this._pendingTurnNoticeTimer = undefined;
-        const sent = await sendTurnNotice(this, turnNoticeKey);
+        const telegram = telegramModule();
+        const sent = await telegram.sendTurnNotice(this, turnNoticeKey);
         if (sent || this.hasActiveTurnNotice(turnNoticeKey)) {
           this._turnNoticeSentThisRound = true;
           this.scheduleTurnNoticeReminder(turnNoticeKey);
@@ -2451,6 +2514,7 @@ export class Player implements IPlayer {
     const waitingFor = this.waitingFor;
     this.waitingFor = undefined;
     this.waitingForCb = undefined;
+    this.requestId = undefined;
     if (waitingFor !== undefined && !waitingFor.optional) {
       this.timer.stop();
     }
@@ -2555,6 +2619,7 @@ export class Player implements IPlayer {
       withinDeflectionZone: this.withinDeflectionZone,
 
       name: this.name,
+      aiLevel: this.aiLevel,
       color: this.color,
       beginner: this.beginner,
       handicap: this.handicap,
@@ -2590,6 +2655,7 @@ export class Player implements IPlayer {
 
   public static deserialize(d: SerializedPlayer, options: {restoreTimerClock?: boolean, helperOwner?: IPlayer} = {}): Player {
     const player = new Player(d.name, d.color, d.beginner, Number(d.handicap), d.id, normalizePreludeHandicap(d.preludeHandicap), options.helperOwner);
+    player.aiLevel = isAiLevel(d.aiLevel) ? d.aiLevel : undefined;
 
     player.actionsTakenThisGame = d.actionsTakenThisGame;
     player.actionsTakenAtGenerationStart = d.actionsTakenAtGenerationStart ?? 0;

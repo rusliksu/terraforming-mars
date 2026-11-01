@@ -1,10 +1,10 @@
 <template>
-    <div class="top-bar-container">
-      <div class="top-bar">
-        <TerraformedBanner v-if="playerView.game.isTerraformed" :playerId="playerView.id"/>
-        <PlayerInfo :player="playerView.thisPlayer" :playerView="playerView" :actionLabel="''" :playerIndex="0" :hideZeroTags="true" :isTopBar="true"/>
-      </div>
+  <div class="top-bar-container">
+    <div class="top-bar">
+      <TerraformedBanner v-if="playerView.game.isTerraformed" :playerId="playerView.id" />
+      <PlayerInfo :player="playerView.thisPlayer" :playerView="playerView" :actionLabel="''" :playerIndex="0" :hideZeroTags="true" :isTopBar="true" />
     </div>
+  </div>
 </template>
 
 <script lang="ts">

@@ -5,6 +5,7 @@ import {ParticipantId} from '../Types';
 import {Color} from '../Color';
 import {Resource} from '../Resource';
 import {GlobalParameter} from '../GlobalParameter';
+import {AiDecisionSummary} from '../ai/AiDecisionSummary';
 
 export type LogEffect =
   | {kind: 'resource', resource: Resource, production: boolean, amount: number, player: Color}
@@ -17,8 +18,6 @@ export type LogGlobalEffect = {
   player: Color;
 };
 
-export type LogPayment = {megacredits: number, steel: number, titanium: number, energy?: number};
-
 export class LogMessage implements Message {
   public playerId?: ParticipantId;
   public hiddenFor?: Array<ParticipantId>;
@@ -28,8 +27,15 @@ export class LogMessage implements Message {
   public actionEnd?: boolean;
   public effect?: LogEffect;
   public replayGlobalEffects?: Array<LogGlobalEffect>;
-  public payment?: LogPayment;
   public timestamp = Date.now();
+  // Analysis games only (aiAnalysis): stable id of the line, so ratings can refer to it
+  public id?: string;
+  // Analysis games only: the AI decision that caused this line
+  public aiDecisionId?: string;
+  public aiDecision?: AiDecisionSummary;
+  // Set on the copy sent to other players: a private line of this AI player, shown in an analysis
+  // game. Replaces playerId there, so the AI's player id never leaves the server.
+  public aiInsight?: Color;
   public type?: LogMessageType;
   constructor(
     type: LogMessageType,

@@ -1,0 +1,115 @@
+<template>
+  <div class="players-table-row players-table-head">
+    <!-- Toggles in front, level with the icons: show and hide goods / tags / scoring.
+         Before them the game menu (only in the player view, GameMenu.vue) -->
+    <div class="players-table-toggles">
+      <GameMenu />
+      <button v-for="section in sections" :key="section.key" type="button"
+        :class="['players-table-toggle', {'players-table-toggle--squeezed': autoHidden.includes(section.key)}]"
+        :aria-pressed="visibility[section.key] ? 'true' : 'false'"
+        :aria-label="$t(section.label)"
+        v-glass-tooltip="$t(section.label)"
+        :data-test="'toggle-' + section.key"
+        @click="$emit('toggle', section.key)">
+        <span :class="['players-table-toggle-icon', 'players-table-toggle-icon--' + section.icon]"></span>
+      </button>
+    </div>
+
+    <!-- Section order from PlayersTable (desktop: goods, tags, scoring; mobile: goods, scoring, tags) -->
+    <template v-for="section in sectionOrder" :key="section">
+      <template v-if="section === 'goods' && visibility.goods">
+        <div class="players-table-divider"></div>
+        <div class="players-table-cell" v-for="type in resources" :key="type">
+          <span :class="'resource_icon resource_icon--' + type"><span v-if="type === 'coordination'" class="resource_icon--coordination-fill"></span></span>
+        </div>
+      </template>
+
+      <template v-if="section === 'tags' && visibility.tags">
+        <div class="players-table-divider"></div>
+        <template v-for="(group, groupIndex) in tagColumns" :key="groupIndex">
+          <div v-if="groupIndex > 0"></div>
+          <div class="players-table-cell" v-for="tag in group" :key="tag" :data-test="'tag-head-' + tag">
+            <Tag :tag="(tag as CardTag)" size="big" type="secondary" />
+          </div>
+        </template>
+      </template>
+
+      <template v-if="section === 'score' && visibility.score">
+        <div class="players-table-divider"></div>
+        <div class="players-table-cell"><div class="tag-count tag-vp tag-type-main tooltip tooltip-bottom" :data-tooltip="$t('Victory Points')"></div></div>
+        <div class="players-table-cell"><div class="tag-count tag-tr tag-type-main tooltip tooltip-bottom" :data-tooltip="$t('Terraform Rating')"></div></div>
+        <div class="players-table-cell"><div class="tag-count tag-cards tag-type-main tooltip tooltip-bottom" :data-tooltip="$t('Cards in hand')"></div></div>
+        <div class="players-table-cell">
+          <div class="tag-count tag-action-card tooltip tooltip-bottom" :data-tooltip="$t('The number of available actions on active cards')">
+            <div class="blue-stripe"></div>
+            <div class="red-arrow"></div>
+          </div>
+        </div>
+      </template>
+    </template>
+
+    <div class="players-table-divider"></div>
+    <div class="players-table-cell players-table-head-label" v-i18n>Cards</div>
+  </div>
+</template>
+
+<script lang="ts">
+import {glassTooltip} from '@/client/wrybit/visuals/common/GlassTooltip';
+import {defineComponent} from 'vue';
+import Tag from '@/client/components/Tag.vue';
+import GameMenu from '@/client/wrybit/visuals/gameMenu/GameMenu.vue';
+import {Tag as CardTag} from '@/common/cards/Tag';
+import {ALL_RESOURCES} from '@/common/Resource';
+import {DESKTOP_SECTION_ORDER, SectionVisibility, TableSection, TagColumnGroups} from '@/client/wrybit/visuals/overview/playersTableLayout';
+
+type SectionToggle = {key: TableSection; label: string; icon: 'megacredit' | 'building' | 'vp'};
+
+// Icon per toggle: typical symbol of the section
+const SECTION_TOGGLES: Array<SectionToggle> = [
+  {key: 'goods', label: 'Goods', icon: 'megacredit'},
+  {key: 'tags', label: 'Tags', icon: 'building'},
+  {key: 'score', label: 'Scoring', icon: 'vp'},
+];
+
+export default defineComponent({
+  name: 'PlayersTableHeader',
+  components: {
+    Tag,
+    GameMenu,
+  },
+  directives: {
+    glassTooltip,
+  },
+  props: {
+    conglomeratesExpansion: {type: Boolean, default: false},
+    visibility: {
+      type: Object as () => SectionVisibility,
+      required: true,
+    },
+    // Section order (playersTableLayout.ts: sectionOrder)
+    sectionOrder: {
+      type: Array as () => ReadonlyArray<TableSection>,
+      default: () => DESKTOP_SECTION_ORDER,
+    },
+    tagColumns: {
+      type: Array as () => TagColumnGroups,
+      required: true,
+    },
+    // Sections hidden for lack of space: toggle dashed, a click brings them back
+    autoHidden: {
+      type: Array as () => Array<TableSection>,
+      default: () => [],
+    },
+  },
+  emits: ['toggle'],
+  computed: {
+    // Toggles in the same order as the sections (mobile: goods, scoring, tags)
+    sections(): Array<SectionToggle> {
+      return this.sectionOrder.flatMap((key) => SECTION_TOGGLES.filter((toggle) => toggle.key === key));
+    },
+    resources(): ReadonlyArray<string> {
+      return this.conglomeratesExpansion ? [...ALL_RESOURCES, 'coordination'] : ALL_RESOURCES;
+    },
+  },
+});
+</script>

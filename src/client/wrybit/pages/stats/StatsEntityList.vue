@@ -1,0 +1,88 @@
+<template>
+  <section class="stats-card">
+    <div class="stats-card-head">
+      <h2><span v-i18n>{{ definition.label }}</span> <span class="stats-dim">· {{ visibleRows.length }}</span></h2>
+      <div v-if="rows.length > searchThreshold" class="stats-list-tools">
+        <span class="stats-dim" v-i18n>Played at least</span>
+        <SegmentedControl :options="minPlaysOptions" v-model="minPlays" />
+        <input v-model="search" type="search" class="stats-search" :placeholder="$t('Search')">
+      </div>
+    </div>
+    <p v-if="rows.length === 0" class="stats-note" v-i18n>No games for these filters.</p>
+    <StatsTable v-else :columns="columns" :rows="visibleRows" :rowKey="rowKey" :initialSort="initialSort">
+      <template #name="{row, rows: shownRows}"><StatsEntityName :kind="kind" :name="row.name" :siblings="namesOf(shownRows)" /></template>
+      <template #winRate="{row}"><StatsWinRate :winRate="row.winRate" :expected="row.expectedWinRate" /></template>
+      <template #mostPlayedBy="{row}"><StatsEntityName v-if="row.mostPlayedBy" kind="player" :name="row.mostPlayedBy" /></template>
+      <template #mostWinsBy="{row}"><StatsEntityName v-if="row.mostWinsBy" kind="player" :name="row.mostWinsBy" /></template>
+    </StatsTable>
+  </section>
+</template>
+
+<script lang="ts">
+import {defineComponent, PropType} from 'vue';
+import {translateText} from '@/client/directives/i18n';
+import {StatsColumn} from './statsTypes';
+import StatsTable from './StatsTable.vue';
+import SegmentedControl from '@/client/wrybit/create/SegmentedControl.vue';
+import StatsEntityName from './StatsEntityName.vue';
+import StatsWinRate from './StatsWinRate.vue';
+import {aggregate} from './statsAggregate';
+import {entityColumns, EntityRow, initialSortOf, withCardPoints, withFunderWinShare} from './statsColumns';
+import {StatsKind, StatsKindDefinition, STATS_KINDS} from './statsKinds';
+import {StatsPlayerResult} from './statsResults';
+import {chooseMinPlays, MIN_PLAYS_OPTIONS} from './statsMinPlays';
+
+// From this many entries on a search field and a minimum count are worthwhile (project cards)
+const SEARCH_THRESHOLD = 15;
+
+// List of one kind (corporations, preludes, cards, milestones, awards, boards)
+export default defineComponent({
+  name: 'StatsEntityList',
+  components: {StatsTable, StatsEntityName, StatsWinRate, SegmentedControl},
+  props: {
+    kind: {type: String as PropType<Exclude<StatsKind, 'player'>>, required: true},
+    results: {type: Array as PropType<ReadonlyArray<StatsPlayerResult>>, required: true},
+  },
+  data() {
+    return {search: '', searchThreshold: SEARCH_THRESHOLD, minPlays: 1, minPlaysOptions: MIN_PLAYS_OPTIONS};
+  },
+  created() {
+    this.minPlays = chooseMinPlays(this.rows.map((row) => row.plays));
+  },
+  computed: {
+    definition(): StatsKindDefinition {
+      return STATS_KINDS[this.kind];
+    },
+    rows(): Array<EntityRow> {
+      const rows = aggregate(this.results, this.kind);
+      if (this.kind === 'award') {
+        return rows.map((row) => withFunderWinShare(row, this.results));
+      }
+      return this.kind === 'card' ? rows.map((row) => withCardPoints(row, this.results)) : rows;
+    },
+    visibleRows(): Array<EntityRow> {
+      if (this.rows.length <= SEARCH_THRESHOLD) {
+        return this.rows;
+      }
+      const search = this.search.trim().toLowerCase();
+      // Search both the translated and the English name
+      return this.rows.filter((row) => row.plays >= this.minPlays &&
+        (search === '' || row.name.toLowerCase().includes(search) || translateText(row.name).toLowerCase().includes(search)));
+    },
+    columns(): Array<StatsColumn> {
+      return entityColumns(this.kind);
+    },
+    initialSort(): string {
+      return initialSortOf(this.kind);
+    },
+  },
+  methods: {
+    rowKey(row: EntityRow): string {
+      return row.name;
+    },
+    namesOf(rows: ReadonlyArray<EntityRow>): Array<string> {
+      return rows.map((row) => row.name);
+    },
+  },
+});
+</script>

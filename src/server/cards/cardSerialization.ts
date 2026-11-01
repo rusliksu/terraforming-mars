@@ -90,11 +90,14 @@ export function deserializeProjectCard(element: SerializedCard): IProjectCard {
 }
 
 export function serializeCorporationCard(card: ICorporationCard): SerializedCard {
-  const serialized = {
+  const serialized: SerializedCard = {
     name: card.name,
     resourceCount: card.resourceCount,
     isDisabled: false,
   };
+  if (card.data !== undefined) {
+    serialized.data = card.data;
+  }
   card.serialize?.(serialized);
   return serialized;
 }
@@ -106,6 +109,9 @@ export function deserializeCorporationCard(element: SerializedCard): ICorporatio
   }
   if (element.resourceCount !== undefined) {
     card.resourceCount = element.resourceCount;
+  }
+  if (card.hasOwnProperty('data') && element.data !== undefined) {
+    card.data = element.data;
   }
   card.deserialize?.(element);
   return card;

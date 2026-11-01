@@ -70,7 +70,8 @@ describe('PatentPooling', () => {
     player.playedCards.push(card);
     const topCard = new MicroMills();
     game.projectDeck.drawPile.push(topCard);
-    const action = cast(player.playActionCard(), SelectCard);
+    const action = cast(player.getActions().options.find((option) =>
+      option.title === 'Perform an action from a played card'), SelectCard);
     expect(action.cards).includes(card);
     action.process({type: 'card', cards: [card.name]});
     runAllActions(game);

@@ -1,0 +1,39 @@
+.create-game-segmented {
+  display: flex;
+  gap: 2px;
+  padding: @create-game-control-padding;
+  border-radius: @create-game-radius-small;
+  background: rgba(0, 0, 0, 0.3);
+
+  button {
+    // Width by label; a long label wraps between words instead of sticking out of the card (phone, long languages)
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: @create-game-dim;
+    line-height: 1.2;
+    cursor: pointer;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  .create-game-segmented--selected {
+    background: @bg_action;
+    color: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  }
+
+  &.create-game-segmented--sub {
+    margin: 2px 0 4px 16px;
+  }
+}
+.page-toolbar {
+  display: flex;
+  gap: @toolbar-gap;
+  .toolbar-glass-icon-buttons();
+}

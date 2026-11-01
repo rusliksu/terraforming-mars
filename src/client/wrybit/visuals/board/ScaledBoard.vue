@@ -1,0 +1,136 @@
+<template>
+  <div ref="root" :class="['scaled-board', {'scaled-board--planet': cropToPlanet, 'scaled-board--preview': planetOnly}]">
+    <!-- The game board is a fixed ~700 px wide; in narrower containers it shrinks instead of being clipped.
+         Comment inside the root on purpose: above it, dev builds get a fragment root (no class fallthrough, $el not an element) -->
+    <div ref="scaled" class="scaled-board-content" :style="contentStyle">
+      <Board :spaces="spaces" :expansions="expansions" :venusScaleLevel="0" :boardName="boardName" :customBoardRows="customBoardRows" :globalParameters="globalParameters" />
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import {defineComponent, PropType} from 'vue';
+import {BoardName} from '@/common/boards/BoardName';
+import {Expansion} from '@/common/cards/GameModule';
+import {GlobalParametersConfig} from '@/common/GlobalParameterConfig';
+import {SpaceModel} from '@/common/models/SpaceModel';
+import Board from '@/client/wrybit/visuals/Board.vue';
+import {PLANET_BOUNDS} from '@/client/wrybit/visuals/board/mobileBoardZoom';
+
+const mountedBoards = new WeakSet<object>();
+
+// Empty game board outside the game (statistics, "Create game"), scaled to the width of its container
+export default defineComponent({
+  name: 'ScaledBoard',
+  components: {Board},
+  props: {
+    spaces: {type: Array as PropType<ReadonlyArray<SpaceModel>>, required: true},
+    boardName: {type: String as PropType<BoardName>, required: true},
+    customBoardRows: {type: Number, default: undefined},
+    globalParameters: {type: Object as PropType<GlobalParametersConfig>, default: undefined},
+    // Without expansions by default: this is about the board itself, not the Venus/Moon tracks
+    expansions: {type: Object as PropType<Record<Expansion, boolean>>, default: () => ({})},
+    // Only the planet: without the scales around it and the spaces outside it (board.less)
+    planetOnly: {type: Boolean, default: false},
+    // Largest zoom: 1 only shrinks; above 1 the board also grows on wide containers
+    maxScale: {type: Number, default: 1},
+    // Planet alone: largest share of the container width the planet itself may take (1 = full width)
+    maxPlanetShare: {type: Number, default: 1},
+  },
+  data() {
+    return {
+      scale: 1,
+      // Width of the board at original size, measured at zoom 1
+      naturalWidth: 0,
+      resizeObserver: undefined as ResizeObserver | undefined,
+    };
+  },
+  computed: {
+    cropToPlanet(): boolean {
+      // The large Amazonis Planitia board is its own hexagon, not the round Mars
+      // artwork: cropping it to PLANET_BOUNDS cut its right/bottom rows off.
+      return this.planetOnly && this.boardName !== BoardName.CUSTOM && this.boardName !== BoardName.AMAZONIS_PLANITIA;
+    },
+    contentStyle(): Record<string, string | number> {
+      if (!this.cropToPlanet) {
+        return {zoom: this.scale};
+      }
+      return {
+        'zoom': this.scale,
+        '--wrybit-planet-left': PLANET_BOUNDS.left + 'px',
+        '--wrybit-planet-top': PLANET_BOUNDS.top + 'px',
+        'width': PLANET_BOUNDS.width + 'px',
+        'height': PLANET_BOUNDS.height + 'px',
+      };
+    },
+  },
+  watch: {
+    spaces() {
+      this.measure();
+    },
+    customBoardRows() {
+      this.measure();
+    },
+    // Another board can be wider or narrower (outer spaces): measure again
+    boardName() {
+      this.measure();
+    },
+  },
+  mounted() {
+    mountedBoards.add(this);
+    this.measure();
+    // Older browsers and test environments without ResizeObserver keep the first fit
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => this.fitToWidth());
+      // Via ref, not $el: $el is only the element as long as the template has a single root
+      this.resizeObserver.observe(this.$refs.root as HTMLElement);
+    }
+  },
+  beforeUnmount() {
+    mountedBoards.delete(this);
+    this.resizeObserver?.disconnect();
+  },
+  methods: {
+    async measure(): Promise<void> {
+      this.scale = 1;
+      await this.$nextTick();
+      if (!mountedBoards.has(this)) {
+        return;
+      }
+      const scaled = this.$refs.scaled as HTMLElement | undefined;
+      // Planet alone: the section has a fixed width; scrollWidth would count the clipped board behind it
+      this.naturalWidth = this.cropToPlanet ? this.planetWidthWithCaptions(scaled) : scaled?.scrollWidth ?? 0;
+      this.fitToWidth();
+    },
+    // Width the planet needs so the place names beside it (e.g. Tharsis volcanoes) stay inside the container.
+    // The overhang is added on both sides, so the planet stays centered.
+    planetWidthWithCaptions(scaled: HTMLElement | undefined): number {
+      if (scaled === undefined) {
+        return PLANET_BOUNDS.width;
+      }
+      const section = scaled.getBoundingClientRect();
+      let overhang = 0;
+      scaled.querySelectorAll('.board-caption').forEach((caption) => {
+        const rect = caption.getBoundingClientRect();
+        if (rect.width > 0) {
+          overhang = Math.max(overhang, section.left - rect.left, rect.right - section.right);
+        }
+      });
+      return PLANET_BOUNDS.width + 2 * Math.ceil(overhang);
+    },
+    fitToWidth(): void {
+      const container = this.$refs.root as HTMLElement | undefined;
+      if (container === undefined) {
+        return;
+      }
+      const available = container.clientWidth;
+      if (this.naturalWidth <= 0) {
+        this.scale = 1;
+        return;
+      }
+      const planetLimit = this.cropToPlanet ? this.maxPlanetShare * available / PLANET_BOUNDS.width : Infinity;
+      this.scale = Math.min(this.maxScale, available / this.naturalWidth, planetLimit);
+    },
+  },
+});
+</script>

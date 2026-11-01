@@ -87,6 +87,24 @@ describe('ServeAsset', () => {
     expect(res.content).eq('Not found');
   });
 
+  it('serves responsive image formats only inside assets', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    for (const [extension, contentType] of [['avif', 'image/avif'], ['webp', 'image/webp']]) {
+      scaffolding.url = `/assets/wrybit/shell/milky-way-portrait-540.${extension}`;
+      const imageResponse = new MockResponse();
+      await scaffolding.get(instance, imageResponse);
+      expect(imageResponse.statusCode).eq(statusCode.ok);
+      expect(imageResponse.headers.get('Content-Type')).eq(contentType);
+      expect(imageResponse.content).contains(`milky-way-portrait-540.${extension}`);
+
+      scaffolding.url = `/private/picture.${extension}`;
+      const outsideResponse = new MockResponse();
+      await scaffolding.get(instance, outsideResponse);
+      expect(outsideResponse.statusCode).eq(statusCode.notFound);
+    }
+    expect(fileApi.counts.readFile).eq(2);
+  });
+
   it('missing asset returns 404 instead of 500', async () => {
     instance = new ServeAsset(undefined, false, new MissingFileApiMock());
     scaffolding.url = '/assets/default_templates.json';
@@ -256,6 +274,71 @@ describe('ServeAsset', () => {
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
     expect(res.statusCode).eq(statusCode.notFound);
+  });
+
+  it('redirects solo URLs to the ELO ratings page', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    for (const url of ['/solo', '/solo/', '/solo/stats']) {
+      const soloRes = new MockResponse();
+      scaffolding.url = url;
+      await scaffolding.get(instance, soloRes);
+
+      expect(soloRes.statusCode, url).eq(statusCode.movedPermanently);
+      expect(soloRes.headers.get('Location'), url).eq('/elo/');
+    }
+  });
+
+  it('serves solo-prefixed data aliases without redirecting', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    for (const [url, path] of [
+      ['/solo/elo-data', 'solo/elo-data'],
+      ['/solo/elo-data/', 'solo/elo-data/'],
+      ['/solo/solo-records', 'solo/solo-records'],
+      ['/solo/solo-records/', 'solo/solo-records/'],
+    ]) {
+      const aliasRes = new MockResponse();
+      scaffolding.url = url;
+      await scaffolding.get(instance, aliasRes);
+
+      expect(aliasRes.statusCode, url).eq(statusCode.ok);
+      expect(aliasRes.content, url).eq('data: ' + resolveEloAssetPath(path));
+    }
+  });
+
+  it('serves the ELO mirror at the root without redirecting', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    for (const url of ['/elo-data.json?ts=123', '/elo-data?ts=123']) {
+      const rootRes = new MockResponse();
+      scaffolding.url = url;
+      await scaffolding.get(instance, rootRes);
+
+      expect(rootRes.statusCode, url).eq(statusCode.ok);
+      expect(rootRes.content, url).eq('data: ' + resolveEloAssetPath('elo-data.json'));
+    }
+  });
+
+  it('serves solo records at the root without redirecting', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    for (const url of ['/solo-records.json', '/solo-records']) {
+      const rootRes = new MockResponse();
+      scaffolding.url = url;
+      await scaffolding.get(instance, rootRes);
+
+      expect(rootRes.statusCode, url).eq(statusCode.ok);
+      expect(rootRes.content, url).eq('data: ' + resolveEloAssetPath('solo-records.json'));
+    }
+  });
+
+  it('redirects trailing-slash data aliases to their canonical URLs', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    for (const [url, location] of [['/elo-data/', '/elo-data'], ['/solo-records/', '/solo-records']]) {
+      const aliasRes = new MockResponse();
+      scaffolding.url = url;
+      await scaffolding.get(instance, aliasRes);
+
+      expect(aliasRes.statusCode, url).eq(statusCode.movedPermanently);
+      expect(aliasRes.headers.get('Location'), url).eq(location);
+    }
   });
 
   it('serves /elo/data.json from the elo asset path', async () => {

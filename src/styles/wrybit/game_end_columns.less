@@ -1,0 +1,585 @@
+// Results page in the look of the game view: galaxy background (app_background.less), frosted-glass boxes and
+// from @player-home-columns-min-width two columns – results on the left, board, charts and log on the right.
+// The sections are distributed so that both columns end up roughly the same length.
+
+@game-end-page-padding: 24px;
+// Law of proximity: tighter within a box than between boxes, widest between the columns
+@game-end-box-padding: 14px;
+@game-end-block-gap: 16px;
+@game-end-columns-gap: 32px;
+@game-end-box-radius: 10px;
+@game-end-box-border: rgba(255, 255, 255, 0.07); // very subtle
+
+// Right column: board (~670px) plus overhang of the colony/spaceport spaces on the left and the scales on the right
+// Overhang of the outer space columns beside .board-cont: RING_FRAME in mobileBoardZoom.ts
+@game-end-board-overhang-left: 36px;
+@game-end-board-overhang-right: 34px;
+@game-end-side-width: 740px;
+@game-end-chart-height: 300px;
+// Total points: largest number on the page, on its own dark surface
+@game-end-total-font-size: 38px;
+@game-end-total-background: rgba(0, 0, 0, 0.55);
+@game-end-total-accent: #ffcc64; // gold like the M/A header of the table
+// Highlighted rows of the victory point details (from NOTABLE_DETAIL_POINTS in GameEnd.vue)
+@game-end-notable-background: rgba(255, 204, 100, 0.16);
+// Divider before the statistics group of the table
+@game-end-divider-width: 2px;
+@game-end-divider-color: rgba(255, 255, 255, 0.35);
+// Glow around the winner row (color of the total points)
+@wrybit-game-end-winner-glow-min: 0 0 4px fade(@game-end-total-accent, 40%);
+@wrybit-game-end-winner-glow-max: 0 0 18px 3px fade(@game-end-total-accent, 75%);
+// Rows with negative points
+@game-end-negative-background: rgba(230, 60, 60, 0.28);
+@game-end-negative-accent: #ff7b7b;
+
+#game-end {
+  padding: @game-end-page-padding;
+  // Background brighter and more colorful here than in the game view (app_background.less): no cards to distract
+  --app-background-saturation: 0.5;
+  --app-background-brightness: 0.5;
+}
+
+// Page background black instead of gray: the background image only covers the window; in full-page screenshots
+// it ends at the bottom – on black the transition is barely noticeable
+body:has(#game-end) {
+  background: #000;
+}
+
+// The results page has no sidebar: drop its reserved space on the left (common.less), otherwise the left margin is larger than the right
+.main-container:has(#game-end) {
+  margin-left: 0;
+}
+
+// Very subtle outlines also for tabs and tab boxes of charts and log (they set their border color themselves, or_options_tabs.less)
+#game-end .or-tab-panel {
+  --or-tab-panel-border: @game-end-box-border;
+}
+
+#game-end .or-tab {
+  border-color: @game-end-box-border;
+}
+
+// Section as a frosted-glass box, same surface as the "view only" tab boxes (or_options_tabs.less)
+.game-end-box {
+  .frosted-surface();
+  position: relative;
+  padding: @game-end-box-padding;
+  border: 1px solid @game-end-box-border;
+  border-radius: @game-end-box-radius;
+  background: @or-tabs-view-panel-background;
+
+  h2 {
+    margin: 0 0 @game-end-box-padding;
+    font-size: 22px;
+  }
+}
+
+// Solo result: picture over the full card width, fading into the ground colour of the picture.
+// The card surface takes that colour too, so picture and text read as one surface.
+@game-end-solo-win-ground: #a9562d; // warm beach sand of solo_win.jpg
+@game-end-solo-lose-ground: #3f2820; // burnt mud of solo_lose.jpg
+
+// Higher specificity than the mobile game-end-box rule (mobile.less), so its padding does not push the picture away from the edges
+#game-end .game-end-solo {
+  --game-end-solo-ground: @game-end-solo-win-ground;
+  --game-end-solo-border: rgba(255, 190, 140, 0.22);
+  --game-end-solo-text: #fbe6d4;
+  padding: 0;
+  overflow: hidden;
+  border-color: var(--game-end-solo-border);
+  background: var(--game-end-solo-ground);
+  backdrop-filter: none;
+
+  &.game-end-solo--lose {
+    --game-end-solo-ground: @game-end-solo-lose-ground;
+    --game-end-solo-border: rgba(255, 200, 170, 0.10);
+    --game-end-solo-text: #e6d8cf;
+  }
+}
+
+.game-end-solo__media {
+  position: relative;
+
+  // Fade the lower part of the picture into the ground colour, no hard edge
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 38%;
+    background: linear-gradient(to bottom, transparent 0%, color-mix(in srgb, var(--game-end-solo-ground) 55%, transparent) 45%, var(--game-end-solo-ground) 100%);
+  }
+}
+
+// Always the whole picture, never cropped
+.game-end-solo__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+}
+
+// Text starts slightly inside the fade
+.game-end-solo__body {
+  position: relative;
+  margin-top: -28px;
+  padding: 0 28px 26px;
+}
+
+.game-end-solo__lead {
+  margin: 0 0 14px;
+  font-size: 24px;
+  line-height: 1.35;
+  font-weight: 500;
+  color: #fff;
+}
+
+#game-end .game-end-solo__list {
+  margin: 0;
+  padding-left: 22px;
+  list-style-position: outside;
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--game-end-solo-text);
+
+  li {
+    margin: 2px 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .game-end-solo__body {
+    margin-top: -18px;
+    padding: 0 16px 18px;
+  }
+
+  .game-end-solo__lead {
+    font-size: 19px;
+  }
+
+  #game-end .game-end-solo__list {
+    font-size: 16px;
+    padding-left: 20px;
+
+    li {
+      margin: 6px 0;
+    }
+  }
+}
+
+.game-end-columns__main,
+.game-end-columns__side {
+  display: flex;
+  flex-direction: column;
+  gap: @game-end-block-gap;
+  min-width: 0;
+}
+
+// Header across both columns: winner and navigation without their own box (no "game over" heading, the winner already says it)
+.game-end-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px; // rows tighter than the elements side by side
+  margin-bottom: @game-end-block-gap;
+
+  // Menu, logo and winner in one row; gaps as in the page header of card list/statistics
+  .game-end-hero-lead {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .page-toolbar {
+    gap: 8px;
+  }
+
+  .game-end-winer-announcement {
+    font-size: 32px;
+    text-align: left;
+  }
+
+  .game_end_navigation {
+    margin: 0 0 0 auto;
+    font-size: 16px;
+    gap: 10px;
+
+    .btn {
+      margin: 0;
+    }
+  }
+}
+
+// Icon left of the text; fixed height of .btn-lg removed (hence three classes) so wrapped text stays inside the button
+// (on mobile both sit side by side in the grid and grow taller together, mobile.less)
+.btn.btn-lg.game-end-nav-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: auto;
+  min-height: 44px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.game-end-nav-icon {
+  flex: none;
+}
+
+// Table: clearly emphasize total points, separate column groups with gaps
+.game_end_table {
+  background: transparent;
+  border-collapse: separate;
+  border-spacing: 0 4px;
+
+  .game-end-table-groups th {
+    padding: 0 6px;
+    font-size: 13px;
+    line-height: 16px;
+    opacity: 0.7;
+    text-shadow: none;
+  }
+
+  td.game-end-total {
+    font-size: @game-end-total-font-size;
+    font-weight: bold;
+    color: @game-end-total-accent;
+    background-color: @game-end-total-background;
+    background-clip: padding-box;
+  }
+
+  th.game-end-total {
+    color: @game-end-total-accent;
+    font-weight: bold;
+  }
+
+  .game-end-group-start {
+    border-left: 8px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .game-end-contribution-total {
+    font-weight: bold;
+  }
+
+  // Divider between scoring (incl. global parameters) and statistics (M€, time, actions)
+  .game-end-group-divider {
+    border-left: @game-end-divider-width solid @game-end-divider-color;
+    padding-left: 10px;
+  }
+
+  // Winner: border in the color of the total points with a pulsing glow
+  tr.game-end-winner-row {
+    outline: 3px solid @game-end-total-accent;
+    outline-offset: 1px;
+    border-radius: 4px;
+    animation: wrybit-game-end-winner-glow 2.4s ease-in-out infinite;
+  }
+
+  // More compact than the old single-column page so the table including the parameter group fits in the left column
+  td,
+  th {
+    padding: 4px;
+    min-width: 0;
+    font-size: 18px;
+  }
+
+  // Smaller icons in the header (original sizes from game_end.less: 34–46px)
+  thead {
+    .tr { width: 34px; height: 28px; background-size: 34px 28px; }
+    .vp,
+    .m-and-a { width: 28px; height: 28px; line-height: 28px; font-size: 14px; }
+    .card-delegate { width: 24px; height: 29px; background-size: 24px 29px; }
+    .resized-tile { width: 26px; height: 30px; background-size: 26px 30px; }
+    // margin overrides the 2px left from .resized-tile(), otherwise greenery/city sit askew above the numbers
+    .table-forest-tile,
+    .table-city-tile,
+    .table-moon-road-tile,
+    .table-moon-habitat-tile,
+    .table-moon-mine-tile,
+    .table-planetary-track { width: 26px; height: 30px; background-size: 26px 30px; margin: 0 auto; }
+    // Global parameters scaled proportionally to 30px height (originals in cards.less: 40×46, thermometer 14×46, oxygen 46×46, Venus 60×40)
+    .tile { height: 30px; margin: 0; background-repeat: no-repeat; }
+    .temperature-tile { width: 9px; background-size: 9px 30px; }
+    .ocean-tile { width: 26px; background-size: 26px 30px; }
+    .venus-tile { width: 45px; background-size: 45px 30px; }
+    .oxygen-tile { width: 30px; background-size: 30px 30px; }
+    .table-red-arrow { width: 24px; height: 24px; background-size: 24px; }
+    .mc-icon { width: 22px; height: 22px; }
+
+    // Block icons would otherwise sit left in the cell – centered so they sit exactly above the centered numbers
+    th > div {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    // Player icon flush with the name below (same indent as .game-end-player-cell)
+    th:first-child {
+      text-align: left !important; // overrides the centered cells from game_end.less
+      padding-left: 10px;
+    }
+  }
+
+  a {
+    font-size: 20px;
+  }
+
+  .game-end-total-column {
+    padding: 0 8px;
+  }
+
+  .column-corporation {
+    width: auto;
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  .game-end-player-cell {
+    text-align: left !important; // overrides the centered cells from game_end.less
+    padding-left: 10px;
+  }
+}
+
+// Victory point details: columns share the width instead of a fixed 275px
+// Safety net: with many columns (Moon, Venus, Pathfinders) the table scrolls inside its box instead of reaching under the board
+.game_end_victory_points {
+  overflow-x: auto;
+
+  // Table fills the whole box; excess width is spread across the columns instead of staying empty on the right
+  .game_end_table {
+    width: 100%;
+  }
+}
+
+.game-end-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+
+  .game-end-column {
+    padding: 0;
+  }
+
+  .game-end-winer-scorebreak-player-title,
+  .game-end-column-row {
+    width: auto;
+  }
+
+  .game-end-winer-scorebreak-player-title {
+    font-size: 20px;
+  }
+
+  .game-end-player {
+    font-size: 20px;
+  }
+
+  .game-end-column-row {
+    font-size: 16px;
+  }
+
+  .game-end-column-text {
+    width: auto;
+    flex: 1;
+  }
+
+  .game-end-column-row--notable {
+    background: linear-gradient(@game-end-notable-background, @game-end-notable-background), @grey_900;
+    font-weight: bold;
+
+    .game-end-column-vp {
+      color: @game-end-total-accent;
+    }
+  }
+
+  .game-end-column-row--negative {
+    background: linear-gradient(@game-end-negative-background, @game-end-negative-background), @grey_900;
+    font-weight: bold;
+
+    .game-end-column-vp {
+      color: @game-end-negative-accent;
+    }
+  }
+}
+
+.game_end_block--board {
+  // Colony/spaceport spaces and scales extend beyond .board-cont
+  padding-left: @game-end-board-overhang-left;
+  padding-right: @game-end-board-overhang-right;
+
+  h2 {
+    margin-left: -(@game-end-board-overhang-left - @game-end-box-padding);
+  }
+}
+
+.game-end-charts .victory-point-chart-container {
+  width: 100%;
+  min-width: 0;
+  height: @game-end-chart-height;
+  margin: 0;
+}
+
+@media only screen and (min-width: @player-home-columns-min-width) {
+  .game-end-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) @game-end-side-width;
+    column-gap: @game-end-columns-gap;
+    // Both columns equally tall so the last box on the left ends flush with the log on the right
+    align-items: stretch;
+  }
+
+  // Last box of the left column (victory point details) fills the rest down to the bottom of the right column
+  .game-end-box--fill {
+    flex-grow: 1;
+  }
+}
+
+// Winner's total points inverted: gold as the surface, number in the darkened player color (like the other total cells)
+// with a bright glow so the winner cell stands out at first glance
+@game-end-winner-total-font-size: 46px;
+@game-end-winner-total-glow: 0 0 10px fade(#fff, 70%); // soft glow without a hard edge so the number stays readable
+// Box background on which the row's 70 % player color (player_translucent_bg_color_*) sits
+@game-end-row-underlay: #1c1c20;
+
+.game_end_table tr.game-end-winner-row td.game-end-total {
+  background-color: @game-end-total-accent;
+  font-size: @game-end-winner-total-font-size;
+  font-weight: 900;
+  // Reserved identities have no entry in the standard @players loop below. Without this dark
+  // fallback their total would stay @game-end-total-accent (gold on gold) and become unreadable.
+  color: #2a1a00;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+// The Rigatone persona surface has bright diagonal streaks; across a dense results table they
+// cut through the score digits. Keep the row colour but drop its decorative pattern here.
+.game_end_table tr.player_translucent_bg_color_rigatone,
+.game_end_table tr.player_translucent_bg_color_rigatone2 {
+  background-image: none;
+  background-color: rgba(82, 12, 8, 0.92);
+}
+
+// Text color = visible row color (70 % player color over the box) under the 38 % darkening of @game-end-total-background
+each(@players, {
+  @c: ~"player_@{value}";
+  .game_end_table tr.game-end-winner-row.player_translucent_bg_color_@{value} td.game-end-total {
+    color: mix(#000, mix(@@c, @game-end-row-underlay, 70%), 38%);
+  }
+});
+
+@keyframes wrybit-game-end-winner-glow {
+  0%,
+  100% { box-shadow: @wrybit-game-end-winner-glow-min; }
+  50% { box-shadow: @wrybit-game-end-winner-glow-max; }
+}
+
+// No pulsing with "reduce motion" – border and slight glow remain
+@media (prefers-reduced-motion: reduce) {
+  .game_end_table tr.game-end-winner-row {
+    animation: none;
+    box-shadow: @wrybit-game-end-winner-glow-min;
+  }
+}
+
+// Legend of the history charts (VictoryPointChart.vue): color stroke, icon, name
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 20px; // entries further apart than stroke, icon and name of one entry
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chart-legend-swatch {
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.chart-legend-icon {
+  filter: drop-shadow(0 0 1px black);
+}
+
+
+// Narrow result page: source tables/navigation/logs are desktop-width; keep their
+// overflow inside the page instead of widening the document. This lives with the
+// Wrybit page styles because the proof app does not load the legacy common.less.
+@media (max-width: 900px) {
+  #game-end .game-end-hero,
+  #game-end .game-end-hero-lead {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  #game-end .game-end-hero-lead {
+    flex-wrap: wrap;
+  }
+
+  #game-end .game-end-winer-announcement {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 24px;
+    overflow-wrap: anywhere;
+  }
+
+  #game-end .game_end {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  #game-end .game_end_table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  // Actions become a full-width column on phones: wrapping/centering a
+  // horizontal button strip clipped both ends at 360px.
+  #game-end .game_end_navigation {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    overflow-x: visible;
+  }
+
+  #game-end .game_end_navigation .game-end-nav-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  #game-end .game-end-columns,
+  #game-end .game-end-columns__side,
+  #game-end .game-end-box {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  #game-end .log-container,
+  #game-end .log-generations {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  #game-end .log-gen-numbers {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}

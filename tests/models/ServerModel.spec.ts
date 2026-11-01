@@ -14,8 +14,97 @@ import {EarthCatapult} from '../../src/server/cards/base/EarthCatapult';
 import {Rogers} from '../../src/server/cards/ceos/Rogers';
 import {OrOptions} from '../../src/server/inputs/OrOptions';
 import {SelectOption} from '../../src/server/inputs/SelectOption';
+import {Builder} from '../../src/server/milestones/Builder';
+import {GeneralistConglomerates} from '../../src/server/milestones/conglomerates/GeneralistConglomerates';
+import {conglomeratesVariant} from '../../src/server/milestones/conglomerates/ConglomeratesMilestoneVariant';
+import {CuttingEdgeTechnology} from '../../src/server/cards/promo/CuttingEdgeTechnology';
+import {CuttingEdgeTechnologyRebalanced} from '../../src/server/cards/rebalanced/CuttingEdgeTechnologyRebalanced';
+import {Xavier} from '../../src/server/cards/ceos/Xavier';
+import {AdhaiHighOrbitConstructions} from '../../src/server/cards/pathfinders/AdhaiHighOrbitConstructions';
+import {Birds} from '../../src/server/cards/base/Birds';
+import {Asteroid} from '../../src/server/cards/base/Asteroid';
+import {ICard} from '../../src/server/cards/ICard';
+import {SpaceType} from '../../src/common/boards/SpaceType';
 
 describe('ServerModel', () => {
+  it('projects conditional discounts from canonical methods without changing payable prices or pending input', () => {
+    const [, player] = testGame(2);
+    const technology: ICard = new CuttingEdgeTechnology();
+    const rebalanced = new CuttingEdgeTechnologyRebalanced();
+    const xavier = new Xavier();
+    const adhai = new AdhaiHighOrbitConstructions();
+    player.playedCards.push(technology, rebalanced, xavier, adhai);
+    const birds = new Birds();
+    const asteroid = new Asteroid();
+    const prompt = new SelectOption('Confirm selection');
+    player.setWaitingFor(prompt);
+    const fixedSources = [{source: technology.name, amount: 2, condition: 'requirements'},
+      {source: rebalanced.name, amount: 2, condition: 'requirements'}];
+    for (const resources of [0, 1, 2, 5]) {
+      adhai.resourceCount = resources;
+      const prices = [player.getCardCost(birds), player.getCardCost(asteroid)];
+      const expected = resources < 2 ? fixedSources :
+        [...fixedSources, {source: adhai.name, amount: resources === 2 ? 1 : 2, condition: 'spaceWithoutPlanetaryTags'}];
+      expect(Server.getPlayer(player, true).conditionalDiscounts).deep.eq(expected);
+      expect([player.getCardCost(birds), player.getCardCost(asteroid)]).deep.eq(prices);
+      expect(player.getWaitingFor()).eq(prompt);
+      expect(adhai.resourceCount).eq(resources);
+      expect(xavier.isDisabled).is.false;
+    }
+    xavier.isDisabled = true;
+    expect(Server.getPlayer(player, true).conditionalDiscounts).deep.eq([
+      ...fixedSources, {source: xavier.name, amount: 1, condition: 'requirements'},
+      {source: adhai.name, amount: 2, condition: 'spaceWithoutPlanetaryTags'},
+    ]);
+    technology.getCardDiscount = () => 7;
+    expect(Server.getPlayer(player, true).conditionalDiscounts?.find((discount) => discount.source === technology.name)?.amount).eq(7);
+  });
+
+  it('keeps conditional badges independent of private hands and identical for player and spectator projections', () => {
+    const [game, player] = testGame(2);
+    player.playedCards.push(new CuttingEdgeTechnology());
+    const expected = Server.getPlayer(player, true).conditionalDiscounts;
+    player.cardsInHand.push(new Asteroid());
+    expect(Server.getPlayer(player, false).conditionalDiscounts).deep.eq(expected);
+    player.cardsInHand.push(new Birds());
+    expect(Server.getPlayer(player, true).conditionalDiscounts).deep.eq(expected);
+    expect(Server.getSpectatorModel(game).players.find((publicPlayer) => publicPlayer.color === player.color)?.conditionalDiscounts).deep.eq(expected);
+  });
+
+  it('projects existing milestone display thresholds without changing scores or claimability', () => {
+    const [game] = testGame(2);
+    const Builder12 = conglomeratesVariant('Builder12', 'Have 12 building tags in play', () => new Builder());
+    game.milestones = [new Builder(), new Builder12(), new GeneralistConglomerates()];
+    const expected = game.milestones.map((milestone) => game.players.map((player) => ({
+      color: player.color, score: milestone.getScore(player), claimable: milestone.canClaim(player),
+    })));
+    const names = game.milestones.map((milestone) => milestone.name);
+    const models = Server.getMilestones(game);
+    expect(models[0]).to.have.property('threshold', 8);
+    expect(models[1]).to.have.property('threshold', 12);
+    expect(models[2]).to.have.property('threshold', undefined);
+    expect(models.map((model) => model.scores)).deep.eq(expected);
+    expect(game.milestones.map((milestone) => milestone.name)).deep.eq(names);
+  });
+
+  it('identifies the pending input across reads and replaces its identity for an identical new prompt', () => {
+    const [game, player, other] = testGame(2);
+    player.setWaitingFor(new SelectOption('Confirm selection'));
+    const first = Server.getPlayerModel(player);
+    expect(first.waitingForId).to.be.a('string');
+    other.megaCredits++;
+    expect(Server.getPlayerModel(player).waitingForId).eq(first.waitingForId);
+    expect(player.getWaitingFor()).to.not.eq(undefined);
+
+    player.popWaitingFor();
+    expect(Server.getPlayerModel(player).waitingForId).eq(undefined);
+    player.setWaitingFor(new SelectOption('Confirm selection'));
+    const next = Server.getPlayerModel(player);
+    expect(next.waitingFor).deep.eq(first.waitingFor);
+    expect(next.waitingForId).not.eq(first.waitingForId);
+    expect(Server.getSpectatorModel(game)).not.to.have.property('waitingForId');
+  });
+
   it('advertises the current Astra replay exclusions in both public models', () => {
     const [game, player] = testGame(2);
     const exclusions = ['Patent Manipulation', 'Hostile Takeover'];
@@ -273,6 +362,14 @@ describe('ServerModel', () => {
       drawPile: game.turmoil!.globalEventDealer.deck.length,
       discardPile: game.turmoil!.globalEventDealer.discards.length,
     });
+  });
+
+  it('labels Mars spaces with their printed coordinates', () => {
+    const [, player] = testGame(2);
+    const spaces = Server.getPlayerModel(player).game.spaces;
+
+    expect(spaces.find((space) => space.id === '03')?.a9).eq('A1');
+    expect(spaces.filter((space) => space.spaceType === SpaceType.COLONY).every((space) => space.a9 === undefined)).is.true;
   });
 
   it('highlights Venus Phase 2\'s Stratopolis/Maxwell Base reserved spots before their tile is placed', () => {

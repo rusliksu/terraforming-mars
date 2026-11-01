@@ -2,59 +2,61 @@
   <div class="player_home_block player_home_block--setup nofloat">
     <template v-if="isInitialDraftingPhase">
       <div v-for="card in playerView.dealtCorporationCards" :key="card.name" class="cardbox">
-        <Card :card="card"/>
+        <Card :card="card" />
       </div>
 
       <div v-for="card in playerView.dealtPreludeCards" :key="card.name" class="cardbox">
-        <Card :card="card"/>
+        <Card :card="card" />
       </div>
 
       <div v-for="card in playerView.dealtCeoCards" :key="card.name" class="cardbox">
-        <Card :card="card"/>
+        <Card :card="card" />
       </div>
 
       <div v-for="card in playerView.dealtProjectCards" :key="card.name" class="cardbox">
-        <Card :card="card"/>
+        <Card :card="card" />
       </div>
     </template>
     <div class="player_home_block player_home_block--hand" v-if="playerView.draftedCards.length > 0">
-      <DynamicTitle title="Drafted Cards" :color="thisPlayer.color"/>
+      <DynamicTitle title="Drafted Cards" :color="thisPlayer.color" />
       <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox">
-          <Card :card="card"/>
+        <Card :card="card" />
       </div>
     </div>
 
     <template v-if="playerView.pickedCorporationCard.length === 1">
-      <DynamicTitle title="Your selected cards:" :color="thisPlayer.color"/>
+      <DynamicTitle title="Your selected cards:" :color="thisPlayer.color" />
       <div>
         <div class="cardbox">
-          <Card :card="playerView.pickedCorporationCard[0]"/>
+          <Card :card="playerView.pickedCorporationCard[0]" />
         </div>
         <template v-if="game.gameOptions.expansions.prelude">
           <div v-for="card in playerView.preludeCardsInHand" :key="card.name" class="cardbox">
-            <Card :card="card"/>
+            <Card :card="card" />
           </div>
         </template>
         <template v-if="game.gameOptions.expansions.ceo">
           <div v-for="card in playerView.ceoCardsInHand" :key="card.name" class="cardbox">
-          <Card :card="card"/>
+            <Card :card="card" />
           </div>
         </template>
       </div>
       <div>
         <div v-for="card in playerView.cardsInHand" :key="card.name" class="cardbox">
-          <Card :card="card"/>
+          <Card :card="card" />
         </div>
       </div>
     </template>
 
-    <DynamicTitle v-if="playerView.pickedCorporationCard.length === 0" title="Select initial cards:" :color="thisPlayer.color"/>
-    <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+    <DynamicTitle v-if="playerView.pickedCorporationCard.length === 0" title="Select initial cards:" :color="thisPlayer.color" />
+    <InputHost v-if="game.phase !== 'end'">
+      <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor" />
+    </InputHost>
     <div class="player_home_block nofloat" v-if="isInitialDraftingPhase">
-      <LogPanel :viewModel="playerView" :color="thisPlayer.color" :step="game.step"/>
+      <LogPanel :viewModel="playerView" :color="thisPlayer.color" :step="game.step" />
     </div>
 
-    <DynamicTitle title="Game details" :color="thisPlayer.color"/>
+    <DynamicTitle title="Game details" :color="thisPlayer.color" />
 
     <div class="player_home_block" v-if="playerView.players.length > 1">
       <Milestones :showScores="true" :milestones="game.milestones" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates" />
@@ -62,8 +64,8 @@
     </div>
 
     <div class="player_home_block player_home_block--turnorder nofloat" v-if="playerView.players.length>1">
-      <DynamicTitle title="Turn order" :color="thisPlayer.color"/>
-      <div class="player_item" v-for="(p, idx) in playerView.players" :key="idx" v-trim-whitespace>
+      <DynamicTitle title="Turn order" :color="thisPlayer.color" />
+      <div class="player_item" v-for="(p, idx) in playerView.players" :key="idx">
         <div class="player_name_cont" :class="getPlayerCssForTurnOrder(p, true)">
           <span class="player_number">{{ idx+1 }}.</span><span class="player_name" :class="getPlayerCssForTurnOrder(p, false)" href="#">{{ p.name }}</span>
         </div>
@@ -83,26 +85,26 @@
           :spaces="game.spaces"
           :expansions="game.gameOptions.expansions"
           :venusScaleLevel="game.venusScaleLevel"
-          :boardName ="game.gameOptions.boardName"
+          :boardName="game.gameOptions.boardName"
           :globalParameters="game.gameOptions.globalParameters"
           :customBoardRows="game.gameOptions.customBoardRows"
           :aresData="game.aresData"
           :altVenusBoard="game.gameOptions.altVenusBoard"
           :tileView="tileView"
-          @toggleTileView="$emit('toggleTileView')"/>
+          @toggleTileView="$emit('toggleTileView')" />
 
-        <Turmoil v-if="game.turmoil" :turmoil="game.turmoil" :morePartiesExpansion="game.gameOptions.expansions.moreParties" :agendaStyle="game.gameOptions.politicalAgendasExtension"/>
+        <Turmoil v-if="game.turmoil" :turmoil="game.turmoil" :morePartiesExpansion="game.gameOptions.expansions.moreParties" :agendaStyle="game.gameOptions.politicalAgendasExtension" />
 
-        <PlanetaryTracks v-if="game.gameOptions.expansions.pathfinders" :tracks="game.pathfinders" :gameOptions="game.gameOptions"/>
+        <PlanetaryTracks v-if="game.gameOptions.expansions.pathfinders" :tracks="game.pathfinders" :gameOptions="game.gameOptions" />
 
         <a name="moonBoard" class="player_home_anchor"></a>
-        <MoonBoard v-if="game.moon !== undefined" :model="game.moon" :tileView="tileView"/>
+        <MoonBoard v-if="game.moon !== undefined" :model="game.moon" :tileView="tileView" />
         <VenusSurfaceBoard v-if="game.venusPhase2" :model="game.venusPhase2" :tileView="tileView" :venusScaleLevel="game.venusScaleLevel"
           :altVenusBoard="game.gameOptions.altVenusBoard"
-          :venusScaleMax="game.gameOptions.globalParameters?.venus.max"/>
-        <HighOrbitMarket v-if="game.highOrbitMarket" :market="game.highOrbitMarket"/>
-        <ConglomeratesTeams v-if="game.conglomerates" :model="game.conglomerates"/>
-        <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="playerView.players"/>
+          :venusScaleMax="game.gameOptions.globalParameters?.venus.max" />
+        <HighOrbitMarket v-if="game.highOrbitMarket" :market="game.highOrbitMarket" />
+        <ConglomeratesTeams v-if="game.conglomerates" :model="game.conglomerates" />
+        <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="playerView.players" />
       </div>
     </details>
   </div>
@@ -121,6 +123,7 @@ import DynamicTitle from '@/client/components/common/DynamicTitle.vue';
 import Milestones from '@/client/components/Milestones.vue';
 import Awards from '@/client/components/Awards.vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
+import InputHost from '@/client/wrybit/shell/InputHost.vue';
 import Turmoil from '@/client/components/turmoil/Turmoil.vue';
 import MoonBoard from '@/client/components/moon/MoonBoard.vue';
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
@@ -163,6 +166,7 @@ export default defineComponent({
     Card,
     DynamicTitle,
     WaitingFor,
+    InputHost,
     Milestones,
     Awards,
     Turmoil,

@@ -17,6 +17,10 @@ Fork of [terraforming-mars/terraforming-mars](https://github.com/terraforming-ma
 
 **[tm.knightbyte.win](https://tm.knightbyte.win/)** — live server, all expansions enabled.
 
+## Interface guide
+
+[Wrybit interface guide](docs/wrybit-ui-guide.md) — один экран без прокрутки, клавиатура, мобильный режим и скриншоты без адвайзера. В игре: **Player help → Interface & Controls** или клавиша **?**.
+
 ## What's different from upstream
 
 - **SmartBot** — improved AI opponent with VP/MC optimization, better card evaluation, adaptive strategy
@@ -53,6 +57,28 @@ GitHub Actions in this repo are CI-only. Live deploys for `tm.knightbyte.win` us
 - Deploy to staging: `pwsh -File scripts/deploy_tm_staging.ps1`
 - Verify and promote the tested artifact to prod: `pwsh -File scripts/release_tm_prod.ps1`
 - Emergency direct prod deploy remains blocked by default in `deploy_tm_server.ps1`
+
+## Verify Production After Deploy
+
+Run these commands from the clean release checkout after a promotion:
+
+```powershell
+git status --short
+git rev-parse HEAD
+Invoke-WebRequest https://tm.knightbyte.win/ | Select-Object StatusCode
+Invoke-RestMethod https://tm.knightbyte.win/release.json | Select-Object environment,gitSha,artifactSha256,sourceTreeClean
+npx mocha --import=tsx --require tests/testing/setup.ts "tests/Style.spec.ts"
+```
+
+Expected values:
+
+- `git status --short` prints nothing.
+- local `HEAD` equals `release.json.gitSha`.
+- `release.json.environment` is `prod` and `sourceTreeClean` is `true`.
+- the home page returns HTTP `200`.
+- the Style test suite reports `32 passing`.
+
+The packaged production runtime includes `README.md` and `CHANGELOG.md`, but not `tests/` or `src/`; run the test command from the source checkout whose `HEAD` matches the production `gitSha`.
 
 ## Upstream
 

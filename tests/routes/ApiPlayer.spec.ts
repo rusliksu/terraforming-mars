@@ -94,11 +94,13 @@ describe('ApiPlayer', () => {
     const game = Game.newInstance('game-id', [player], player, 'spectatorid');
     scaffolding.ctx.clientIp = {address: '203.0.113.10', source: 'cf-connecting-ip'};
     scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    scaffolding.ctx.user = {id: 'other-user', username: 'other', discriminator: '0000'};
     scaffolding.req.headers['user-agent'] = 'Browser A';
     scaffolding.url = '/api/player?id=' + player.id;
     await scaffolding.ctx.gameLoader.add(game);
 
     await scaffolding.get(ApiPlayer.INSTANCE, res);
+    expect(res.statusCode).eq(statusCode.forbidden);
 
     expect(auditEvents).deep.eq([{
       event: 'player_view_denied',
@@ -110,6 +112,19 @@ describe('ApiPlayer', () => {
       clientIp: scaffolding.ctx.clientIp,
       userAgent: 'Browser A',
     }]);
+  });
+
+  it('returns 401 for a claimed player without a session', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    player.user = 'discord-user' as any;
+    scaffolding.url = '/api/player?id=' + player.id;
+    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+
+    await scaffolding.get(ApiPlayer.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.unauthorized);
+    expect(res.content).eq('Unauthorized');
   });
 
   it('allows serverId override for claimed player', async () => {

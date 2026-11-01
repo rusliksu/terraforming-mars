@@ -1,57 +1,65 @@
 <template>
   <div>
-  <template v-if="waitingfor === undefined || waitingfor.optional">
-    <template v-if="waitingfor === undefined">
-      {{ $t('Not your turn to take any actions') }}
-    </template>
-    <template v-else>
-      {{ $t('Waiting for other players') }}
-    </template>
-    <template v-if="playersWaitingFor.length > 0">
-      (⌛ <span v-for="color in playersWaitingFor" class="log-player" :class="playerColorClass(color, 'bg')" :key="color">{{ getPlayerName(color) }}</span>)
-    </template>
-  </template>
-  <div v-if="showResearchPurchaseUndo()" class="wf-options wf-undo-controls">
-    <AppButton title="Undo card purchase (experimental)" type="submit" size="normal" @click="undoResearchPurchase" />
-  </div>
-  <div v-if="waitingfor !== undefined" class="wf-root">
-    <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION">
-      <input type="checkbox" name="suspend" id="suspend-checkbox" v-model="suspend" @change="updateSuspend">
-      <label for="suspend-checkbox">
-        <span v-i18n>Pause updates</span>
-      </label>
-      <div v-if="showRefresh()">Refresh<span class="reset"></span></div>
-    </template>
-    <PlayerInputFactory :players="playerView.players"
-                          :playerView="playerView"
-                          :playerinput="playerinputWithStepBack()"
-                          :onsave="onsavePlayerInput"
-                          :showsave="true"
-                          :showtitle="true"
-                          :key="inputKey" />
-  </div>
-  <div v-if="showUndoFooter()" class="wf-options wf-undo-controls">
-    <label v-if="showUndoAction()" class="form-radio">
-      <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="action">
-      <i class="form-icon"></i>
-      <span v-i18n>Undo action</span>
-    </label>
-    <label v-if="showStepBack()" class="form-radio">
-      <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="step">
-      <i class="form-icon"></i>
-      <span v-i18n>Undo one step (experimental)</span>
-    </label>
-    <div v-if="undoChoice" style="margin: 5px 30px 10px" class="wf-action">
-      <AppButton title="Undo" type="submit" size="normal" @click="undoSelected" />
-    </div>
-  </div>
+    <component v-if="waitingPresentation !== undefined && presentationBinding !== undefined" :is="waitingPresentation" :binding="presentationBinding" />
+    <PresentationHost v-else :hosts="bodyHost" />
+    <InputPortal :target="bodyHost.target.value">
+      <div v-if="waitingfor === undefined || waitingfor.optional" class="wf-waiting-status">
+        <template v-if="waitingfor === undefined">
+          {{ $t('Not your turn to take any actions') }}
+        </template>
+        <template v-else>
+          {{ $t('Waiting for other players') }}
+        </template>
+        <template v-if="playersWaitingFor.length > 0">
+          (⌛ <span v-for="color in playersWaitingFor" class="log-player" :class="playerColorClass(color, 'bg')" :key="color">{{ getPlayerName(color) }}</span>)
+        </template>
+      </div>
+      <div v-if="showResearchPurchaseUndo()" v-show="waitingPresentation === undefined || presentationBinding === undefined" class="wf-options wf-undo-controls">
+        <AppButton title="Undo card purchase (experimental)" type="submit" size="normal" @click="undoResearchPurchase" />
+      </div>
+      <div v-if="waitingfor !== undefined" class="wf-root">
+        <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION">
+          <input type="checkbox" name="suspend" id="suspend-checkbox" v-model="suspend" @change="updateSuspend">
+          <label for="suspend-checkbox">
+            <span v-i18n>Pause updates</span>
+          </label>
+          <div v-if="showRefresh()">Refresh<span class="reset"></span></div>
+        </template>
+        <PlayerInputFactory :players="playerView.players"
+          :playerView="playerView"
+          :playerinput="playerinputWithStepBack()"
+          :onsave="onsavePlayerInput"
+          :showsave="true"
+          :showtitle="true" />
+      </div>
+      <div v-if="showUndoFooter()" v-show="waitingPresentation === undefined || presentationBinding === undefined" class="wf-options wf-undo-controls">
+        <label v-if="showUndoAction()" class="form-radio">
+          <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="action">
+          <i class="form-icon"></i>
+          <span v-i18n>Undo action</span>
+        </label>
+        <label v-if="showStepBack()" class="form-radio">
+          <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="step">
+          <i class="form-icon"></i>
+          <span v-i18n>Undo one step (experimental)</span>
+        </label>
+        <div v-if="undoChoice" style="margin: 5px 30px 10px" class="wf-action">
+          <AppButton title="Undo" type="submit" size="normal" @click="undoSelected" />
+        </div>
+      </div>
+    </InputPortal>
   </div>
 </template>
 
 <script lang="ts">
 /* global RequestInit */
 
-import {defineComponent} from 'vue';
+import {computed, defineComponent, markRaw, provide} from 'vue';
+import {WAITING_UNDO, UndoMode, UndoPresentation} from '@/client/wrybit/inputs/undoPresentation';
+import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
+import {INPUT_FOOTER, ROOT_INPUT_FOOTER, InputPresentationBindings, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 import * as constants from '@/common/constants';
 import raw_settings from '@/genfiles/settings.json';
 import {vueRoot} from '@/client/components/vueRoot';
@@ -66,16 +74,14 @@ import {paths} from '@/common/app/paths';
 import {statusCode} from '@/common/http/statusCode';
 import {isPlayerId} from '@/common/Types';
 import {InputResponse} from '@/common/inputs/InputResponse';
-import {INVALID_RUN_ID, UNDO_REVEALED_HIDDEN_INFORMATION, AppErrorResponse} from '@/common/app/AppErrorId';
+import {INVALID_REQUEST_ID, INVALID_RUN_ID, UNDO_REVEALED_HIDDEN_INFORMATION, AppErrorResponse} from '@/common/app/AppErrorId';
 import {Color} from '@/common/Color';
 import {gameDocumentTitle} from '../utils/documentTitle';
 import {setFaviconStatus, setFaviconTurnFrame} from '@/client/utils/favicon';
+import {trySubmitGameShellInput} from '@/client/shell';
+import {redirectToLogin} from '@/client/utils/loginRedirect';
 import AppButton from '@/client/components/common/AppButton.vue';
 
-let ui_update_timeout_id: number | undefined;
-let otherPlayersTimer: number | undefined;
-let documentTitleTimer: number | undefined;
-let animationFrame = 0;
 let undoChoiceSequence = 0;
 
 // How often to refresh other players' status during simultaneous phases.
@@ -94,13 +100,19 @@ function isDesktopBrowser(): boolean {
 }
 
 type DataModel = {
-  playersWaitingFor: Array<Color>,
+  playersWaitingFor: Array<Color>
   suspend: boolean,
   savedPlayerView: PlayerViewModel | undefined;
   undoChoice: '' | 'action' | 'step';
   undoRadioElementName: string;
-  /** Changes with every new player view, so the input starts fresh. */
-  inputKey: number,
+  timers: {
+    update: number | undefined;
+    otherPlayers: number | undefined;
+    title: number | undefined;
+  };
+  animationFrame: number;
+  pollingRevision: number;
+  active: boolean;
 }
 
 const CANNOT_CONTACT_SERVER = 'Unable to reach the server. It may be restarting or down for maintenance.';
@@ -108,6 +120,15 @@ const WAITING_FOR_POLL_RETRY_MESSAGE = 'Waiting-for poll failed; retrying.';
 
 export default defineComponent({
   name: 'WaitingFor',
+  setup() {
+    const footerHost = createInputHosts();
+    provide(INPUT_FOOTER, footerHost.target);
+    provide(ROOT_INPUT_FOOTER, footerHost.target);
+    return {bodyHost: createInputHosts(), footerHost, waitingPresentation: useInputPresentation('waitingFor')};
+  },
+  provide() {
+    return {[WAITING_UNDO as symbol]: computed(() => this.undoPresentation)};
+  },
   props: {
     playerView: {
       type: Object as () => ViewModel,
@@ -115,6 +136,10 @@ export default defineComponent({
     },
     waitingfor: {
       type: Object as () => PlayerInputModel | undefined,
+      default: undefined,
+    },
+    requestId: {
+      type: String as () => string | undefined,
       default: undefined,
     },
   },
@@ -125,45 +150,41 @@ export default defineComponent({
       savedPlayerView: undefined,
       undoChoice: '',
       undoRadioElementName: 'undo-choice-' + undoChoiceSequence++,
-      inputKey: 0,
+      timers: markRaw({update: undefined, otherPlayers: undefined, title: undefined}),
+      animationFrame: 0,
+      pollingRevision: 0,
+      active: true,
     };
   },
   components: {
     AppButton,
+    InputPortal,
+    PresentationHost,
   },
   watch: {
     waitingfor() {
-      this.undoChoice = '';
+      if (!getPreferences().experimental_layout) {
+        this.undoChoice = '';
+      }
     },
     playerView() {
-      this.inputKey++;
-      this.stop();
-      this.start();
+      this.startWaiting();
     },
   },
   methods: {
-    start() {
-      document.title = gameDocumentTitle(this.playerView.game);
-      if (getPreferences().experimental_ui) {
-        setFaviconStatus(this.waitingfor !== undefined ? 'turn' : 'idle');
-      }
-      window.clearInterval(documentTitleTimer);
+    startWaiting() {
+      this.pollingRevision++;
+      window.clearTimeout(this.timers.update);
+      window.clearTimeout(this.timers.otherPlayers);
+      window.clearInterval(this.timers.title);
       if (this.waitingfor === undefined || this.waitingfor.optional) {
         this.waitForUpdate();
       } else if (this.playerView.players.length > 1 && SIMULTANEOUS_PHASES.includes(this.playerView.game.phase)) {
         this.watchOtherPlayers();
       }
       if (this.playerView.players.length > 1 && this.waitingfor !== undefined && !this.waitingfor.optional) {
-        documentTitleTimer = window.setInterval(() => this.animateTitle(), 1000);
+        this.timers.title = window.setInterval(() => this.animateTitle(), 1000);
       }
-    },
-    stop() {
-      window.clearTimeout(ui_update_timeout_id);
-      ui_update_timeout_id = undefined;
-      window.clearTimeout(otherPlayersTimer);
-      otherPlayersTimer = undefined;
-      window.clearInterval(documentTitleTimer);
-      documentTitleTimer = undefined;
     },
     getPlayerName(color: Color): string {
       const player = this.playerView.players.find((p) => p.color === color);
@@ -174,26 +195,31 @@ export default defineComponent({
         return;
       }
 
-      animationFrame = (animationFrame + 1) % TURN_SEQUENCE.length;
+      this.animationFrame = (this.animationFrame + 1) % TURN_SEQUENCE.length;
       const experimental = getPreferences().experimental_ui;
       // The favicon annotation is an experimental feature.
       if (experimental) {
-        setFaviconTurnFrame(animationFrame);
+        setFaviconTurnFrame(this.animationFrame);
       }
       // Existing behavior spins the symbol in the document title. With
       // experimental UI on a desktop browser we show it only in the tab favicon
       // instead; otherwise keep animating the title.
       if (!(experimental && isDesktopBrowser())) {
-        document.title = TURN_SEQUENCE[animationFrame] + ' ' + gameDocumentTitle(this.playerView.game);
+        document.title = TURN_SEQUENCE[this.animationFrame] + ' ' + gameDocumentTitle(this.playerView.game);
       }
     },
     onsave(out: InputResponse) {
+      // Default-off bridge: without a server-issued v2 bootstrap this returns
+      // false and the legacy POST below stays byte-for-byte unchanged.
+      if (trySubmitGameShellInput(this.playerView as PlayerViewModel, out)) {
+        return;
+      }
       this.fetchPlayerInput(
         paths.PLAYER_INPUT + '?id=' + this.playerView.id,
         {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({runId: this.playerView.runId, promptId: this.waitingfor?.promptId, ...out}),
+          body: JSON.stringify({runId: this.playerView.runId, promptId: this.waitingfor?.promptId, requestId: this.requestId, ...out}),
         });
     },
     stepBack() {
@@ -218,6 +244,19 @@ export default defineComponent({
         this.reset();
       }
     },
+    runPresentationUndo(mode: UndoMode) {
+      if (!this.active || this.waitingPresentation === undefined || this.presentationBinding === undefined ||
+          !this.undoPresentation.actions.some((action) => action.mode === mode)) {
+        return;
+      }
+      if (mode === 'research') {
+        this.undoResearchPurchase();
+      } else if (mode === 'step') {
+        this.stepBack();
+      } else {
+        this.reset();
+      }
+    },
     onsavePlayerInput(out: InputResponse) {
       if (this.isStepBackResponse(out)) {
         this.stepBack();
@@ -226,6 +265,9 @@ export default defineComponent({
       this.onsave(out);
     },
     fetchPlayerInput(url: string, options: RequestInit) {
+      if (!this.active) {
+        return;
+      }
       const root = vueRoot(this);
       if (root.isServerSideRequestInProgress) {
         console.warn('Server request in progress');
@@ -233,14 +275,28 @@ export default defineComponent({
       }
 
       root.isServerSideRequestInProgress = true;
+      root.refreshRevision++;
       fetch(url, options)
         .then(async (response) => {
+          if (!this.active) {
+            return;
+          }
           if (response.ok) {
-            this.updatePlayerView(await response.json());
+            const model = await response.json();
+            if (this.active) {
+              this.updatePlayerView(model);
+            }
             return;
           }
 
           const showAlert = vueRoot(this).showAlert;
+          if (response.status === statusCode.unauthorized || response.status === statusCode.forbidden) {
+            const message = response.status === statusCode.unauthorized ?
+              'Sign in with Discord to play this game.' :
+              'This seat belongs to another Discord account. Sign in with the right account.';
+            showAlert('Sign in required', message, () => redirectToLogin());
+            return;
+          }
           if (response.status === statusCode.badRequest) {
             const resp = await this.readAppError(response);
             if (resp.id === UNDO_REVEALED_HIDDEN_INFORMATION &&
@@ -253,8 +309,10 @@ export default defineComponent({
               }
               return;
             }
-            let cb = () => root.updatePlayer();
-            if (resp.id === INVALID_RUN_ID) {
+            let cb: () => void = () => {
+              void root.updatePlayer();
+            };
+            if (resp.id === INVALID_RUN_ID || resp.id === INVALID_REQUEST_ID) {
               cb = () => setTimeout(() => window.location.reload(), 100);
             }
             showAlert('Error with input', resp.message, cb);
@@ -264,11 +322,17 @@ export default defineComponent({
           }
         })
         .catch((e) => {
+          if (!this.active) {
+            return;
+          }
           root.showAlert('Error sending input,', CANNOT_CONTACT_SERVER);
           console.error(e);
         })
         .finally(() => {
           root.isServerSideRequestInProgress = false;
+          if (this.active) {
+            this.startWaiting();
+          }
         });
     },
     async readAppError(response: Response): Promise<AppErrorResponse> {
@@ -282,13 +346,19 @@ export default defineComponent({
       }
     },
     updatePlayerView(playerView: PlayerViewModel | undefined) {
+      if (!this.active) {
+        return;
+      }
       if (this.suspend === false) {
         const root = vueRoot(this);
-        root.screen = 'empty';
-        root.playerView = playerView;
-        root.playerkey++;
+        if (typeof root.applyPlayerView === 'function') {
+          root.applyPlayerView(playerView, true);
+        } else {
+          root.playerView = playerView;
+          root.playerkey++;
+        }
         root.screen = 'player-home';
-        if (this.playerView.game.phase === 'end' && window.location.pathname !== paths.THE_END) {
+        if (playerView?.game.phase === 'end' && window.location.pathname !== paths.THE_END) {
           window.location = window.location as any as (string & Location);
         }
         this.savedPlayerView = undefined;
@@ -299,33 +369,52 @@ export default defineComponent({
     waitForUpdate() {
       const vueApp = this;
       const root = vueRoot(this);
-      clearTimeout(ui_update_timeout_id);
+      const revision = this.pollingRevision;
+      const current = () => this.active && revision === this.pollingRevision;
+      clearTimeout(this.timers.update);
       const retryAfterWaitingForPollError = (reason: string) => {
+        if (!current()) {
+          return;
+        }
         console.warn(`${WAITING_FOR_POLL_RETRY_MESSAGE} ${reason}`);
         vueApp.waitForUpdate();
       };
       const askForUpdate = () => {
+        if (!current()) {
+          return;
+        }
         const xhr = new XMLHttpRequest();
         xhr.open('GET', paths.API_WAITING_FOR + window.location.search + '&gameAge=' + this.playerView.game.gameAge + '&undoCount=' + this.playerView.game.undoCount);
         xhr.onerror = function() {
           retryAfterWaitingForPollError(CANNOT_CONTACT_SERVER);
         };
-        xhr.onload = () => {
+        xhr.onload = async () => {
+          if (!current()) {
+            return;
+          }
           if (xhr.status === statusCode.ok) {
             const result = xhr.response as WaitingForModel;
             this.playersWaitingFor = result.waitingFor;
             if (result.result === 'GO') {
               // Will only apply to player, not spectator.
-              root.updatePlayer();
+              const updated = root.updatePlayer();
               this.notify();
+              // When the fetch works, root.playerView changes and the playerView watcher
+              // calls startWaiting(), which decides whether to keep polling. When it fails
+              // nothing changes, so poll again here.
+              if (!await updated) {
+                vueApp.waitForUpdate();
+              }
               // We don't need to wait anymore - it's our turn
               return;
             } else if (result.result === 'REFRESH') {
               // Something changed, let's refresh UI
               if (isPlayerId(this.playerView.id)) {
-                root.updatePlayer();
-              } else {
-                root.updateSpectator();
+                if (!await root.updatePlayer()) {
+                  vueApp.waitForUpdate();
+                }
+              } else if (!await root.updateSpectator()) {
+                vueApp.waitForUpdate();
               }
 
               return;
@@ -338,7 +427,7 @@ export default defineComponent({
         xhr.responseType = 'json';
         xhr.send();
       };
-      ui_update_timeout_id = window.setTimeout(askForUpdate, raw_settings.waitingForTimeout);
+      this.timers.update = window.setTimeout(askForUpdate, raw_settings.waitingForTimeout);
     },
     /**
      * While this player makes a simultaneous choice (e.g. drafting), keep the other
@@ -346,13 +435,16 @@ export default defineComponent({
      */
     watchOtherPlayers() {
       const playerView = this.playerView;
-      window.clearTimeout(otherPlayersTimer);
+      window.clearTimeout(this.timers.otherPlayers);
       // Schedule the next poll only after this one finishes, so responses can't arrive out of order.
       const timer = window.setTimeout(async () => {
         try {
           const response = await fetch(paths.API_PLAYER + window.location.search);
           if (response.ok) {
             const latest: PlayerViewModel = await response.json();
+            if (!this.active || this.timers.otherPlayers !== timer) {
+              return;
+            }
             playerView.players = latest.players;
           } else {
             console.warn('Unable to update other players', response.status, response.statusText);
@@ -365,11 +457,11 @@ export default defineComponent({
           console.warn('Unable to update other players', e);
         }
         // Stop if the component unmounted or another poll started while this one was in flight.
-        if (otherPlayersTimer === timer) {
+        if (this.active && this.timers.otherPlayers === timer) {
           this.watchOtherPlayers();
         }
       }, OTHER_PLAYERS_INTERVAL);
-      otherPlayersTimer = timer;
+      this.timers.otherPlayers = timer;
     },
     async notify() {
       if (getPreferences().enable_sounds) {
@@ -474,21 +566,47 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.start();
+    document.title = gameDocumentTitle(this.playerView.game);
+    if (getPreferences().experimental_ui) {
+      setFaviconStatus(this.waitingfor !== undefined ? 'turn' : 'idle');
+    }
+    this.startWaiting();
   },
-  unmounted() {
-    window.clearTimeout(ui_update_timeout_id);
-    ui_update_timeout_id = undefined;
-    window.clearTimeout(otherPlayersTimer);
-    otherPlayersTimer = undefined;
-    window.clearInterval(documentTitleTimer);
+  beforeUnmount() {
+    this.active = false;
+    window.clearTimeout(this.timers.update);
+    window.clearTimeout(this.timers.otherPlayers);
+    window.clearInterval(this.timers.title);
   },
   computed: {
-    preferences(): typeof getPreferences {
-      return getPreferences;
+    undoPresentation(): UndoPresentation {
+      const actions: Array<{mode: UndoMode, title: string}> = [];
+      if (this.showResearchPurchaseUndo()) {
+        actions.push({mode: 'research', title: 'Undo card purchase (experimental)'});
+      }
+      if (this.showUndoFooter()) {
+        if (this.showUndoAction()) {
+          actions.push({mode: 'action', title: 'Undo action'});
+        }
+        if (this.showStepBack()) {
+          actions.push({mode: 'step', title: 'Undo one step (experimental)'});
+        }
+      }
+      return {actions, run: this.runPresentationUndo};
+    },
+    presentationBinding(): InputPresentationBindings['waitingFor'] | undefined {
+      if (this.waitingfor === undefined || this.playerView.thisPlayer === undefined) {
+        return undefined;
+      }
+      // Pending inputs belong to our actor view; spectator views have no input.
+      return {playerView: this.playerView as PlayerViewModel, playerinput: this.waitingfor,
+        bodyHost: this.bodyHost, footerHost: this.footerHost};
     },
     Phase(): typeof Phase {
       return Phase;
+    },
+    preferences(): typeof getPreferences {
+      return getPreferences;
     },
     playerColorClass(): typeof playerColorClass {
       return playerColorClass;

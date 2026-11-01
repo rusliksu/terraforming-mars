@@ -1,0 +1,658 @@
+.card-container {
+  .card-resource-base() {
+    font-family: Prototype, sans-serif;
+    position: relative;
+    display: inline-block;
+    margin-left: 3px;
+    margin-right: 3px;
+    width: 30px;
+    height: 30px;
+    font-size: 22px;
+    line-height: 30px;
+    background-size: 30px;
+    filter: drop-shadow(0px 0px 1px black);
+    vertical-align: middle;
+  }
+  .card-resource {
+    .card-resource-base();
+    &--has-secondary-tag {
+      .card-resource-base();
+      margin-right: 10px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+    &--superscript {
+      .card-resource-base();
+      height: 16px;
+      width: 16px;
+      background-size: 16px;
+      margin-left: 1px;
+      margin-right: 1px;
+      margin-bottom: 12px;
+    }
+  }
+  .card-resource-trade-discount {
+    background: white;
+  }
+  .card-resource-money {
+    font-family: Prototype, sans-serif;
+    color: black;
+    background-image: url(../assets/resources/megacredit.png);
+    font-weight: normal;
+    font-size: 18px;
+    text-align: center;
+  }
+  .card-money--L {
+    width: 46px;
+    height: 46px;
+    background-size: 46px;
+    font-size: 24px;
+    line-height: 46px;
+  }
+
+  .card-money--S {
+    width: 20px;
+    height: 20px;
+    background-size: 20px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+
+  @card_standard_resource_types: steel, titanium, plant, heat, wild, one;
+  each(@card_standard_resource_types, {
+    .card-resource-@{value} {
+      background-image: url("../assets/resources/@{value}.png");
+    }
+  });
+  .card-resource-energy {
+    background-image: url(../assets/resources/power.png);
+  }
+  .card-resource-diverse {
+    background: linear-gradient(to bottom right, green, yellow, red);
+  }
+  .card-resource-community {
+    background: linear-gradient(orange, orangered);
+  }
+  .card-resource-cathedral {
+    background-image: url(../assets/promo/cathedral.png);
+  }
+  .card-resource-nomads {
+    background: linear-gradient(to bottom right, gold, goldenrod, gold);
+    border: 1px solid black;
+  }
+  .card-resource-size--S {
+    height: 18px;
+    width: 18px;
+    background-size: 18px;
+  }
+
+  /* Underworld Assets */
+  .card-identification {
+    background-image: url(../assets/underworld/identify.png);
+    width: 44px;
+    background-size: 44px;
+    height: 44px;
+  }
+  .card-excavation {
+    background-image: url(../assets/underworld/excavate.png);
+    width: 44px;
+    background-size: 44px;
+    height: 44px;
+    &--superscript {
+      background-image: url(../assets/underworld/excavate.png);
+      height: 22px;
+      width: 22px;
+      background-size: 22px;
+      margin-left: 0px;
+      margin-right: 0px;
+      margin-bottom: 15px;
+    }
+  }
+  .card-resource-corruption {
+    background-image: url(../assets/underworld/corruption.png);
+  }
+
+  .card-neutral-delegate {
+    .wrybit-card-delegate-base();
+    background-image: url(../assets/underworld/neutral-delegate.png) !important;
+  }
+
+  .card-underground-resources {
+    width: 30px;
+    background-size: 30px 30px;
+    height: 30px;
+    background-image: url("../assets/underworld/underground-token-background.png");
+    margin-left: 3px;
+    margin-right: 3px;
+    .card-x {
+      color: black;
+      font-size: 70px;
+      font-weight: normal;
+      margin-top: 0px;
+      margin-left: -1px;
+    }
+  }
+
+  .card-corruption-shield {
+    width: 44px;
+    height: 44px;
+    background-size: 44px 44px;
+    background-image: url("../assets/underworld/corruption-block.png");
+  }
+
+  .card-geoscan-icon {
+    width: 50px;
+    height: 43px;
+    background-size: 50px 43px;
+    background-image: url("../assets/underworld/geoscan-icon.png");
+  }
+  .card-underground-shelters {
+    background-image: url(../assets/underworld/underground-shelters.png);
+    width: 30px;
+    height: 30px;
+    background-size: 30px;
+  }
+  /* CEO Assets */
+  .card-arrow-opg {
+    display: inline-block;
+    background-image: url(../assets/ceos/arrow-opg.png);
+    width: 50px;
+    height: 43px;
+    background-size: 50px 43px;
+    background-repeat: no-repeat;
+  }
+  .card-reds-deactivated {
+    display: inline-block;
+    background-image: url(../assets/parties/reds.png);
+    // Increase size by 1.5 _without_ Scale; Scale blows out formatting.
+    width: 75px;
+    height: 54px;
+    background-size: 75px 54px;
+    background-repeat: no-repeat;
+    filter: grayscale(1);
+    // transform: scale(1.5);
+    // margin-right: 10px;
+  }
+  .card-reds {
+    display: inline-block;
+    background-image: url(../assets/parties/reds.png);
+    width: 50px;
+    height: 36px;
+    background-size: 50px 36px;
+    background-repeat: no-repeat;
+  }
+  .card-hazard-tile {
+    background-image: url(../assets/tiles/hazard.png);
+  }
+  .card-adjacency-bonus {
+    background-image: url(../assets/tiles/adjacency_bonus.png);
+    background-size: 47px 54px;
+    width: 47px;
+    height: 54px;
+    margin: 5px;
+  }
+
+  /*special*/
+  .card-special {
+    font-size: @font_size_big;
+  }
+  .card-asterix {
+    position: relative;
+    top: 3px;
+  }
+  .card-minus {
+    background-image: url(../assets/misc/minus.png);
+    background-size: 12px;
+    margin: 0;
+    width: 12px;
+    height: 8px;
+    background-repeat: no-repeat;
+    margin-right: 2px;
+    position: relative;
+    top: -2px;
+  }
+  .card-minus--S {
+    .card-minus();
+    background-size: 9px;
+    width: 9px;
+    height: 6px;
+  }
+  .card-plus {
+    background-image: url(../assets/misc/plus.png);
+    background-size: 12px;
+    min-height: 12px;
+    width: 12px;
+    vertical-align: middle;
+    display: inline-block;
+    margin: 0;
+    margin-right: 2px;
+    background-repeat: no-repeat;
+  }
+  .card-plus--small {
+    background-size: 10px;
+    min-height: 10px;
+    width: 10px;
+  }
+  .card-or,
+  .card-colon {
+    font-size: @font_size_normal;
+    line-height: normal;
+  }
+  .card-slash, .card-equals {
+    margin-left: 2px;
+    margin-right: 2px;
+  }
+  .card-or--small, .card-slash--small {
+    font-size: @font_size_small;
+    margin-left: 2px;
+    margin-right: 2px;
+  }
+  .card-or--tiny, .card-slash--tiny {
+    font-size: @font_size_tiny;
+    margin-left: 2px;
+    margin-right: 2px;
+  }
+
+  .card-res-amount {
+    font-size: 21px;
+    margin-right: 1px;
+  }
+  .card-card {
+    background: url("../assets/resources/card.png");
+    height: 40px;
+    width: 30px;
+    background-size: 30px 40px;
+    vertical-align: middle;
+    .cards-count {
+      position: absolute;
+      background: #ffffffb3;
+      color: black;
+      margin-left: 3px;
+      width: 24px;
+      height: 20px;
+      line-height: 20px;
+      margin-top: 16px;
+      border-radius: 5px;
+      font-size: 17px;
+    }
+    .card-icon-space {
+      background: black;
+      color: yellow;
+      font-size: 14px;
+    }
+    .card-icon-building {
+      background: linear-gradient(#a27147, #593e27);
+      color: #493628;
+      font-size: 12px;
+      left: -3px;
+      text-shadow: 0 0 1px black;
+    }
+  }
+  .card-icon {
+    position: absolute;
+    right: -9px;
+    top: -8px;
+    margin: 0;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    border-radius: 10px;
+    background-size: 24px 24px;
+    background-position: center;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  }
+  .card-red-arrow {
+    background-image: url(../assets/misc/arrow.png);
+    background-size: 30px;
+    width: 30px;
+    height: 30px;
+    vertical-align: middle;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position: 0px;
+  }
+  .card-red-arrow--small {
+    background-image: url(../assets/misc/short-arrow.png);
+    background-size: 15px;
+    width: 15px;
+    height: 15px;
+    vertical-align: middle;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position: 0px;
+  }
+
+
+  /*colony special*/
+  .card-resource-trade {
+    background-image: url(../assets/tiles/trade.png);
+    height: 40px;
+    width: 48px;
+    background-size: 48px;
+    .card-x {
+      position: absolute;
+      color: red;
+      font-size: 44px;
+      left: 12px;
+      top: 13px;
+      filter: drop-shadow(1px 0px 1px #888) drop-shadow(-1px 0px 1px #888) drop-shadow(0px 1px 1px #888) drop-shadow(0px -1px 1px #888)
+    }
+  }
+  .card-resource-trade--S {
+    height: 30px !important;
+    width: 36px !important;
+    background-size: 36px !important;
+  }
+  .card-resource-trade-fleet {
+    background-image: url(../assets/tiles/trade.png);
+    height: 40px;
+    width: 48px;
+    background-size: 48px;
+    filter: invert(1) drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.5)) drop-shadow(0px 1px 0px rgba(0, 0, 0, 0.5));
+  }
+  .card-resource-colony {
+    background-image: url(../assets/tiles/colony.png);
+    height: 40px;
+    width: 46px;
+    background-size: 46px;
+  }
+  .card-resource-colony--S {
+    height: 30px !important;
+    width: 36px !important;
+    background-size: 36px !important;
+  }
+  .card-resource-colony--req {
+    height: 34px;
+    width: 40px;
+    background-size: 40px 34px;
+    margin-left: 3px;
+    margin-right: 3px;
+  }
+  /*turmoil special*/
+  .card-influence {
+    display: inline-block;
+    background-image: url(../assets/misc/influence.png);
+    width: 40px;
+    height: 40px;
+    background-size: 40px 40px;
+    vertical-align: middle;
+  }
+  .card-influence--size-S {
+    position: relative;
+    top: -10px;
+    left: -10px;
+    transform: scale(0.7);
+    margin-right: -12px;
+  }
+  .turmoil-global-event {
+    display: inline-block;
+    background-image: url(../assets/parties/globalEvent.png);
+    width: 40px;
+    height: 56px;
+    background-size: 40px 56px;
+    background-repeat: no-repeat;
+    margin-right: 10px;
+  }
+  .turmoil-policy-tile {
+    display: inline-block;
+    background-image: url(../assets/resources/policy.png);
+    width: 60px;
+    height: 40px;
+    background-size: 60px 40px;
+    background-repeat: no-repeat;
+    margin-right: 10px;
+  }
+  /*tags*/
+  .card-resource-tag-base() {
+    position: relative;
+    display: inline-block;
+    text-align: center;
+    border-radius: @radius_circle;
+    margin-left: 3px;
+    margin-right: 3px;
+    width: 30px;
+    height: 30px;
+    background-size: 34px 34px;
+    background-position: -2px;
+    line-height: 28px;
+    box-shadow: @outline-shadow;
+    vertical-align: middle;
+    filter: brightness(0.9);
+  }
+  .card-resource-tag {
+    .card-resource-tag-base();
+    &--S {
+      .card-resource-tag-base();
+      background-size: 34px;
+      margin-left: 2px;
+    }
+  }
+  .card-no-tags {
+    font-size: 42px;
+    vertical-align: middle;
+    background:white;
+  }
+
+  .card-no-tags:after {
+    content: "X";
+    position: relative;
+    top: 1px;
+  }
+
+  .card-private-security {
+    .card-x {
+      vertical-align: middle;
+      position: absolute;
+      color: #b51616;
+      font-size: 72px;
+      left: -13px;
+      font-weight: bold;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Tag shape/size overrides live here, not with the base tag-* image classes in
+  // cards.less. They must beat the base shapes (.card-container .card-icon /
+  // .card-resource-tag), which only works nested here, after those rules, in this
+  // file (imported last). Flattening to bare .tag-* in cards.less was #8250's
+  // regression (round req/blue/floater). See cards.less for the matching note.
+  // Floaters and wild resources are secondary icons, but they're resources, not tags.
+  .card-icon-resource--floater {
+    background-image: url("../assets/resources/floater.png");
+    border-radius: 0px;
+  }
+  .card-icon-resource--wild {
+    background-image: url("../assets/resources/wild.png");
+    border-radius: 0px;
+  }
+  .tag-diverse {
+    background: linear-gradient(to bottom right, green, yellow, red);
+  }
+  .tag-size--S {
+    height: 22px;
+    width: 22px;
+    background-size: 26px;
+    margin-left: 0px;
+    margin-right: 0px;
+  }
+  /* secondary tags */
+  .tag-req {
+    border-radius: 0px;
+    height: 12px;
+    box-shadow: @outline-shadow;
+    background: linear-gradient(90deg, rgba(243,161,14,1) 0%, rgba(253,234,37,1) 45%, rgba(253,234,37,1) 55%, rgba(243,161,14,1) 100%);
+  }
+  .tag-blue {
+    opacity: 0.8;
+    margin-left: 17px;
+    background: #176fe4;
+    width: 16px;
+    top: -7px;
+    height: 16px;
+    border-radius: @radius_circle;
+  }
+  .tag-no_planetary_tag {
+    .tag-clone();
+  }
+  .tag-no_planetary_tag:after {
+    content: '';
+    height: 20px;
+    border-left: 2px dashed #f00;
+    position: absolute;
+    transform: rotate(45deg);
+    margin-left: -1px;
+  }
+  .tag-no_planetary_tag:before {
+    content: '';
+    height: 20px;
+    border-left: 2px dashed #f00;
+    position: absolute;
+    transform: rotate(-45deg);
+    margin-left: -1px;
+  }
+  .tag-turmoil:after {
+    position: absolute;
+    color: @grey_900;
+    border: 1px solid black;
+    left: -1px;
+    background: darkorange;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 16px;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    border-radius: @radius_circle;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+    content: "\25b2";
+    transform: rotate(180deg);
+  }
+  .tag-no_tags {
+    background:white;
+    font-size: 30px;
+    vertical-align: middle;
+    font-weight: normal
+  }
+  .tag-no_tags:after {
+    content: "X";
+    position: relative;
+    top: 1px;
+    left: 1px;
+  }
+  .tag-ares {
+    background-image: url("../assets/expansion_icons/expansion_icon_ares.png");
+  }
+  /* special case Project requirements */
+  .card-project-requirements {
+    position: relative;
+    align-self: center;
+    justify-content: center;
+    .card-x {
+      position: absolute;
+      color: rgb(0, 0, 0);
+      font-size: 63px;
+      left: 61px;
+      top: -2px;
+    }
+    .card-requirements {
+      width: 95%;
+      padding: 0px 4px;
+    }
+  }
+  .card-colony-tile {
+    text-transform: uppercase;
+    background: #444;
+    color: #eee;
+    padding: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 20px;
+    font-weight: normal;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 2px rgba(0,0,0,0.3);
+    border: 1px solid #eee;
+  }
+  .card-prelude-container {
+    background: linear-gradient(to right bottom, black, #3c3c3c, #969696, #3c3c3c, #3c3c3c, black);
+    color: black;
+    font-size: 12px;
+    padding: 4px 7px 1px;
+    border-radius: 3px;
+    box-shadow: 0 2px 2px 1px rgba(0, 0, 0, 0.8);
+    .card-prelude-icon {
+      text-transform: uppercase;
+      background: linear-gradient(to right, rgb(235,118,171), #e64d91);
+      padding-left: 4px;
+      padding-right: 4px;
+      border-radius: 2px;
+    }
+  }
+  .card-ceo-container {
+    background: linear-gradient(to right bottom, black, #3c3c3c, #969696, #3c3c3c, #3c3c3c, black);
+    color: black;
+    font-size: 12px;
+    padding: 4px 7px 1px;
+    border-radius: 3px;
+    box-shadow: 0 2px 2px 1px rgba(0, 0, 0, 0.8);
+    .card-ceo-icon {
+      text-transform: uppercase;
+      background: linear-gradient(to right, rgb(235,118,171), #e64d91);
+      padding-left: 4px;
+      padding-right: 4px;
+      border-radius: 2px;
+    }
+  }
+
+  .card-corporation-icon {
+    display: inline-block;
+    background-image: url(../assets/misc/corpCard.png);
+    background-size: 56px 44px;
+    background-repeat: no-repeat;
+    width: 56px;
+    height: 44px;
+    margin-top: -20px;
+    margin-bottom: -17px;
+    border-radius: 5px;
+  }
+  .card-first-player-icon {
+    display: inline-block;
+    background-image: url(../assets/misc/first-player.png);
+    background-size: 39px 26px;
+    background-repeat: no-repeat;
+    width: 39px;
+    height: 26px;
+  }
+  .card-party-icon {
+    display: inline-block;
+    background-image: url(../assets/parties/parties.png);
+    background-size: 56px 44px;
+    background-repeat: no-repeat;
+    width: 56px;
+    height: 44px;
+    margin-top: -20px;
+    margin-bottom: -17px;
+    border-radius: 5px;
+  }
+  .card-award-icon {
+    text-transform: uppercase;
+    background: orange;
+    padding: 2px 10px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 3px;
+    box-shadow: @outline-shadow;
+  }
+  .card-vp-questionmark {
+    background: linear-gradient(#cc8b00, rgb(128, 87, 0),rgb(128, 87, 0));
+    width: 40px;
+    height: 34px;
+    font-weight: normal;
+    line-height: 31px;
+    font-size: 28px;
+    text-align: center;
+    border-radius: 12px;
+    border-style: outset;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 2px rgba(0,0,0,0.3);
+  }
+  /*production*/
+}

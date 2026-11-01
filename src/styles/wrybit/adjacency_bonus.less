@@ -1,0 +1,56 @@
+.adjacency-bonuses {
+  position: absolute;
+  display: flex;
+  border: 1px solid @adjacency-bonus;
+
+  &.lose2mc {
+    border-color: @adjacency-cost;
+  }
+
+  &.city {
+    border: none;
+  }
+
+  &.width--1 {
+    margin: 7px 0 0 14px;
+  }
+
+
+  &.width--2 {
+    margin: 7px 0 0 6px;
+  }
+}
+
+.adjacency-bonus {
+  pointer-events: none;
+  width: 16px;
+  height: 16px;
+  background-size: 16px;
+  border-radius: 1px;
+
+  &--megacredit {
+    background: url(./assets/misc/1mc.png) no-repeat;
+    background-size: 16px;
+  }
+
+  &--2mc {
+    background: url(./assets/misc/2mc.png) no-repeat;
+    background-size: 16px;
+  }
+
+  &--lose2mc {
+    background: url(./assets/misc/lose2mc.png) no-repeat;
+    background-size: 16px;
+  }
+
+  &.board-space-bonus--city {
+    background: url(./assets/tiles/city.png) no-repeat;
+    background-size: 16px;
+  }
+  // A card is portrait, so keep it 16px tall but narrower than it is square.
+  &.board-space-bonus--card {
+    width: 11px;
+    height: 16px;
+    background-size: auto 16px;
+  }
+}

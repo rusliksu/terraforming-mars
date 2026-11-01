@@ -1,0 +1,411 @@
+.wrybit-party-choice-styles() {
+  @turmoil-gold: #f2c14e;
+  @turmoil-muted: #a2a8ba;
+  @turmoil-text: #eceef3;
+  // ---------- Delegate tab (SelectParty.vue) ----------
+  .select-party {
+    container-type: inline-size;
+    width: 100%;
+  }
+
+  html:not(.tm-mobile) & .or-tab-panel .select-party {
+    margin: auto 0;
+  }
+
+  // Top to bottom like the trade tab (deal_steps.less): source, small arrow, parties
+  .select-party__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    width: 100%;
+    padding: 10px 0;
+    box-sizing: border-box;
+  }
+
+  .select-party__step {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .select-party__sources {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  // Same tile as a fee in the trade tab: figures left, name and price right
+  .select-party__source {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(10, 12, 18, 0.6);
+
+    &--off {
+      opacity: 0.4;
+    }
+  }
+
+  .select-party__source-text {
+    display: grid;
+    line-height: 1.2;
+
+    b {
+      font-size: 16px;
+    }
+
+    small {
+      font-size: 13px;
+      color: @turmoil-muted;
+    }
+  }
+
+  .select-party__figures {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  // Parties as tiles: glass in the party colour, hexagon on top.
+  // --party-columns: fewer cards than parties (Mars Frontier Alliance) do not leave empty columns (PartyOptions.vue)
+  .select-party__cards {
+    display: grid;
+    grid-template-columns: repeat(var(--party-columns, 6), minmax(0, 1fr));
+    // Row gap: the badge below a card (Ruling) and the hexagon above the next one must not touch
+    gap: 46px 8px;
+    padding: 24px 0 2px;
+  }
+
+  .select-party__card {
+    --rim: var(--party);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 28px 6px 16px;
+    border: 2px solid var(--rim);
+    border-radius: 10px;
+    background: linear-gradient(160deg, color-mix(in srgb, var(--party) 34%, #101418), color-mix(in srgb, var(--party) 14%, #0b0e12));
+    box-sizing: border-box;
+    text-align: center;
+    cursor: pointer;
+
+    // Selected: corner-flag selection like every choice tile (selection_highlight.less); rim and hexagon turn purple
+    &--on {
+      --rim: @selection-color;
+      .selection-corner(2px; 10px);
+    }
+
+    // Party not selectable: clearly inactive
+    &--off {
+      opacity: 0.35;
+      cursor: default;
+    }
+  }
+
+  .select-party__badge {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 51px;
+    transform: translateX(-50%);
+    background: var(--rim);
+    clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  }
+
+  .select-party__hex {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 45px;
+    background: #f4f4f2;
+    clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+
+    img {
+      width: 42px;
+      height: 30px;
+      object-fit: contain;
+    }
+  }
+
+  .select-party__name {
+    display: grid;
+    place-items: center;
+    min-height: 28px;
+    max-width: 100%;
+    font: 12px/14px Prototype, sans-serif;
+    overflow-wrap: anywhere;
+  }
+
+  .select-party__leader {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 36px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 6px;
+    // Dark seat (mockup): the white neutral astronaut stays visible on it
+    background: rgba(0, 0, 0, 0.38);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+  }
+
+  .select-party__seat {
+    width: 22px;
+    height: 28px;
+    opacity: 0.15;
+    filter: brightness(0);
+    background: center / contain no-repeat;
+  }
+
+  .select-party__seats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1px;
+    min-height: 20px;
+    max-width: 80px;
+  }
+
+  .select-party__rule {
+    font-size: 10px;
+    line-height: 1.15;
+    color: #d6d9e2;
+
+    small {
+      display: block;
+      font: 600 8.5px/11px system-ui, sans-serif;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: @turmoil-muted;
+    }
+
+    &--policy {
+      margin-top: auto;
+    }
+  }
+
+  // Badges centred on the bottom edge of the card: in office (gold) and successor (white)
+  .select-party__marks {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    z-index: 2;
+    display: flex;
+    gap: 4px;
+    transform: translateX(-50%);
+  }
+
+  .select-party__ruling {
+    padding: 0 8px;
+    border-radius: 4px;
+    background: @turmoil-gold;
+    color: #2a1f00;
+    font: 700 9.5px/18px system-ui, sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  // Successor = dominant party: white like the dominance marker, with a help cursor for the tooltip
+  .select-party__ruling--successor {
+    background: #f4f4f2;
+    color: #1c2026;
+    cursor: help;
+  }
+
+  .select-party__preview {
+    padding: 6px 10px;
+    border-left: 3px solid var(--party, rgba(255, 255, 255, 0.2));
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    color: @turmoil-muted;
+    font-size: 13px;
+
+    b {
+      color: @turmoil-text;
+    }
+  }
+
+  // Narrow box (tablet portrait): 3 × 2 with wider tiles – leader and delegates in one row, policy and bonus side by side
+  @container (max-width: 700px) {
+    .select-party__cards {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .select-party__card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas: "name name" "people people" "policy bonus";
+      align-items: start;
+      gap: 6px 10px;
+      padding: 28px 10px 14px;
+    }
+
+    .select-party__name {
+      grid-area: name;
+      min-height: 0;
+    }
+
+    // Leader seat stays centred like in the wide layout; seated delegates follow right of it
+    .select-party__leader {
+      grid-area: people;
+      justify-self: center;
+    }
+
+    .select-party__seats {
+      grid-area: people;
+      align-self: center;
+      justify-content: flex-start;
+      max-width: none;
+      padding-left: calc(50% + 22px);
+    }
+
+    .select-party__rule {
+      font-size: 11px;
+      text-align: left;
+
+      &--policy {
+        grid-area: policy;
+        margin-top: 0;
+      }
+
+      &--bonus {
+        grid-area: bonus;
+      }
+    }
+  }
+
+  @container (max-width: 520px) {
+    // Two sources side by side on a phone: figures above the text, otherwise the reserve does not fit
+    .select-party__source {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+
+    .select-party__cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    // Two narrow cards per row: "while ruling" and "when taking over" stacked instead of side by side
+    .select-party__card {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "name" "people" "policy" "bonus";
+    }
+  }
+
+  .turmoil-board-tab__more {
+    align-self: center;
+    margin-left: 2px;
+    font: 11px Prototype, sans-serif;
+    color: @turmoil-text;
+  }
+
+  // Large box (desktop, mockup with-extensions): parties as 3 × 2 big cards, larger type
+  @container (min-width: 701px) {
+    .select-party__cards {
+      grid-template-columns: repeat(var(--party-columns, 3), minmax(0, 1fr));
+      gap: 58px 14px;
+      padding: 34px 0 6px;
+    }
+
+    // Name in the middle with the leader seat left and the seated delegates right of it, policy and bonus at the
+    // bottom: keeps the source step and two rows of cards within the box height
+    .select-party__card {
+      display: grid;
+      grid-template: "leader name seats" auto "policy policy policy" 1fr "bonus bonus bonus" auto / minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: 6px 12px;
+      padding: 34px 14px 16px;
+    }
+
+    .select-party__name {
+      grid-area: name;
+    }
+
+    .select-party__leader {
+      grid-area: leader;
+      justify-self: end;
+    }
+
+    .select-party__seats {
+      grid-area: seats;
+      justify-self: start;
+      justify-content: flex-start;
+      max-width: none;
+      min-height: 0;
+    }
+
+    .select-party__rule--policy {
+      grid-area: policy;
+      align-self: end;
+      margin-top: 0;
+    }
+
+    .select-party__rule--bonus {
+      grid-area: bonus;
+    }
+
+    .select-party__badge {
+      top: -32px;
+      width: 72px;
+      height: 63px;
+    }
+
+    .select-party__hex {
+      width: 64px;
+      height: 56px;
+
+      img {
+        width: 52px;
+        height: 38px;
+      }
+    }
+
+    .select-party__name {
+      min-height: 22px;
+      font-size: 17px;
+      line-height: 20px;
+    }
+
+    .select-party__leader {
+      width: 42px;
+      height: 44px;
+    }
+
+    .select-party__rule {
+      font-size: 14px;
+      line-height: 1.3;
+
+      small {
+        font-size: 10.5px;
+        line-height: 14px;
+      }
+    }
+
+    .select-party__marks {
+      bottom: -12px;
+    }
+
+    .select-party__ruling {
+      font-size: 12px;
+      line-height: 22px;
+    }
+
+    .select-party__preview {
+      padding: 8px 14px;
+      font-size: 15px;
+    }
+  }
+
+
+}

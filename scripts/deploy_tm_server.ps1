@@ -262,6 +262,8 @@ $assetsDir = Join-Path $resolvedSourceRoot "assets"
 $eloDir = Join-Path $resolvedSourceRoot "elo"
 $packageJsonPath = Join-Path $resolvedSourceRoot "package.json"
 $packageLockPath = Join-Path $resolvedSourceRoot "package-lock.json"
+$readmePath = Join-Path $resolvedSourceRoot "README.md"
+$changelogPath = Join-Path $resolvedSourceRoot "CHANGELOG.md"
 $eloSourceFiles = @(
     "index.html",
     "audit_player_names.py",
@@ -291,6 +293,12 @@ if (-not (Test-Path $packageJsonPath)) {
 }
 if (-not (Test-Path $packageLockPath)) {
     throw "Source dependency lockfile is missing package-lock.json in $resolvedSourceRoot."
+}
+if (-not (Test-Path $readmePath)) {
+    throw "Source README is missing README.md in $resolvedSourceRoot."
+}
+if (-not (Test-Path $changelogPath)) {
+    throw "Source changelog is missing CHANGELOG.md in $resolvedSourceRoot."
 }
 foreach ($eloFile in $eloSourceFiles) {
     if (-not (Test-Path (Join-Path $eloDir $eloFile))) {
@@ -372,6 +380,8 @@ Copy-Item -Path (Join-Path $buildDir "*") -Destination $payloadBuildDir -Recurse
 Copy-Item -Path (Join-Path $assetsDir "*") -Destination $payloadAssetsDir -Recurse -Force
 Copy-Item -LiteralPath $packageJsonPath -Destination (Join-Path $releasePayloadRoot "package.json") -Force
 Copy-Item -LiteralPath $packageLockPath -Destination (Join-Path $releasePayloadRoot "package-lock.json") -Force
+Copy-Item -LiteralPath $readmePath -Destination (Join-Path $releasePayloadRoot "README.md") -Force
+Copy-Item -LiteralPath $changelogPath -Destination (Join-Path $releasePayloadRoot "CHANGELOG.md") -Force
 $eloPayloadDir = Join-Path $releasePayloadRoot "elo"
 New-Item -ItemType Directory -Path $eloPayloadDir -Force | Out-Null
 foreach ($eloFile in $eloSourceFiles) {
@@ -385,7 +395,7 @@ $packagedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
 
 Push-Location $releaseWorkRoot
 try {
-    & tar.exe -czf $payloadArchiveName -C $releasePayloadRoot build assets elo package.json package-lock.json
+    & tar.exe -czf $payloadArchiveName -C $releasePayloadRoot build assets elo package.json package-lock.json README.md CHANGELOG.md
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to create payload archive."
     }
@@ -409,7 +419,7 @@ try {
     (Get-Item -LiteralPath $releaseJsonPath).LastWriteTimeUtc = $buildMainJsTimestampUtc
     (Get-Item -LiteralPath (Join-Path $releasePayloadRoot "assets")).LastWriteTimeUtc = $buildMainJsTimestampUtc
 
-    & tar.exe -czf $archiveName -C $releasePayloadRoot build assets elo package.json package-lock.json
+    & tar.exe -czf $archiveName -C $releasePayloadRoot build assets elo package.json package-lock.json README.md CHANGELOG.md
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to create deploy archive."
     }
@@ -509,7 +519,7 @@ normalize_release_permissions() {
   chmod 755 "$runtime_root" "$releases_root" "$shared_root" "$shared_root/elo" "$resolved_candidate" || return 49
   find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type d -exec chmod 755 {} + || return 49
   find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type f -exec chmod 644 {} + || return 49
-  for public_file in package.json package-lock.json; do
+  for public_file in package.json package-lock.json README.md CHANGELOG.md; do
     if [ -f "$resolved_candidate/$public_file" ]; then
       chmod 644 "$resolved_candidate/$public_file" || return 49
     fi
@@ -721,6 +731,8 @@ test -f "$release_unpack_dir/elo/index.html"
 test -f "$release_unpack_dir/elo/elo-api.js"
 test -f "$release_unpack_dir/package.json"
 test -f "$release_unpack_dir/package-lock.json"
+test -f "$release_unpack_dir/README.md"
+test -f "$release_unpack_dir/CHANGELOG.md"
 
 deps_dir="$deps_root/$dependency_sha"
 if [ ! -d "$deps_dir/node_modules" ]; then
@@ -750,6 +762,8 @@ mv "$release_unpack_dir/build" "$new_release_dir/build"
 mv "$release_unpack_dir/assets" "$new_release_dir/assets"
 mv "$release_unpack_dir/package.json" "$new_release_dir/package.json"
 mv "$release_unpack_dir/package-lock.json" "$new_release_dir/package-lock.json"
+mv "$release_unpack_dir/README.md" "$new_release_dir/README.md"
+mv "$release_unpack_dir/CHANGELOG.md" "$new_release_dir/CHANGELOG.md"
 mkdir -p "$new_release_dir/elo"
 for file in $elo_files; do
   cp "$release_unpack_dir/elo/$file" "$new_release_dir/elo/$file"

@@ -7,7 +7,7 @@ import {Thermalist} from '../src/server/awards/Thermalist';
 import {Birds} from '../src/server/cards/base/Birds';
 import {WaterImportFromEuropa} from '../src/server/cards/base/WaterImportFromEuropa';
 import {Phase} from '../src/common/Phase';
-import {addCity, addGreenery, addOcean, fakeCard, forceGenerationEnd, maxOutOceans, runAllActions, setOxygenLevel, setTemperature, setVenusScaleLevel, testGame} from './TestingUtils';
+import {addCity, addGreenery, addOcean, doWait, fakeCard, forceGenerationEnd, formatMessage, maxOutOceans, runAllActions, setOxygenLevel, setTemperature, setVenusScaleLevel, testGame} from './TestingUtils';
 import {cast, toName} from '../src/common/utils/utils';
 import {TestPlayer} from './TestPlayer';
 import {SaturnSystems} from '../src/server/cards/corporation/SaturnSystems';
@@ -55,6 +55,8 @@ function noopGameLoader(): IGameLoader {
     saveGame: () => Promise.resolve(),
     completeGame: () => Promise.resolve(),
     maintenance: () => Promise.resolve(),
+    deleteGame: () => Promise.resolve(),
+    flush: () => Promise.resolve(),
   };
 }
 import {Spacefarer} from '../src/server/milestones/terraCimmeria/Spacefarer';
@@ -299,6 +301,20 @@ describe('Game', () => {
 
     expect(game.getOxygenLevel()).to.eq(constants.MAX_OXYGEN_LEVEL);
     expect(player.terraformRating).to.eq(initialTR + 1);
+  });
+
+  it('Logs every parameter increase with the number of steps', () => {
+    const [game, player] = testGame(2);
+    const messages = (): Array<string> => game.gameLog.map(formatMessage);
+
+    game.increaseTemperature(player, 2);
+    expect(messages()).to.include('blue raised the temperature 2 step(s)');
+
+    game.increaseOxygenLevel(player, 1);
+    expect(messages()).to.include('blue raised the oxygen level 1 step(s)');
+
+    game.increaseVenusScaleLevel(player, 3);
+    expect(messages()).to.include('blue raised the Venus scale 3 step(s)');
   });
 
   it('Venus moves 1% per step above 30% on Amazonis Planitia', () => {
@@ -1192,6 +1208,47 @@ describe('Game', () => {
     expect(oceanSpace.tile!.tileType).to.eq(TileType.NEW_HOLLAND);
   });
 
+  it('restores the solar phase by recreating the World Government Terraforming input', () => {
+    const [game] = testGame(2, {solarPhaseOption: true});
+    // Generation 1 without corporations loads through the initial-research path, so use a game
+    // that has already started.
+    game.generation = 5;
+    game.phase = Phase.SOLAR;
+
+    const restored = Game.deserialize(game.serialize());
+
+    expect(restored.phase).eq(Phase.SOLAR);
+    const input = restored.first.getWaitingFor();
+    expect(input).is.an.instanceof(OrOptions);
+    expect((input as OrOptions).options.length).greaterThan(0);
+  });
+
+  it('restores the solar phase by finishing the generation when World Government Terraforming is off', () => {
+    const [game] = testGame(2);
+    const generation = 5;
+    game.generation = generation;
+    game.phase = Phase.SOLAR;
+
+    const restored = Game.deserialize(game.serialize());
+
+    expect(restored.generation).eq(generation + 1);
+    expect([Phase.RESEARCH, Phase.DRAFTING]).includes(restored.phase);
+  });
+
+  it('restores the intergeneration phase without advancing the generation twice', () => {
+    const [game] = testGame(2);
+    // startGeneration() increments the counter before the save point, so a persisted game in this
+    // phase already shows the new generation number.
+    const generation = game.generation + 1;
+    game.generation = generation;
+    game.phase = Phase.INTERGENERATION;
+
+    const restored = Game.deserialize(game.serialize());
+
+    expect(restored.generation).eq(generation);
+    expect([Phase.RESEARCH, Phase.DRAFTING]).includes(restored.phase);
+  });
+
   /**
    * ensure as we modify properties we consider
    * serialization. if this fails update SerializedGame
@@ -1211,6 +1268,7 @@ describe('Game', () => {
 
     const unserializedFieldsInGame: Array<keyof Game | 'saveGame'> = [
       'actionReplayState',
+      'engine',
       'createdTime',
       'discardedColonies',
       'inDoubleDown',
@@ -1229,6 +1287,7 @@ describe('Game', () => {
       'skipGeneration1Actions',
       'max',
       'globalParameterTracks',
+      'standardProjects',
     ];
     const serializedValuesNotInGame: Array<keyof SerializedGame> = [
       'seed',
@@ -1746,11 +1805,11 @@ describe('Game', () => {
   player.tagsForTest = {earth: 1};
 
   game.worldGovernmentTerraforming();
-  const [input, cb] = player2.popWaitingFor2();
-  const orOptions = cast(input, OrOptions);
-  const oceanAction = cast(orOptions.options.filter((o) => o.title.toString() === 'Add an ocean')[0], SelectSpace);
-  assertPlaceOcean(player2, oceanAction);
-  cb?.(); // Will gain 2 plants and lose 1 plant.
+  // The callback will gain 2 plants and lose 1 plant.
+  doWait(player2, OrOptions, (orOptions) => {
+    const oceanAction = cast(orOptions.options.filter((o) => o.title.toString() === 'Add an ocean')[0], SelectSpace);
+    assertPlaceOcean(player2, oceanAction);
+  });
 
   expect(player.plants).to.eq(1);
   });

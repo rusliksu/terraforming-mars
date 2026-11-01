@@ -30,7 +30,7 @@
             v-text="score.score"
             data-test="player-score"
           ></p>
-      </template>
+        </template>
       </div>
     </div>
 

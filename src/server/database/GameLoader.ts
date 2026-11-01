@@ -381,6 +381,39 @@ export class GameLoader implements IGameLoader {
     this.cache.sweep();
   }
 
+  /** Waits for the pending save of every resident game; used by the shutdown drain. */
+  public async flush(): Promise<void> {
+    const data = await this.cache.getGames();
+    const pending: Array<Promise<void>> = [];
+    for (const game of data.games.values()) {
+      if (game !== undefined) {
+        pending.push(game.saveGamePromise);
+      }
+    }
+    await Promise.allSettled(pending);
+  }
+
+  /**
+   * Forgets a game that was deleted from the database: rejects later saves (saveGame
+   * checks purgedGames) and drops the in-memory copy with its participant ids right away.
+   * The caller deletes the game's rows from the database; this only invalidates the cache.
+   */
+  public async deleteGame(gameId: GameId): Promise<void> {
+    const wasPurged = this.purgedGames.includes(gameId);
+    if (!wasPurged) {
+      this.purgedGames.push(gameId);
+    }
+    try {
+      await Database.getInstance().deleteGame(gameId);
+    } catch (err) {
+      if (!wasPurged) {
+        this.purgedGames = this.purgedGames.filter((id) => id !== gameId);
+      }
+      throw err;
+    }
+    this.cache.remove(gameId);
+  }
+
   public async completeGame(game: IGame) {
     this.assertNotReplaced(game);
     const database = Database.getInstance();
@@ -412,6 +445,10 @@ export class GameLoader implements IGameLoader {
 
   public async maintenance() {
     const database = Database.getInstance();
+    const orphanParticipants = await database.deleteOrphanParticipants();
+    if (orphanParticipants > 0) {
+      console.log(`Removed ${orphanParticipants} orphan participant rows`);
+    }
     const purgedGames = await database.purgeUnfinishedGames();
     this.purgedGames.push(...purgedGames);
     metrics.gamesPurged.inc(purgedGames.length);

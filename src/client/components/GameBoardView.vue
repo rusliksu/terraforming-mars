@@ -5,7 +5,7 @@
     :spaces="game.spaces"
     :expansions="game.gameOptions.expansions"
     :venusScaleLevel="game.venusScaleLevel"
-    :boardName ="game.gameOptions.boardName"
+    :boardName="game.gameOptions.boardName"
     :globalParameters="game.gameOptions.globalParameters"
     :customBoardRows="game.gameOptions.customBoardRows"
     :oceans_count="game.oceans"
@@ -20,31 +20,31 @@
 
   <template v-if="game.turmoil">
     <a class="hotkey-target"></a>
-    <Turmoil :turmoil="game.turmoil" :morePartiesExpansion="game.gameOptions.expansions.moreParties" :agendaStyle="game.gameOptions.politicalAgendasExtension"/>
+    <Turmoil :turmoil="game.turmoil" :morePartiesExpansion="game.gameOptions.expansions.moreParties" :agendaStyle="game.gameOptions.politicalAgendasExtension" />
   </template>
 
   <template v-if="game.moon">
     <a class="hotkey-target"></a>
-    <MoonBoard :model="game.moon" :tileView="tileView" id="shortkey-moonBoard"/>
+    <MoonBoard :model="game.moon" :tileView="tileView" id="shortkey-moonBoard" />
   </template>
 
   <template v-if="game.venusPhase2">
     <a class="hotkey-target"></a>
     <VenusSurfaceBoard :model="game.venusPhase2" :tileView="tileView" :venusScaleLevel="game.venusScaleLevel"
       :altVenusBoard="game.gameOptions.altVenusBoard"
-      :venusScaleMax="game.gameOptions.globalParameters?.venus.max" id="shortkey-venusBoard"/>
+      :venusScaleMax="game.gameOptions.globalParameters?.venus.max" id="shortkey-venusBoard" />
   </template>
 
   <template v-if="game.gameOptions.expansions.pathfinders">
     <a class="hotkey-target"></a>
-    <PlanetaryTracks :tracks="game.pathfinders" :gameOptions="game.gameOptions"/>
+    <PlanetaryTracks :tracks="game.pathfinders" :gameOptions="game.gameOptions" />
   </template>
 
-  <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="players"/>
+  <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="players" />
 
   <template v-if="game.highOrbitMarket">
     <a class="hotkey-target"></a>
-    <HighOrbitMarket :market="game.highOrbitMarket"/>
+    <HighOrbitMarket :market="game.highOrbitMarket" />
   </template>
 
   <div v-if="players.length > 1" class="player_home_block--milestones-and-awards">
@@ -55,7 +55,7 @@
 
   <template v-if="game.conglomerates">
     <a class="hotkey-target"></a>
-    <ConglomeratesTeams :model="game.conglomerates"/>
+    <ConglomeratesTeams :model="game.conglomerates" />
   </template>
 </template>
 

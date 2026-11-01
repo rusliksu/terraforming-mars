@@ -235,7 +235,7 @@ describe('ELO page', () => {
     await waitForRows(dom);
     const document = dom.window.document;
 
-    expect(getCells(document, 'body > table thead th')).deep.eq(['#', 'Player', 'ELO', 'Avg place', 'Games', 'Avg VP', 'Avg gen', 'VP Margin']);
+    expect(getCells(document, 'table.rating-only thead th')).deep.eq(['#', 'Player', 'ELO', 'Avg place', 'Games', 'Avg VP', 'Avg gen', 'VP Margin']);
     expect(cleanText(document.querySelector('#stats')?.textContent)).eq('3 players | 1 games | Avg gen 10');
     expect(getCells(document, '#tbody tr:first-child td')).deep.eq(['1', 'GydRo', '1613', '0.75', '14', '102', '8.9', '+5.2']);
     expect(cleanText(document.querySelector('#matchupsSummary')?.textContent)).eq('3 players with 5+ games | 3 played pairs | most frequent: GydRo / Рав (1)');

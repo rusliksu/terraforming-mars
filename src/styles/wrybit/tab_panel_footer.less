@@ -1,0 +1,237 @@
+// Sticky footer at the bottom of the tab box (tabPanelFooter.ts): prices left, button right.
+// It sits at the bottom edge of the box even when the content is shorter, and stays visible while scrolling.
+
+@tab-panel-padding: 16px; // Padding of the box (.or-tab-panel in or_options_tabs.less)
+@tab-panel-radius: 8px; // Corner radius of the box (@or-tabs-radius)
+@tab-panel-footer-gap: 16px;
+@tab-panel-footer-padding: 12px @tab-panel-padding;
+// Dark frosted glass, clearly darker than the box, so the footer reads as its own surface
+@tab-panel-footer-background: rgba(14, 15, 20, 0.72);
+@tab-panel-footer-blur: 10px;
+// Light upward shadow: the footer visibly sits in front of the cards scrolling beneath it
+@tab-panel-footer-shadow: 0 -6px 16px rgba(0, 0, 0, 0.45);
+// Above hovered cards (they lift out with z-index 100, preferences.less)
+@tab-panel-footer-z-index: 110;
+
+// Box as a column, so the footer slides to the bottom edge via margin-top: auto
+.or-tab-panel:has(> .or-tab-footer > *) {
+  display: flex;
+  flex-direction: column;
+}
+
+.or-tab-footer {
+  position: sticky;
+  bottom: -@tab-panel-padding; // otherwise it sticks to the padding instead of the border
+  z-index: @tab-panel-footer-z-index;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: @tab-panel-footer-gap;
+  margin: auto -@tab-panel-padding -@tab-panel-padding;
+  padding: @tab-panel-footer-padding;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0 0 (@tab-panel-radius - 1px) (@tab-panel-radius - 1px);
+  background: @tab-panel-footer-background;
+  backdrop-filter: blur(@tab-panel-footer-blur);
+  box-shadow: @tab-panel-footer-shadow;
+
+  // Empty (nothing to confirm): no footer; :has instead of :empty, because Vue inserts empty text nodes as anchors
+  &:not(:has(> *)) {
+    display: none;
+  }
+
+  // Buttons bring their own margins (btn-submit: 10px/30px) – in the footer the padding determines the height
+  .btn {
+    margin: 0;
+  }
+
+  // Button groups of the inputs (e.g. .select-card-actions) on the right; their own margins are dropped
+  > :not(.payments_form) {
+    margin: 0 0 0 auto;
+  }
+
+  // The menu's button always at the far right, even when a payment area (PaymentForm) is inserted before it
+  > .or-tab-save {
+    order: 1;
+  }
+
+  // Short explanation left of the button (e.g. draft: choice can still be changed) – small, it is no question
+  > .or-tab-footer-hint {
+    flex: 1 1 auto;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 14px;
+    line-height: 1.35;
+  }
+}
+
+// Mobile: the task header above already carries this explanation, the footer only holds the buttons
+
+// Pass/End (or-tab-panel--end, OrOptions.vue): explanation and button centered in the box instead of the footer –
+// there is nothing to select, only this one decision
+.or-tab-panel--end {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: @tab-panel-footer-gap;
+  text-align: center;
+
+  .or-tab-end-hint,
+  .card-warning {
+    max-width: 560px;
+    margin: 0;
+    color: #fff;
+    font-size: 18px;
+  }
+
+  .or-tab-footer {
+    position: static;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    backdrop-filter: none;
+    box-shadow: none;
+
+    > * {
+      margin: 0;
+    }
+  }
+
+  .btn {
+    box-shadow: @floating-button-shadow;
+  }
+}
+
+// Tabs without content of their own (only a button, e.g. raise temperature, corporation first action;
+// orOptionsShortLabels.ts): intro (card/image) stays on top, the button sits centered in the remaining space.
+// Flex instead of an overlay, so that in a low box the button never covers the intro.
+.or-tab-panel--centered-button {
+  display: flex;
+  flex-direction: column;
+}
+
+.or-tab-panel--centered-button .or-tab-footer:not(.or-tab-footer--bar) {
+  position: static;
+  flex: 1 1 auto;
+  min-height: 120px;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  backdrop-filter: none;
+  box-shadow: none;
+
+  > * {
+    margin: 0;
+  }
+
+  .btn {
+    box-shadow: @floating-button-shadow;
+  }
+}
+
+// Narrow layout: the box is only as tall as its content – button directly below the intro, with spacing
+@media only screen and (max-width: (@player-home-columns-min-width - 1px)) {
+  .or-tab-panel--centered-button .or-tab-footer:not(.or-tab-footer--bar) {
+    min-height: 0;
+    margin-top: 16px;
+  }
+}
+
+// "Cancel" (CancelActionButton.vue, action menu tabs with a single button): left in the footer, quiet so the
+// confirm button stays the main action. !important like the base .btn colours (common.less)
+.or-tab-panel .or-tab-footer > .btn.cancel-action-button {
+  order: -1;
+  margin: 0 auto 0 0;
+  // Same size as the confirm buttons (.btn-submit) – not a submit button itself, scripts click the first .btn-submit
+  min-width: 140px;
+  height: 50px;
+  font-size: 20px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #eceef6 !important;
+  box-shadow: none;
+}
+
+// Our separate action/step/research undo commands retain their exact meanings.
+.or-tab-footer:has(> [data-undo-mode]) {
+  flex-wrap: wrap;
+
+  > .btn.cancel-action-button {
+    height: auto;
+    min-height: 50px;
+    max-width: 100%;
+    padding: 8px 12px;
+    font-size: 16px;
+    white-space: normal;
+  }
+}
+
+// Box with a single centered button (raise temperature …): Cancel in its own footer bar at the bottom
+// (.or-tab-footer--bar); quiet colours also against the tab tone (or_tab_tones.less)
+.or-tab-panel.or-tab-panel--centered-button .or-tab-footer > .btn.cancel-action-button {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #eceef6 !important;
+  box-shadow: none;
+}
+
+// "1st / 2nd action" chips next to the main button (ActionStepChips.vue), right-aligned before it
+// Payment areas teleport into the footer after the chips: order keeps the chips directly before the button
+.action-step-chips {
+  order: 98;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  margin-right: 4px;
+}
+
+.or-tab-footer > .or-tab-save {
+  order: 99;
+}
+
+// Chips and button form one group at the right edge: only the chips push away from the left (margin auto),
+// every button group (own save button or teleported ones like Sell/Trade/Send delegate) follows them directly
+.or-tab-footer > .action-step-chips {
+  margin: 0 4px 0 auto;
+}
+
+.or-tab-footer:has(> .action-step-chips) > :not(.payments_form):not(.action-step-chips):not(.cancel-action-button):not(.or-tab-footer-hint) {
+  order: 99;
+  margin-left: 0;
+}
+
+.action-step-chip {
+  padding: 5px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: #a4a9b6;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+
+  &--now {
+    border-color: @bg_action;
+    background: fade(@bg_action, 22%);
+    color: #ece9e2;
+  }
+
+  &--next {
+    opacity: 0.6;
+  }
+
+  &--done {
+    color: #8be28f;
+    border-color: fade(#8be28f, 35%);
+  }
+}
+
+// Phone: the rocket in the navigation already shows "1/2" – no chips in the narrow footer

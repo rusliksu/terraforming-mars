@@ -15,7 +15,7 @@ import {runId} from '../utils/server-ids';
 import {AppError} from '../server/AppError';
 import {InputError} from '../inputs/InputError';
 import {isIProjectCard} from '../cards/IProjectCard';
-import {INVALID_RUN_ID, STALE_PROMPT, UNDO_REVEALED_HIDDEN_INFORMATION, RESPONDING_TOO_QUICKLY} from '../../common/app/AppErrorId';
+import {INVALID_REQUEST_ID, INVALID_RUN_ID, STALE_PROMPT, UNDO_REVEALED_HIDDEN_INFORMATION, RESPONDING_TOO_QUICKLY} from '../../common/app/AppErrorId';
 import {hasRevealedHiddenInformation} from '../game/hasRevealedHiddenInformation';
 import {getUserAgent} from './auditRequest';
 import type {AccessAuditEvent, AccessAuditRecordInput} from '../server/AccessAudit';
@@ -84,8 +84,6 @@ export class PlayerInput extends Handler {
   public override async post(req: Request, res: Response, ctx: Context): Promise<void> {
     const playerId = ctx.urlParams.playerId('id');
 
-    ctx.ipTracker.addParticipant(playerId, ctx.ip);
-
     // This is the exact same code as in `ApiPlayer`. I bet it's not the only place.
     const game = await ctx.gameLoader.getGame(playerId);
     if (game === undefined) {
@@ -106,13 +104,48 @@ export class PlayerInput extends Handler {
       responses.notFound(req, res);
       return;
     }
+    if (!this.canSubmitForPlayer(player, ctx)) {
+      const missingSession = ctx.user?.id === undefined;
+      recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {
+        reason: missingSession ? 'missing_session' : 'foreign_session',
+      });
+      if (missingSession) {
+        responses.unauthorized(req, res);
+      } else {
+        responses.notAuthorized(req, res);
+      }
+      return;
+    }
+    ctx.ipTracker.addParticipant(playerId, ctx.ip);
     recordPlayerInputAudit(req, ctx, player, 'player_input_attempt');
     if (game.surrenderedPlayerIds.has(player.id) && !this.hasServerIdAccess(ctx)) {
       recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {reason: 'surrendered_bot_control'});
       responses.badRequest(req, res, 'surrendered player is controlled by a bot');
       return;
     }
+    if (player.aiLevel !== undefined) {
+      recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {reason: 'ai_player'});
+      responses.badRequest(req, res, 'This player is controlled by the AI.');
+      return;
+    }
     return this.processInput(req, res, ctx, player);
+  }
+
+  /**
+   * Legacy input is accepted only for the authenticated owner of the seat.
+   * Server/admin access remains available for internal bots and operational
+   * tooling. Unowned seats are closed by default; local-only deployments that
+   * intentionally need anonymous seats must opt in explicitly.
+   */
+  private canSubmitForPlayer(player: IPlayer, ctx: Context): boolean {
+    if (this.hasServerIdAccess(ctx)) {
+      return true;
+    }
+    if (player.user === undefined) {
+      return player.game.gameOptions.requiresDiscordLogin !== true ||
+        process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT === '1';
+    }
+    return this.isUser(player.user, ctx);
   }
 
   private isWaitingForUndo(player: IPlayer, entity: InputResponse): boolean {
@@ -195,6 +228,7 @@ export class PlayerInput extends Handler {
       promptSnapshot = capturePromptSnapshot(player);
       promptInputSeq = player.game.shadowInputSeq ?? 0;
       validateInputContext(player, entity);
+      validateRequestId(player, entity);
 
       // Placed here because it fits in a temporally cohesive sense.
       this.resetTableauCardState(player);
@@ -508,4 +542,14 @@ function validateInputContext(player: IPlayer, entity: any) {
       'This game screen is out of date. Click OK to refresh it before choosing again.',
     );
   }
+}
+
+// Rejects a response sent for an input the player has since moved past, e.g. from a page
+// that never got the reply to its previous response.
+function validateRequestId(player: IPlayer, entity: any) {
+  if (entity.requestId !== undefined && entity.requestId !== player.requestId) {
+    throw new AppError(INVALID_REQUEST_ID, 'This page is out of date. Click OK to refresh it.');
+  }
+  // Clearing this out to be compatible with the input response processors.
+  delete entity.requestId;
 }

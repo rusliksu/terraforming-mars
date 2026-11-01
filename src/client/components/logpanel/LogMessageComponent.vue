@@ -1,32 +1,32 @@
 <template>
-   <li
+  <li
     v-if="message !== undefined && message.data !== undefined && message.message !== undefined"
     @click.prevent="$emit('click')"
     :class="classes">
     <span v-if="(message.type ?? LogMessageType.DEFAULT) === LogMessageType.DEFAULT" :title="when" v-html="icon"></span>
-    <template v-for="(data, idx) of entries" :key="idx">
+    <template v-for="(data, idx) in entries" :key="idx">
       <span class="log-plain-text" v-if="typeof(data) === 'string'" v-html="inlineMarkdown(data)"></span>
       <span v-else>
         <span v-if="data.type === undefined || data.value === undefined"></span>
         <span v-else-if="data.type === LogMessageDataType.PLAYER" class="log-player" :class="'player_bg_color_' + data.value"> {{ getPlayerName(data.value) }} </span>
         <span v-else-if="data.type === LogMessageDataType.CARD" v-html="cardToHtml(data)"></span>
         <span v-else-if="data.type === LogMessageDataType.GLOBAL_EVENT" class="log-card background-color-global-event" v-i18n>
-          {{data.value}}
+          {{ data.value }}
         </span>
         <span v-else-if="data.type === LogMessageDataType.TILE_TYPE" v-i18n>
-          {{tileTypeToString[data.value]}}
+          {{ tileTypeToString[data.value] }}
         </span>
         <span v-else-if="data.type === LogMessageDataType.COLONY" class="log-card background-color-colony" v-i18n>
-          {{data.value}}
+          {{ data.value }}
         </span>
         <span v-else-if="data.type === LogMessageDataType.UNDERGROUND_TOKEN" class="log-excavation-token" v-i18n>
-          {{undergroundResourceTokenDescription[data.value]}}
+          {{ undergroundResourceTokenDescription[data.value] }}
         </span>
         <span v-else-if="data.type === LogMessageDataType.SPACE" class="log-space-id" @click.prevent="$emit('spaceClicked', data.value)">
-            <svg width="20" height="14" viewBox="0 0 28 38">
-              <circle cx="14" cy="19" r="16" stroke="black" stroke-width="1" transform="translate(0, 2)" :fill="data.value.startsWith('m') ? 'gray' : '#b7410e'" />
-            </svg>
-            {{ spaceName(data.value) }}
+          <svg width="20" height="14" viewBox="0 0 28 38">
+            <circle cx="14" cy="19" r="16" stroke="black" stroke-width="1" transform="translate(0, 2)" :fill="data.value.startsWith('m') ? 'gray' : '#b7410e'" />
+          </svg>
+          {{ spaceName(data.value) }}
         </span>
         <span v-else-if="data.type === LogMessageDataType.CARDS" v-html="cardsToHtml(data)"></span>
 
@@ -34,11 +34,17 @@
         <span v-else-if="data.type === LogMessageDataType.PRODUCTION" v-html="inlineMarkdown(`:p:${data.value}:`)"></span>
         <span v-else-if="data.type === LogMessageDataType.CARD_RESOURCE" v-html="inlineMarkdown(`:cr:${cardResourceName(data.value)}:`)"></span>
         <span v-else-if="data.type === LogMessageDataType.RAW_STRING">{{ data.value }}</span>
+        <span v-else-if="data.type === LogMessageDataType.MARKDOWN" v-html="renderIcons(data.value)"></span>
         <span v-else-if="data.type === LogMessageDataType.STRING" v-html="inlineMarkdown($t(data.value))"></span>
         <span v-else v-i18n>{{ data.value }}</span>
       </span>
     </template>
-   </li>
+    <span v-if="message.aiInsight !== undefined" class="ai-log-rate-bar" data-test="ai-log-rate-bar" @click.stop>
+      <button v-for="choice in AI_RATING_CHOICES" :key="choice.rating" type="button"
+        class="ai-log-rate-bar__button" :title="choice.label" :data-test="'ai-rate-' + choice.rating"
+        @click.stop="$emit('aiRate', choice.rating)">{{ AI_FEEDBACK_EMOJI[choice.rating] }}</button>
+    </span>
+  </li>
 </template>
 
 <script lang="ts">
@@ -62,8 +68,10 @@ import {spacesById} from '@/client/utils/spacesById';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {gameLocaleToIntlLocale} from '@/client/utils/LocaleUtils';
 import {range} from '@/common/utils/utils';
-import {renderMarkdown} from '@/client/markdown/markdown';
+import {renderIcons, renderMarkdown} from '@/client/markdown/markdown';
 import {CardResource} from '@/common/CardResource';
+import {AI_FEEDBACK_EMOJI} from '@/common/ai/AiFeedback';
+import {AI_RATING_CHOICES} from '@/client/components/logpanel/aiAnalysis/aiRatingChoices';
 
 const cardTypeToCss: Record<CardType, string | undefined> = {
   event: 'background-color-events',
@@ -79,6 +87,7 @@ const cardTypeToCss: Record<CardType, string | undefined> = {
 
 export default defineComponent({
   name: 'LogMessageComponent',
+  emits: ['click', 'spaceClicked', 'aiRate'],
   props: {
     message: {
       type: Object as () => LogMessage,
@@ -92,6 +101,9 @@ export default defineComponent({
   methods: {
     inlineMarkdown(text: string): string {
       return renderMarkdown(text, {inline: true, translate: false});
+    },
+    renderIcons(text: string): string {
+      return renderIcons(text);
     },
     // Matches the card-resource-* CSS classes, e.g. Syndicate Fleet -> syndicate-fleet.
     cardResourceName(resource: CardResource): string {
@@ -161,6 +173,8 @@ export default defineComponent({
     },
   },
   computed: {
+    AI_RATING_CHOICES: () => AI_RATING_CHOICES,
+    AI_FEEDBACK_EMOJI: () => AI_FEEDBACK_EMOJI,
     entries() {
       if (this.message === undefined) {
         return [];
@@ -202,3 +216,26 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="less" scoped>
+.ai-log-rate-bar {
+  display: none;
+  margin-left: 6px;
+  vertical-align: middle;
+
+  &__button {
+    padding: 0 1px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+  }
+}
+
+li:hover > .ai-log-rate-bar,
+li:focus-within > .ai-log-rate-bar {
+  display: inline-flex;
+  gap: 2px;
+}
+</style>

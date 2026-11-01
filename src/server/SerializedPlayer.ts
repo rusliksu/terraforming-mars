@@ -1,11 +1,12 @@
 import {PlayerId} from '../common/Types';
+import {AiLevel} from '../common/ai/AiLevel';
 import {CardName} from '../common/cards/CardName';
 import {Color} from '../common/Color';
 import {DynamicCardState, SerializedCard} from './SerializedCard';
 import {SerializedTimer} from '../common/SerializedTimer';
 import {AlliedParty} from '../common/turmoil/Types';
 import {GlobalParameter} from '../common/GlobalParameter';
-import {DiscordId} from './server/auth/discord';
+import type {DiscordId} from './server/auth/discord';
 import {UnderworldPlayerData} from '../common/underworld/UnderworldPlayerData';
 import {ConglomeratesPlayerData} from '../common/conglomerates/ConglomeratesPlayerData';
 import {DeltaProjectPlayerModel} from '../common/models/DeltaProjectPlayerModel';
@@ -54,6 +55,7 @@ export interface SerializedPlayer extends DeprecatedFields{
   fleetSize: number;
   globalParameterSteps: Record<GlobalParameter, number>;
   handicap: number;
+  aiLevel?: AiLevel;
   preludeHandicap?: number;
   hasIncreasedTerraformRatingThisGeneration: boolean;
   hasTurmoilScienceTagBonus: boolean;

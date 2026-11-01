@@ -6,6 +6,9 @@ import {Phase} from '../../common/Phase';
 import {Log} from '../../common/logs/Log';
 import {LogMessageData} from '../../common/logs/LogMessageData';
 import {LogMessageDataType} from '../../common/logs/LogMessageDataType';
+import {aiPlayerOfLine, isSharedAiLine, spoilsOpenChoice} from '../aiFeedback/aiLogLines';
+import {AiFeedbackStore} from '../aiFeedback/AiFeedbackStore';
+import {AI_FEEDBACK_EMOJI} from '../../common/ai/AiFeedback';
 
 export class GameLogs {
   private normalizeCorporationSelection(message: LogMessage): LogMessage {
@@ -107,6 +110,10 @@ export class GameLogs {
         if (showAllMessages) {
           return true;
         }
+        // Analysis game: the AI players' private lines are open to everyone – never those of humans
+        if (isSharedAiLine(game, message) && !spoilsOpenChoice(game, message, playerId)) {
+          return true;
+        }
         return message.playerId === undefined || message.playerId === playerId;
       } catch (e) {
         console.error('Error checking message for player', e);
@@ -119,12 +126,12 @@ export class GameLogs {
     const labelOwner = (message: LogMessage): LogMessage => {
       const normalized = this.normalizeCorporationSelection(message);
       const labeled = showAllMessages ? this.labelPrivateMessageOwner(normalized, game) : normalized;
-      if (labeled.replayGlobalEffects === undefined) {
-        return labeled;
+      let result = labeled;
+      if (labeled.replayGlobalEffects !== undefined) {
+        result = {...labeled};
+        delete result.replayGlobalEffects;
       }
-      const regularLog = {...labeled};
-      delete regularLog.replayGlobalEffects;
-      return regularLog;
+      return this.forReader(game, result, playerId);
     };
     if (generation === null) {
       return game.gameLog.filter(messagesForPlayer).slice(-this.getRecentLogLimit(limit)).map(labelOwner);
@@ -132,12 +139,35 @@ export class GameLogs {
     return this.getLogsForGeneration(game.gameLog, Number(generation)).filter(messagesForPlayer).map(labelOwner);
   }
 
+  /**
+   * Another player's (AI) private line goes out as a copy naming the AI by colour: its player id
+   * would let the reader play the AI's seat.
+   */
+  private forReader(game: IGame, message: LogMessage, playerId: ParticipantId): LogMessage {
+    if (message.playerId === undefined || message.playerId === playerId) {
+      return message;
+    }
+    const owner = aiPlayerOfLine(game, message);
+    if (owner === undefined) {
+      return message;
+    }
+    const copy: LogMessage = {...message, aiInsight: owner.color};
+    delete copy.playerId;
+    return copy;
+  }
+
   public getLogsForGameEnd(game: IGame): Array<string> {
     if (game.phase !== Phase.END) {
       throw new Error('Game is not over');
     }
 
-    return game.gameLog.filter((message) => message.canceled !== true).map((message) => Log.applyData(this.labelPrivateMessageOwner(this.normalizeCorporationSelection(message), game), (datum: LogMessageData) => {
+    // Analysis game: the ratings of a line follow it, so the evaluation reads them in place
+    const ratings = game.gameOptions.aiAnalysis === true ? AiFeedbackStore.getInstance().entries(game.id) : [];
+    const ratingLines = (message: LogMessage): Array<string> => ratings
+      .filter((entry) => entry.messageId === message.id)
+      .map((entry) => `    ${AI_FEEDBACK_EMOJI[entry.rating]} ${entry.name}${entry.text === '' ? '' : ': ' + entry.text}` +
+        (entry.betterOptionLabel === undefined ? '' : ` → ${entry.betterOptionLabel}`));
+    return game.gameLog.filter((message) => message.canceled !== true).flatMap((message) => [Log.applyData(this.labelPrivateMessageOwner(this.normalizeCorporationSelection(message), game), (datum: LogMessageData) => {
       if (datum.type === undefined || datum.value === undefined) {
         return '';
       }
@@ -164,6 +194,6 @@ export class GameLogs {
       default:
         return datum.value.toString();
       }
-    }));
+    }), ...ratingLines(message)]);
   }
 }

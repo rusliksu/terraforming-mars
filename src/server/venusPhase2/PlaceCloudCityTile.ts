@@ -1,3 +1,4 @@
+import {TileType} from '../../common/TileType';
 import {Space} from '../boards/Space';
 import {IPlayer} from '../IPlayer';
 import {BasePlaceVenusPhase2Tile} from './BasePlaceVenusPhase2Tile';
@@ -12,6 +13,8 @@ import {VenusPhase2Expansion} from './VenusPhase2Expansion';
 // every later tile type's ordinal, corrupting already-serialized games) -- only the display string
 // and card-facing text changed.
 export class PlaceCloudCityTile extends BasePlaceVenusPhase2Tile {
+  protected override readonly tileType = TileType.VENUS_CLOUD_CITY;
+
   constructor(
     player: IPlayer,
     spaces?: Array<Space>,

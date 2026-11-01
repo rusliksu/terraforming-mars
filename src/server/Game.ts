@@ -9,15 +9,15 @@ import {ColonyDealer} from './colonies/ColonyDealer';
 import {IColony} from './colonies/IColony';
 import {Color} from '../common/Color';
 import {ICorporationCard, isICorporationCard} from './cards/corporation/ICorporationCard';
-import {Database} from './database/Database';
 import {FundedAward, serializeFundedAwards, deserializeFundedAwards} from './awards/FundedAward';
 import {IAward} from './awards/IAward';
 import {IMilestone} from './milestones/IMilestone';
 import {Space} from './boards/Space';
 import {Tile} from './Tile';
 import {LogMessageBuilder} from './logs/LogMessageBuilder';
+import {annotateLogMessage} from './logs/aiDecisionContext';
 import {LogHelper} from './LogHelper';
-import {LogEffect, LogGlobalEffect, LogMessage, LogPayment} from '../common/logs/LogMessage';
+import {LogEffect, LogGlobalEffect, LogMessage} from '../common/logs/LogMessage';
 import {milestoneManifest} from './milestones/Milestones';
 import {awardManifest} from './awards/Awards';
 import {PartyHooks} from './turmoil/parties/PartyHooks';
@@ -63,13 +63,12 @@ import {PathfindersData} from './pathfinders/PathfindersData';
 import {DeltaProject} from './cards/delta/DeltaProject';
 import {AddResourcesToCard} from './deferredActions/AddResourcesToCard';
 import {ColonyDeserializer} from './colonies/ColonyDeserializer';
-import {GameLoader} from './database/GameLoader';
 import {DEFAULT_GAME_OPTIONS, GameOptions} from './game/GameOptions';
 import {normalizeEscapeVelocityOptions} from '../common/game/EscapeVelocityOptions';
 import {GlobalParametersConfig, ParameterBonus, resolveGlobalParameters} from '../common/GlobalParameterConfig';
 import {CorporationDeck, PreludeDeck, ProjectDeck, CeoDeck} from './cards/Deck';
 import {Logger} from './logs/Logger';
-import {addDays, stringToNumber} from './database/utils';
+import {addDays, stringToNumber} from '../common/utils/dateMath';
 import {Tag} from '../common/cards/Tag';
 import {IGame, Score} from './IGame';
 import {GlobalParameterMaximums} from '../common/boards/GlobalParameterMaximums';
@@ -98,6 +97,7 @@ import {SpaceType} from '../common/boards/SpaceType';
 import {ICard} from './cards/ICard';
 import {generateGameName} from './GameName';
 import {captureEarlyGameStats} from './game/EarlyGameStats';
+import type {EngineRuntime} from './engine/EngineRuntime';
 import type {ActionReplayState} from './game/ActionReplay';
 import {compareCompletionRank, getSharedRemainingPlaceRange, hasSameCompletionRank, isLastActivePlayerFinish} from '../common/game/CompletionOutcome';
 import {comparing} from '@/common/utils/Ordering';
@@ -107,6 +107,24 @@ import {ColoniesHandler} from './colonies/ColoniesHandler';
 let createGameLog: () => Array<LogMessage> = () => [];
 
 type SaveGame = (game: IGame) => Promise<void>;
+
+type GameLoaderModule = {
+  GameLoader: {
+    getInstance(): {
+      saveGame(game: IGame): Promise<void>;
+      completeGame(game: IGame): Promise<void>;
+      mark(gameId: GameId): void;
+    };
+  };
+};
+
+type DatabaseModule = {
+  Database: {
+    getInstance(): {
+      saveGameResults(gameId: GameId, players: number, generations: number, gameOptions: GameOptions, scores: Array<Score>): void;
+    };
+  };
+};
 
 const TRACK_BONUS_KIND: Record<ParameterBonus['kind'], GlobalParameterTrackBonus> = {
   ocean: 'ocean',
@@ -180,6 +198,8 @@ export class Game implements IGame, Logger {
   public simulationMode: boolean = false;
   private clonedGamedId: string | undefined;
   public rng: SeededRandom;
+  /** Optional host dependencies. Undefined keeps legacy server/test behavior. */
+  public readonly engine?: EngineRuntime;
   public spectatorId: SpectatorId;
   public deferredActions: DeferredActionsQueue = new DeferredActionsQueue();
   public createdTime: Date = new Date(0);
@@ -188,6 +208,7 @@ export class Game implements IGame, Logger {
   public gameLog: Array<LogMessage> = createGameLog();
   public logActionContext?: {id: string, actor: IPlayer, generation: number, phase: Phase, ordinal: number, firstMessage: boolean, pendingGlobalEffects?: Array<LogGlobalEffect>};
   public undoCount: number = 0; // Each undo increases it
+  public aiDecisionCount: number = 0; // Analysis games: running number of AI decisions
   public actionReplayState: ActionReplayState | null | undefined = undefined;
   public inputsThisRound = 0;
   public resettable: boolean = false;
@@ -281,6 +302,7 @@ export class Game implements IGame, Logger {
 
   public underworldDraftEnabled = true;
   public readonly globalParameterTracks: GlobalParameterTracks;
+  public readonly standardProjects: ReadonlyArray<IStandardProjectCard>;
 
   private constructor(
     id: GameId,
@@ -297,8 +319,13 @@ export class Game implements IGame, Logger {
     preludeDeck: PreludeDeck,
     ceoDeck: CeoDeck,
     tags: ReadonlyArray<Tag>,
-    private readonly saveGame: SaveGame = (game) => GameLoader.getInstance().saveGame(game)) {
+    private readonly saveGame: SaveGame = (game) => {
+      const {GameLoader} = require('./database/GameLoader') as GameLoaderModule;
+      return GameLoader.getInstance().saveGame(game);
+    },
+    engine?: EngineRuntime) {
     this.id = id;
+    this.engine = engine;
     this.name = name;
     this.gameOptions = {...gameOptions};
     this.parameters = resolveGlobalParameters(this.gameOptions.globalParameters, this.gameOptions.venusPhase2Expansion, this.gameOptions.venusPhase2Max);
@@ -360,6 +387,7 @@ export class Game implements IGame, Logger {
     this.globalParameterTracks = configured === undefined ?
       getGlobalParameterTracks(gameOptions.boardName) :
       tracksForConfig(this.parameters);
+    this.standardProjects = this.computeStandardProjects();
   }
 
   private setFirstPlayer(first: IPlayer) {
@@ -378,7 +406,8 @@ export class Game implements IGame, Logger {
     spectatorId: SpectatorId,
     partialOptions: Partial<GameOptions> = {},
     seed = 0,
-    saveGame?: SaveGame): Game {
+    saveGame?: SaveGame,
+    engine?: EngineRuntime): Game {
     if (partialOptions.expansions === undefined) {
       partialOptions.expansions = {
         corpera: partialOptions.corporateEra ?? false,
@@ -429,7 +458,7 @@ export class Game implements IGame, Logger {
       throw new Error('Delta Project cannot be banned. It is given to all players as part of the Delta Project.');
     }
 
-    const rng = new SeededRandom(seed);
+    const rng = engine?.random.create(seed) ?? new SeededRandom(seed);
     const board = GameSetup.newBoard(gameOptions, rng);
     const gameCards = new GameCards(gameOptions);
 
@@ -462,15 +491,17 @@ export class Game implements IGame, Logger {
       gameOptions.initialDraftOneWay = false;
       gameOptions.preludeDraftVariant = false;
       gameOptions.randomMA = RandomMAOptionType.NONE;
+      gameOptions.customMA = undefined;
 
       // Single player game player starts with 14TR
       players[0].setTerraformRating(14);
     }
 
-    const name = generateGameName(UnseededRandom.INSTANCE);
-    const game = new Game(id, name, players, firstPlayer, activePlayer, spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, Array.from(tags), saveGame);
-    // This evaluation of created time doesn't match what's stored in the database, but that's fine.
-    game.createdTime = new Date();
+    const name = engine === undefined ?
+      generateGameName(UnseededRandom.INSTANCE) :
+      generateGameName(engine.random.create(seed));
+    const game = new Game(id, name, players, firstPlayer, activePlayer, spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, Array.from(tags), saveGame, engine);
+    game.createdTime = engine === undefined ? new Date() : new Date(engine.clock.now());
     // Initialize Ares data
     if (gameOptions.aresExtension) {
       game.aresData = AresSetup.initialData(gameOptions.aresHazards, players);
@@ -636,6 +667,10 @@ export class Game implements IGame, Logger {
   }
 
   public save(): void {
+    if (this.engine !== undefined) {
+      this.saveGamePromise = this.engine.persistence.save(this.serialize());
+      return;
+    }
     if (this.simulationMode) {
       return;
     }
@@ -700,6 +735,7 @@ export class Game implements IGame, Logger {
       underworldData: this.underworldData,
       conglomerates: this.conglomerates,
       undoCount: this.undoCount,
+      aiDecisionCount: this.aiDecisionCount,
       venusPhase2Data: VenusPhase2Data.serialize(this.venusPhase2Data),
       venusScaleLevel: this.venusScaleLevel,
       verminInEffect: this.verminInEffect,
@@ -744,11 +780,7 @@ export class Game implements IGame, Logger {
    * Run every deferred action, including any added while running them, and then call `cb`.
    */
   public drainQueue(cb: () => void): void {
-    if (this.deferredActions.length === 0) {
-      cb();
-      return;
-    }
-    this.deferredActions.runAll(() => this.drainQueue(cb));
+    this.deferredActions.runAll(cb);
   }
 
   public milestoneClaimed(milestone: IMilestone): boolean {
@@ -1177,6 +1209,37 @@ export class Game implements IGame, Logger {
     }
   }
 
+  /**
+   * Resumes a game loaded from the database in the solar phase.
+   *
+   * Solar is persisted only while the first player is choosing the World Government Terraforming
+   * action: every other step of the phase runs synchronously. Re-creating that input (or finishing
+   * the generation when the option is off) is enough to continue the game.
+   */
+  public restoreSolarPhase(): void {
+    if (this.gameOptions.solarPhaseOption && !this.marsIsTerraformed()) {
+      this.worldGovernmentTerraforming();
+    } else {
+      this.finishSolarPhase();
+    }
+  }
+
+  /**
+   * Resumes a game loaded from the database in the intergeneration phase.
+   *
+   * startGeneration() sets this phase and then immediately moves on to drafting or research in the
+   * same call, so a persisted game never means "the generation has not started yet": only the
+   * opening prompt of the new generation is missing. Re-create it without advancing the generation
+   * a second time.
+   */
+  public restoreIntergenerationPhase(): void {
+    if (this.gameOptions.draftVariant) {
+      this.gotoDraftPhase();
+    } else {
+      this.gotoResearchPhase();
+    }
+  }
+
   private gotoWorldGovernmentTerraforming() {
     this.worldGovernmentTerraforming();
   }
@@ -1449,12 +1512,21 @@ export class Game implements IGame, Logger {
       });
     });
 
+    if (this.engine !== undefined) {
+      this.phase = Phase.END;
+      this.engine.notifier.gameEnded?.(this.id);
+      await this.engine.persistence.save(this.serialize());
+      this.engine.persistence.markCompleted?.(this.id);
+      return;
+    }
     if (this.simulationMode) {
       this.phase = Phase.END;
       return;
     }
+    const {Database} = require('./database/Database') as DatabaseModule;
     Database.getInstance().saveGameResults(this.id, this.players.length, this.generation, this.gameOptions, scores);
     this.phase = Phase.END;
+    const {GameLoader} = require('./database/GameLoader') as GameLoaderModule;
     const gameLoader = GameLoader.getInstance();
     await gameLoader.saveGame(this);
     await gameLoader.completeGame(this);
@@ -1650,6 +1722,10 @@ export class Game implements IGame, Logger {
     this.oxygenLevel = newOxygenLevel;
     this.recordReplayGlobalEffect(player, GlobalParameter.OXYGEN, steps);
 
+    if (steps > 0 && this.phase !== Phase.SOLAR) {
+      LogHelper.logOxygenIncrease(player, steps);
+    }
+
     AresHandler.ifAres(this, (aresData) => {
       AresHandler.onOxygenChange(this, aresData);
     });
@@ -1717,6 +1793,11 @@ export class Game implements IGame, Logger {
     this.venusScaleLevel = newValue;
     this.recordReplayGlobalEffect(player, GlobalParameter.VENUS, steps);
 
+    // Every Venus raise shows the amount in the game log; callers no longer have to.
+    if (steps > 0 && this.phase !== Phase.SOLAR) {
+      LogHelper.logVenusIncrease(player, steps);
+    }
+
     return steps;
   }
 
@@ -1755,6 +1836,10 @@ export class Game implements IGame, Logger {
 
     this.temperature = newTemperature;
     this.recordReplayGlobalEffect(player, GlobalParameter.TEMPERATURE, steps);
+
+    if (steps > 0 && this.phase !== Phase.SOLAR) {
+      LogHelper.logTemperatureIncrease(player, steps);
+    }
 
     AresHandler.ifAres(this, (aresData) => {
       AresHandler.onTemperatureChange(this, aresData);
@@ -1870,7 +1955,7 @@ export class Game implements IGame, Logger {
 
   public grantPlacementBonuses(player: IPlayer, space: Space, coveringExistingTile: boolean = false) {
     if (!coveringExistingTile) {
-      this.grantSpaceBonuses(player, space, /* tilePlaced= */ true);
+      this.grantSpaceBonusesAsPlacement(player, space);
     }
 
     const adjacentOceanCount = this.board.getAdjacentSpaces(space).filter(Board.isOceanSpace).length;
@@ -1919,14 +2004,20 @@ export class Game implements IGame, Logger {
     LogHelper.logTilePlacement(player, space, tile.tileType);
   }
 
-  public grantSpaceBonuses(player: IPlayer, space: Space, tilePlaced: boolean = false) {
+  public grantSpaceBonuses(player: IPlayer, space: Space, onStandardResource?: (resource: Resource) => void) {
     const bonuses = MultiSet.from(space.bonus);
     bonuses.forEachMultiplicity((count: number, bonus: SpaceBonus) => {
-      this.grantSpaceBonus(player, bonus, count, tilePlaced ? space : undefined);
+      this.grantSpaceBonus(player, bonus, count, onStandardResource);
     });
   }
 
-  public grantSpaceBonus(player: IPlayer, spaceBonus: SpaceBonus, count: number = 1, space?: Space) {
+  public grantSpaceBonusesAsPlacement(player: IPlayer, space: Space) {
+    this.grantSpaceBonuses(player, space, (resource) => {
+      this.triggerForAllCards((p, c) => c.onStandardResourcePlacementBonus?.(p, player, space, resource));
+    });
+  }
+
+  public grantSpaceBonus(player: IPlayer, spaceBonus: SpaceBonus, count: number = 1, onStandardResource?: (resource: Resource) => void) {
     switch (spaceBonus) {
     case SpaceBonus.DRAW_CARD:
       player.drawCard(count);
@@ -2007,9 +2098,7 @@ export class Game implements IGame, Logger {
       player.defer(new SelectResource('Select a standard resource to gain')
         .andThen((resource) => {
           player.stock.add(resource, 1, {log: true});
-          if (space !== undefined) {
-            this.triggerForAllCards((p, c) => c.onStandardResourcePlacementBonus?.(p, player, space, resource));
-          }
+          onStandardResource?.(resource);
           return undefined;
         }));
       break;
@@ -2109,7 +2198,7 @@ export class Game implements IGame, Logger {
     }
   }
 
-  public getStandardProjects(): Array<IStandardProjectCard> {
+  private computeStandardProjects(): Array<IStandardProjectCard> {
     const gameOptions = this.gameOptions;
     return new GameCards(gameOptions)
       .getStandardProjects()
@@ -2174,7 +2263,7 @@ export class Game implements IGame, Logger {
     (context.pendingGlobalEffects ??= []).push(effect);
   }
 
-  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>, effect?: LogEffect, payment?: LogPayment}) {
+  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>, effect?: LogEffect}) {
     const builder = new LogMessageBuilder(message);
     f?.(builder);
     const logMessage = builder.build();
@@ -2184,9 +2273,6 @@ export class Game implements IGame, Logger {
     }
     if (options?.effect !== undefined) {
       logMessage.effect = options.effect;
-    }
-    if (options?.payment !== undefined) {
-      logMessage.payment = options.payment;
     }
     const context = this.logActionContext;
     if (context !== undefined && context.actor.actionsTakenThisGame === context.ordinal &&
@@ -2201,6 +2287,7 @@ export class Game implements IGame, Logger {
         context.pendingGlobalEffects = undefined;
       }
     }
+    annotateLogMessage(this, logMessage);
     this.gameLog.push(logMessage);
     this.gameAge++;
   }
@@ -2237,7 +2324,7 @@ export class Game implements IGame, Logger {
     return addDays(this.createdTime, days).getTime();
   }
 
-  public static deserialize(d: SerializedGame, options: {simulation?: boolean; viewOnly?: boolean; saveGame?: SaveGame} = {}): Game {
+  public static deserialize(d: SerializedGame, options: {simulation?: boolean; viewOnly?: boolean; saveGame?: SaveGame; environment?: EngineRuntime} = {}): Game {
     if (options.viewOnly) {
       d = structuredClone(d);
     }
@@ -2251,7 +2338,7 @@ export class Game implements IGame, Logger {
 
     const board = GameSetup.deserializeBoard(players, gameOptions, d);
 
-    const rng = new SeededRandom(d.seed, d.currentSeed);
+    const rng = options.environment?.random.create(d.seed, d.currentSeed) ?? new SeededRandom(d.seed, d.currentSeed);
 
     const projectDeck = ProjectDeck.deserialize(d.projectDeck, rng);
     const corporationDeck = CorporationDeck.deserialize(d.corporationDeck, rng);
@@ -2259,7 +2346,7 @@ export class Game implements IGame, Logger {
 
     const ceoDeck = CeoDeck.deserialize(d.ceoDeck, rng);
 
-    const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags, options.saveGame);
+    const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags, options.saveGame, options.environment);
     game.simulationMode = options.simulation === true || options.viewOnly === true;
     game.resettable = true;
     game.spectatorId = d.spectatorId;
@@ -2341,6 +2428,7 @@ export class Game implements IGame, Logger {
     game.phase = d.phase;
     game.oxygenLevel = d.oxygenLevel;
     game.undoCount = d.undoCount ?? 0;
+    game.aiDecisionCount = d.aiDecisionCount ?? 0;
     game.temperature = d.temperature;
     game.venusScaleLevel = d.venusScaleLevel;
     game.activePlayer = game.getPlayerById(d.activePlayer);
@@ -2410,13 +2498,22 @@ export class Game implements IGame, Logger {
       }
     } else if (game.phase === Phase.END) {
       // There's nowhere that we need to go for end game.
+    } else if (game.phase === Phase.SOLAR) {
+      game.restoreSolarPhase();
+    } else if (game.phase === Phase.INTERGENERATION) {
+      game.restoreIntergenerationPhase();
     } else {
       // We should be in ACTION phase, let's prompt the active player for actions
       game.activePlayer.takeAction();
     }
 
-    if (game.phase === Phase.END && !game.simulationMode) {
-      GameLoader.getInstance().mark(game.id);
+    if (game.phase === Phase.END) {
+      if (game.engine !== undefined) {
+        game.engine.persistence.markCompleted?.(game.id);
+      } else if (!game.simulationMode) {
+        const {GameLoader} = require('./database/GameLoader') as GameLoaderModule;
+        GameLoader.getInstance().mark(game.id);
+      }
     }
     return game;
   }

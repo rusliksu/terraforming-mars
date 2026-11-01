@@ -5,14 +5,18 @@ import {Handler} from './Handler';
 import {Context} from './IHandler';
 import {Database} from '../database/Database';
 import {BoardName} from '../../common/boards/BoardName';
+import {boardOptions} from '../../common/boards/randomBoardOptions';
+import {RandomBoardOption} from '../../common/boards/RandomBoardOption';
 import {decodeCustomBoard} from '../../common/boards/customBoardCodec';
 import {decodeSimpleBoard} from '../../common/boards/simpleBoardCodec';
 import {Cloner} from '../database/Cloner';
 import {Game} from '../Game';
 import {GameOptions} from '../game/GameOptions';
+import {aiUnsupportedReasons} from '../../common/ai/aiSupport';
+import {aiPlayerName, isAiLevel} from '../../common/ai/AiLevel';
 import {Player} from '../Player';
 import {Server} from '../models/ServerModel';
-import {NewGameConfig, normalizePreludeHandicap} from '../../common/game/NewGameConfig';
+import {NewGameConfig, NewPlayerModel, normalizePreludeHandicap} from '../../common/game/NewGameConfig';
 import {normalizeEscapeVelocityOptions} from '../../common/game/EscapeVelocityOptions';
 import {safeCast, isGameId, isSpectatorId, isPlayerId} from '../../common/Types';
 import {generateRandomId} from '../utils/server-ids';
@@ -25,10 +29,48 @@ import {DEFAULT_EXPANSIONS} from '../../common/cards/GameModule';
 import {readBody} from './readBody';
 import {RouteError} from './RouteError';
 import {CEO_CARDS_DEALT_PER_PLAYER} from '../../common/constants';
+import {validateCustomMA} from '../../common/ma/CustomMA';
 import {hasNegativeEscapeVelocityOption} from '../../common/game/escapeVelocity';
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
   return (telegramID ?? '').trim();
+}
+
+/**
+ * Normalizes the legacy single-board 'board' field into 'boards'.
+ *
+ * API callers and cached clients that predate the multi-board 'boards' array still send a
+ * single 'board' value (a concrete BoardName or one of the random options). Without this the
+ * create-game handler would read 'boards.length' off undefined and fail with a 500.
+ */
+export function normalizeLegacyBoardSelection(gameReq: NewGameConfig): void {
+  let selection: Array<BoardName | RandomBoardOption>;
+  if (Array.isArray(gameReq.boards) && gameReq.boards.length > 0) {
+    selection = gameReq.boards;
+  } else if (Array.isArray(gameReq.boards)) {
+    // An explicitly empty selection is an error; the caller rejects it instead of
+    // silently substituting a board. Only legacy requests without `boards` fall back.
+    return;
+  } else if (gameReq.board === undefined || gameReq.board === null) {
+    selection = [BoardName.THARSIS];
+  } else {
+    selection = [gameReq.board];
+  }
+
+  const boards = new Set<BoardName>();
+  for (const choice of selection) {
+    if (choice === RandomBoardOption.OFFICIAL || choice === RandomBoardOption.ALL) {
+      for (const board of boardOptions(choice)) {
+        boards.add(board);
+      }
+      continue;
+    }
+    if (!Object.values(BoardName).includes(choice as BoardName)) {
+      throw RouteError.badRequest('Invalid board: ' + String(choice));
+    }
+    boards.add(choice as BoardName);
+  }
+  gameReq.boards = [...boards];
 }
 
 export function isTelegramIdValid(telegramID: string | undefined): boolean {
@@ -37,7 +79,8 @@ export function isTelegramIdValid(telegramID: string | undefined): boolean {
 }
 
 function isTelegramIdRequired(player: NewGameConfig['players'][number]): boolean {
-  return player.isBot !== true;
+  // AI seats and bot-takeover seats are driven by the server: no chat id to notify.
+  return player.isBot !== true && player.aiLevel === undefined;
 }
 
 function maskTelegramIdForLog(telegramID: string): string {
@@ -91,10 +134,38 @@ export class ApiCreateGame extends Handler {
     validate(gameReq.customCeos, Math.max(gameReq.startingCeos ?? 0, CEO_CARDS_DEALT_PER_PLAYER), 'CEOs');
   }
 
+  /**
+   * Human seats are owned by Discord accounts. AI and bot seats never receive a user.
+   * IDs are Discord snowflakes: positive decimal integers.
+   */
+  public validateDiscordIds(players: ReadonlyArray<NewPlayerModel>, requireAll: boolean): void {
+    const seen = new Set<string>();
+    for (let i = 0; i < players.length; i++) {
+      const player = players[i];
+      if (player.isBot === true || isAiLevel(player.aiLevel)) {
+        continue;
+      }
+      const discordId = player.discordId?.trim();
+      if (discordId === undefined || discordId === '') {
+        if (requireAll) {
+          throw RouteError.badRequest(`missing Discord ID for player ${i + 1}`);
+        }
+        continue;
+      }
+      if (!/^[1-9][0-9]*$/.test(discordId)) {
+        throw RouteError.badRequest(`invalid Discord ID for player ${i + 1}`);
+      }
+      if (seen.has(discordId)) {
+        throw RouteError.badRequest(`duplicate Discord ID for player ${i + 1}`);
+      }
+      seen.add(discordId);
+    }
+  }
+
   // TODO(kberg): much of this code can be moved outside of handler, and that
   // would be better.
   public override async post(req: Request, res: Response, ctx: Context): Promise<void> {
-    const withinQuota = this.quotaHandlers.map((handler) => handler.measure(ctx)).every((ok) => ok);
+    const withinQuota = this.quotaHandlers.every((handler) => handler.isWithinQuota(ctx));
     if (!withinQuota) {
       responses.quotaExceeded(req, res);
       return;
@@ -105,7 +176,14 @@ export class ApiCreateGame extends Handler {
       const gameReq = JSON.parse(body) as NewGameConfig;
       gameReq.expansions = {...DEFAULT_EXPANSIONS, ...gameReq.expansions};
       gameReq.expansions.betterMars &&= gameReq.expansions.pathfinders;
+      normalizeLegacyBoardSelection(gameReq);
       this.validateCustomLists(gameReq);
+      const requiresDiscordLogin = gameReq.requiresDiscordLogin === true;
+      if (requiresDiscordLogin && ctx.user === undefined && !this.hasServerIdAccess(ctx)) {
+        responses.unauthorized(req, res);
+        return;
+      }
+      this.validateDiscordIds(gameReq.players, requiresDiscordLogin);
       const turnBasedGame = gameReq.turnBasedGame === true;
       const botGame = gameReq.botGame === true;
       if (turnBasedGame) {
@@ -128,18 +206,34 @@ export class ApiCreateGame extends Handler {
       if (gameReq.escapeVelocity !== undefined && gameReq.escapeVelocity !== null && hasNegativeEscapeVelocityOption(gameReq.escapeVelocity)) {
         throw RouteError.badRequest('Escape Velocity values cannot be negative.');
       }
+      if (gameReq.boards.length === 0) {
+        throw RouteError.badRequest('Must select at least one board');
+      }
       const gameId = safeCast(generateRandomId('g'), isGameId);
       const spectatorId = safeCast(generateRandomId('s'), isSpectatorId);
-      const requestedPlayers = gameReq.players.map((player) => ({...player}));
+      const requestedPlayers = gameReq.players.map((player) => ({...player, discordId: player.discordId?.trim()}));
+      const aiBlockers = aiUnsupportedReasons({
+        expansions: gameReq.expansions,
+        twoCorpsVariant: gameReq.twoCorpsVariant,
+      });
+      if (aiBlockers.length > 0 && requestedPlayers.some((p) => isAiLevel(p.aiLevel))) {
+        throw RouteError.badRequest(`AI players do not support: ${aiBlockers.join(', ')}.`);
+      }
       const players = requestedPlayers.map((p) => {
-        return new Player(
-          p.name,
+        const aiLevel = isAiLevel(p.aiLevel) ? p.aiLevel : undefined;
+        const player = new Player(
+          aiLevel === undefined ? p.name : aiPlayerName(p.name, aiLevel),
           p.color,
           p.beginner,
           Number(p.handicap), // For some reason handicap is coming up a string.
           safeCast(generateRandomId('p'), isPlayerId),
           normalizePreludeHandicap(p.preludeHandicap),
         );
+        player.aiLevel = aiLevel;
+        if (aiLevel === undefined && p.isBot !== true && p.discordId !== undefined && p.discordId !== '') {
+          player.user = p.discordId;
+        }
+        return player;
       });
       // Assign telegramID from game request
       players.forEach((p, i) => {
@@ -216,6 +310,7 @@ export class ApiCreateGame extends Handler {
         customCeos: gameReq.customCeos,
         customColoniesList: gameReq.customColoniesList,
         customCorporationsList: gameReq.customCorporationsList,
+        customMA: gameReq.customMA,
         customPreludes: gameReq.customPreludes,
         draftVariant: gameReq.draftVariant,
         escapeVelocity: normalizeEscapeVelocityOptions(gameReq.escapeVelocity),
@@ -225,7 +320,8 @@ export class ApiCreateGame extends Handler {
         initialDraftVariant: gameReq.initialDraft,
         initialDraftOneWay: gameReq.initialDraftOneWay === true,
         modularMA: gameReq.modularMA,
-        noEloGame: gameReq.noEloGame === true,
+        // AI games are training games by default: results against the computer never count for ELO.
+        noEloGame: gameReq.noEloGame === true || gameReq.players.some((p) => isAiLevel(p.aiLevel)),
         turnBasedGame,
         moonExpansion: gameReq.expansions.moon,
         moonStandardProjectVariant: gameReq.moonStandardProjectVariant,
@@ -241,6 +337,7 @@ export class ApiCreateGame extends Handler {
         pathfindersExpansion: gameReq.expansions.pathfinders,
         politicalAgendasExtension: gameReq.politicalAgendasExtension,
         privateHands: gameReq.privateHands !== false,
+        requiresDiscordLogin,
         prelude2Expansion: gameReq.expansions.prelude2,
         preludeDraftVariant: gameReq.preludeDraftVariant,
         preludeExtension: gameReq.expansions.prelude,
@@ -268,6 +365,7 @@ export class ApiCreateGame extends Handler {
         customCardsExpansion: gameReq.expansions.customCards,
         undoOption: gameReq.undoOption,
         undoStepOption: gameReq.undoStepOption === true,
+        aiAnalysis: gameReq.aiAnalysis === true && gameReq.players.some((p) => isAiLevel(p.aiLevel)),
         venusNextExtension: gameReq.expansions.venus,
       };
 
@@ -280,6 +378,11 @@ export class ApiCreateGame extends Handler {
           throw RouteError.badRequest(reason);
         }
       };
+      try {
+        validateCustomMA(gameOptions.customMA, gameOptions.randomMA, gameOptions.venusNextExtension);
+      } catch (e) {
+        throw RouteError.badRequest(e instanceof Error ? e.message : String(e));
+      }
       let game: IGame;
       if (gameOptions.clonedGamedId !== undefined && !gameOptions.clonedGamedId.startsWith('#')) {
         const serialized = await Database.getInstance().getGameVersion(gameOptions.clonedGamedId, 0);
@@ -314,6 +417,8 @@ export class ApiCreateGame extends Handler {
       }
 
       await ctx.gameLoader.add(game);
+      // Only games that are actually created count against the quota.
+      this.quotaHandlers.forEach((handler) => handler.record(ctx));
       // Send Telegram game start notifications
       if (game.gameOptions.turnBasedGame === true) {
         for (const p of game.players) {

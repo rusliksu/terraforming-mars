@@ -32,7 +32,7 @@ import {DeltaProjectPlayerModel} from '../common/models/DeltaProjectPlayerModel'
 import {AlliedParty} from '../common/turmoil/Types';
 import {IParty} from './turmoil/parties/IParty';
 import {Message} from '../common/logs/Message';
-import {DiscordId} from './server/auth/discord';
+import type {DiscordId} from './server/auth/discord';
 import {PlayedCards} from './cards/PlayedCards';
 import {From} from './logs/From';
 import {Tag} from '../common/cards/Tag';
@@ -63,12 +63,16 @@ export type CanAffordOptions = Partial<PaymentOptions> & {
  */
 export type CardAction = 'add' | 'discard' | 'nothing' | 'double-down';
 
+import {AiLevel} from '../common/ai/AiLevel';
+
 export interface IPlayer {
   readonly id: PlayerId;
   name: string;
   color: Color;
   beginner: boolean;
   handicap: number;
+  /** Strength of a computer-controlled player; undefined for humans. */
+  aiLevel: AiLevel | undefined;
   preludeHandicap: number;
 
   readonly game: IGame;
@@ -231,6 +235,14 @@ export interface IPlayer {
    * Not serialized: reloading the game asks for input again, which resets it.
    */
   inputRequestedAt?: number;
+
+  /**
+   * The id of the current input request.
+   *
+   * The client sends it back with its response. Not serialized: reloading the game asks for
+   * input again, which sets a new one.
+   */
+  requestId?: string;
 
   setup(game: IGame): void;
 

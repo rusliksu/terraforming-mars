@@ -1,841 +1,897 @@
 <template>
-        <div id="create-game" class="create-game">
-            <h1><span v-i18n>{{ constants.APP_NAME }}</span> — <span v-i18n>Create New Game</span></h1>
-            <div class="create-game-form create-game-panel create-game--block">
+  <div id="create-game" class="create-game" :class="{'create-game--wrybit': creationPresentation !== undefined}">
+    <component v-if="creationPresentation !== undefined" :is="creationPresentation" :binding="creationBinding" />
+    <template v-else>
+      <h1><span v-i18n>{{ constants.APP_NAME }}</span> — <span v-i18n>Create New Game</span></h1>
+      <div class="create-game-form create-game-panel create-game--block">
 
-                <div class="create-game-options">
-                    <div class="create-game-page-container">
-                        <div class="create-game-page-column">
-                            <h4 v-i18n>№ of Players</h4>
-                            <div v-for="pCount in [1,2,3,4,5,6]" :key="pCount">
-                              <input type="radio" :value="pCount" name="playersCount" v-model="playersCount" :id="pCount+'-radio'">
-                              <label :for="pCount+'-radio'">
-                                  {{ getPlayersCountText(pCount) }}
-                              </label>
-                            </div>
-                        </div>
+        <div class="create-game-options">
+          <div class="create-game-page-container">
+            <div class="create-game-page-column">
+              <h4 v-i18n>№ of Players</h4>
+              <div v-for="pCount in [1,2,3,4,5,6]" :key="pCount">
+                <input type="radio" :value="pCount" name="playersCount" v-model="playersCount" :id="pCount+'-radio'">
+                <label :for="pCount+'-radio'">
+                  {{ getPlayersCountText(pCount) }}
+                </label>
+              </div>
+            </div>
 
-                        <div class="create-game-page-column create-game-expansions">
-                            <h4 v-i18n>Expansions</h4>
+            <div class="create-game-page-column create-game-expansions">
+              <h4 v-i18n>Expansions</h4>
 
-                            <input type="checkbox" name="allOfficialExpansions" id="allOfficialExpansions-checkbox" v-model="allOfficialExpansions">
-                            <label for="allOfficialExpansions-checkbox">
-                                <span v-i18n>All</span>
-                            </label>
+              <input type="checkbox" name="allOfficialExpansions" id="allOfficialExpansions-checkbox" v-model="allOfficialExpansions">
+              <label for="allOfficialExpansions-checkbox">
+                <span v-i18n>All</span>
+              </label>
 
-                            <input type="checkbox" name="corporateEra" id="corporateEra-checkbox" v-model="expansions.corpera">
-                            <label for="corporateEra-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-CE"></div>
-                                <span v-i18n>Corporate Era</span>
-                            </label>
+              <input type="checkbox" name="corporateEra" id="corporateEra-checkbox" v-model="expansions.corpera">
+              <label for="corporateEra-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-CE"></div>
+                <span v-i18n>Corporate Era</span>
+              </label>
 
-                            <input type="checkbox" name="rebalanced" id="rebalanced-checkbox" v-model="expansions.rebalanced">
-                            <label for="rebalanced-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-rebalanced"></div>
-                                <span v-i18n>Rebalanced</span>&nbsp;<a :href="wikiUrls.rebalanced" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="rebalanced" id="rebalanced-checkbox" v-model="expansions.rebalanced">
+              <label for="rebalanced-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-rebalanced"></div>
+                <span v-i18n>Rebalanced</span>&nbsp;<a :href="wikiUrls.rebalanced" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <input type="checkbox" name="prelude" id="prelude-checkbox" v-model="expansions.prelude">
-                            <label for="prelude-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-prelude"></div>
-                                <span v-i18n>Prelude</span>
-                            </label>
+              <input type="checkbox" name="prelude" id="prelude-checkbox" v-model="expansions.prelude">
+              <label for="prelude-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-prelude"></div>
+                <span v-i18n>Prelude</span>
+              </label>
 
-                            <input type="checkbox" name="prelude2" id="prelude2-checkbox" v-model="expansions.prelude2">
-                            <label for="prelude2-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-prelude2"></div>
-                                <span v-i18n>Prelude 2</span>
-                            </label>
+              <input type="checkbox" name="prelude2" id="prelude2-checkbox" v-model="expansions.prelude2">
+              <label for="prelude2-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-prelude2"></div>
+                <span v-i18n>Prelude 2</span>
+              </label>
 
-                            <input type="checkbox" name="venusNext" id="venusNext-checkbox" v-model="expansions.venus">
-                            <label for="venusNext-checkbox" id="venusNext-label" class="expansion-button">
-                            <div class="create-game-expansion-icon expansion-icon-venus"></div>
-                                <span v-i18n>Venus Next</span>
-                            </label>
+              <input type="checkbox" name="venusNext" id="venusNext-checkbox" v-model="expansions.venus">
+              <label for="venusNext-checkbox" id="venusNext-label" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-venus"></div>
+                <span v-i18n>Venus Next</span>
+              </label>
 
-                            <div v-if="expansions.venus" class="create-game-suboptions" role="group" aria-labelledby="venusNext-label">
-                                <input type="checkbox" v-model="altVenusBoard" id="altVenusBoard-checkbox">
-                                <label for="altVenusBoard-checkbox">
-                                    <span v-i18n>Alt. Venus Board</span> &nbsp;<a :href="wikiUrls.alternativeVenusBoard" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                                </label>
+              <div v-if="expansions.venus" class="create-game-suboptions" role="group" aria-labelledby="venusNext-label">
+                <input type="checkbox" v-model="altVenusBoard" id="altVenusBoard-checkbox">
+                <label for="altVenusBoard-checkbox">
+                  <span v-i18n>Alt. Venus Board</span> &nbsp;<a :href="wikiUrls.alternativeVenusBoard" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                </label>
 
-                                <input type="checkbox" name="venusPhase2" id="venusPhase2-checkbox" v-model="expansions.venusPhase2">
-                                <label for="venusPhase2-checkbox" class="expansion-button">
-                                    <div class="create-game-expansion-icon expansion-icon-venusPhase2"></div>
-                                    <span v-i18n>Venus: Phase 2</span>&nbsp;<span :title="$t('Adds a Venus surface board and standard projects. Extends the Venus track to 60%, in 2% steps.')">(&#945;)</span>&nbsp;
-                                    <ExpansionHelp helpId="venus-phase-2-help" title="Venus: Phase 2" :wikiUrl="wikiUrls.venusPhase2">
-                                      <p v-i18n>Adds a Venus surface board and standard projects. Extends the Venus track to 60%, in 2% steps.</p>
-                                      <template v-if="expansions.venusPhase2">
-                                        <p v-if="playersCount === 1 && soloTR" v-i18n>In Solo TR, reach 63 TR to win; completing Venus is not required.</p>
-                                        <p v-else-if="playersCount === 1" v-i18n>In solo terraforming, Venus must reach 60% to win.</p>
-                                        <p v-else-if="requiresVenusTrackCompletion" v-i18n>With the current settings, Venus must reach 60% to end the game.</p>
-                                        <p v-else v-i18n>With the current settings, Venus does not need to be completed to end the game.</p>
-                                      </template>
-                                    </ExpansionHelp>
-                                </label>
+                <input type="checkbox" name="venusPhase2" id="venusPhase2-checkbox" v-model="expansions.venusPhase2">
+                <label for="venusPhase2-checkbox" class="expansion-button">
+                  <div class="create-game-expansion-icon expansion-icon-venusPhase2"></div>
+                  <span v-i18n>Venus: Phase 2</span>&nbsp;<span :title="$t('Adds a Venus surface board and standard projects. Extends the Venus track to 60%, in 2% steps.')">(&#945;)</span>&nbsp;
+                  <ExpansionHelp helpId="venus-phase-2-help" title="Venus: Phase 2" :wikiUrl="wikiUrls.venusPhase2">
+                    <p v-i18n>Adds a Venus surface board and standard projects. Extends the Venus track to 60%, in 2% steps.</p>
+                    <template v-if="expansions.venusPhase2">
+                      <p v-if="playersCount === 1 && soloTR" v-i18n>In Solo TR, reach 63 TR to win; completing Venus is not required.</p>
+                      <p v-else-if="playersCount === 1" v-i18n>In solo terraforming, Venus must reach 60% to win.</p>
+                      <p v-else-if="requiresVenusTrackCompletion" v-i18n>With the current settings, Venus must reach 60% to end the game.</p>
+                      <p v-else v-i18n>With the current settings, Venus does not need to be completed to end the game.</p>
+                    </template>
+                  </ExpansionHelp>
+                </label>
 
-                                <template v-if="expansions.venusPhase2">
-                                  <div class="create-game-subsection-label" style="margin-top: 4px;">
-                                    <label for="custom-venus-board-code" v-i18n>Custom Venus Phase 2 board code (optional)</label>
-                                    <textarea
-                                      id="custom-venus-board-code"
-                                      rows="2"
-                                      style="width: 100%; font-family: monospace; font-size: 11px;"
-                                      placeholder="Paste a TMBS1… code from the Venus map editor"
-                                      v-model="customVenusSurfaceBoardCodeInput"
-                                      @input="applyCustomVenusSurfaceBoardCode"></textarea>
-                                    <div v-if="customVenusSurfaceBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customVenusSurfaceBoardCodeError }}</div>
-                                    <div v-else-if="customVenusSurfaceBoardName !== ''" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom Venus board: {{ customVenusSurfaceBoardName }}</div>
-                                  </div>
-                                </template>
-                            </div>
+                <template v-if="expansions.venusPhase2">
+                  <PresentationHost :hosts="creationHosts.venus" />
+                </template>
+              </div>
 
-                            <input type="checkbox" name="colonies" id="colonies-checkbox" v-model="expansions.colonies">
-                            <label for="colonies-checkbox" class="expansion-button">
-                            <div class="create-game-expansion-icon expansion-icon-colony"></div>
-                                <span v-i18n>Colonies</span>
-                            </label>
+              <input type="checkbox" name="colonies" id="colonies-checkbox" v-model="expansions.colonies">
+              <label for="colonies-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-colony"></div>
+                <span v-i18n>Colonies</span>
+              </label>
 
-                            <input type="checkbox" name="turmoil" id="turmoil-checkbox" v-model="expansions.turmoil">
-                            <label for="turmoil-checkbox" id="turmoil-label" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-turmoil"></div>
-                                <span v-i18n>Turmoil</span>
-                            </label>
+              <input type="checkbox" name="turmoil" id="turmoil-checkbox" v-model="expansions.turmoil">
+              <label for="turmoil-checkbox" id="turmoil-label" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-turmoil"></div>
+                <span v-i18n>Turmoil</span>
+              </label>
 
-                            <div v-if="expansions.turmoil" class="create-game-suboptions" role="group" aria-labelledby="turmoil-label">
-                                <input type="checkbox" name="politicalAgendas" id="politicalAgendas-checkbox" :checked="isPoliticalAgendasExtensionEnabled()" @change="politicalAgendasExtensionToggle()">
-                                <label for="politicalAgendas-checkbox" class="expansion-button">
-                                    <div class="create-game-expansion-icon expansion-icon-agendas"></div>
-                                    <span v-i18n>Agendas</span>&nbsp;<a href="https://www.notion.so/Political-Agendas-8c6b0b018a884692be29b3ef44b340a9" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                                </label>
+              <div v-if="expansions.turmoil" class="create-game-suboptions" role="group" aria-labelledby="turmoil-label">
+                <input type="checkbox" name="politicalAgendas" id="politicalAgendas-checkbox" :checked="isPoliticalAgendasExtensionEnabled()" @change="politicalAgendasExtensionToggle()">
+                <label for="politicalAgendas-checkbox" class="expansion-button">
+                  <div class="create-game-expansion-icon expansion-icon-agendas"></div>
+                  <span v-i18n>Agendas</span>&nbsp;<a href="https://www.notion.so/Political-Agendas-8c6b0b018a884692be29b3ef44b340a9" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                </label>
 
-                                <div class="create-game-page-column-row" v-if="isPoliticalAgendasExtensionEnabled()">
-                                    <div>
-                                    <input type="radio" name="agendaStyle" v-model="politicalAgendasExtension" :value="getPoliticalAgendasExtensionAgendaStyle('random')" id="randomAgendaStyle-radio">
-                                    <label class="label-agendaStyle agendaStyle-random" for="randomAgendaStyle-radio">
-                                        <span class="agendas-text" v-i18n>{{ getPoliticalAgendasExtensionAgendaStyle('random') }}</span>
-                                    </label>
-                                    </div>
+                <div class="create-game-page-column-row" v-if="isPoliticalAgendasExtensionEnabled()">
+                  <div>
+                    <input type="radio" name="agendaStyle" v-model="politicalAgendasExtension" :value="getPoliticalAgendasExtensionAgendaStyle('random')" id="randomAgendaStyle-radio">
+                    <label class="label-agendaStyle agendaStyle-random" for="randomAgendaStyle-radio">
+                      <span class="agendas-text" v-i18n>{{ getPoliticalAgendasExtensionAgendaStyle('random') }}</span>
+                    </label>
+                  </div>
 
-                                    <div>
-                                    <input type="radio" name="agendaStyle" v-model="politicalAgendasExtension" :value="getPoliticalAgendasExtensionAgendaStyle('chairman')" id="chairmanAgendaStyle-radio">
-                                    <label class="label-agendaStyle agendaStyle-chairman" for="chairmanAgendaStyle-radio">
-                                        <span class="agendas-text" v-i18n>{{ getPoliticalAgendasExtensionAgendaStyle('chairman') }}</span>
-                                    </label>
-                                    </div>
-                                </div>
+                  <div>
+                    <input type="radio" name="agendaStyle" v-model="politicalAgendasExtension" :value="getPoliticalAgendasExtensionAgendaStyle('chairman')" id="chairmanAgendaStyle-radio">
+                    <label class="label-agendaStyle agendaStyle-chairman" for="chairmanAgendaStyle-radio">
+                      <span class="agendas-text" v-i18n>{{ getPoliticalAgendasExtensionAgendaStyle('chairman') }}</span>
+                    </label>
+                  </div>
+                </div>
 
-                                <input type="checkbox" name="moreParties" id="moreParties-checkbox" v-model="expansions.moreParties">
-                                <label for="moreParties-checkbox" class="expansion-button">
-                                    <div class="create-game-expansion-icon expansion-icon-moreParties"></div>
-                                    <span v-i18n>More Parties</span>&nbsp;<span title="A fan expansion: adds 6 new Turmoil parties (Populists, Spome, Empower, Bureaucrats, Centrists, Transhumanists), required by cards from other fan expansions that reference them">(&#945;)</span>&nbsp;
-                                    <ExpansionHelp helpId="more-parties-help" title="More Parties" :wikiUrl="wikiUrls.moreParties">
-                                      <p v-i18n>Randomly selects 6 parties from an expanded pool of 12. Spome requires The Moon. Events can bring other parties into play.</p>
-                                      <p v-i18n>The two starting events each place a neutral delegate. Party leaders choose bonuses and policies; the ruling policy remains locked until the next election.</p>
-                                    </ExpansionHelp>
-                                </label>
-                            </div>
+                <input type="checkbox" name="moreParties" id="moreParties-checkbox" v-model="expansions.moreParties">
+                <label for="moreParties-checkbox" class="expansion-button">
+                  <div class="create-game-expansion-icon expansion-icon-moreParties"></div>
+                  <span v-i18n>More Parties</span>&nbsp;<span title="A fan expansion: adds 6 new Turmoil parties (Populists, Spome, Empower, Bureaucrats, Centrists, Transhumanists), required by cards from other fan expansions that reference them">(&#945;)</span>&nbsp;
+                  <ExpansionHelp helpId="more-parties-help" title="More Parties" :wikiUrl="wikiUrls.moreParties">
+                    <p v-i18n>Randomly selects 6 parties from an expanded pool of 12. Spome requires The Moon. Events can bring other parties into play.</p>
+                    <p v-i18n>The two starting events each place a neutral delegate. Party leaders choose bonuses and policies; the ruling policy remains locked until the next election.</p>
+                  </ExpansionHelp>
+                </label>
+              </div>
 
-                            <input type="checkbox" name="promo" id="promo-checkbox" v-model="expansions.promo">
-                            <label for="promo-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-promo"></div>
-                                <span v-i18n>Promos</span>&nbsp;<a :href="wikiUrls.promo" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="promo" id="promo-checkbox" v-model="expansions.promo">
+              <label for="promo-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-promo"></div>
+                <span v-i18n>Promos</span>&nbsp;<a :href="wikiUrls.promo" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <div class="create-game-subsection-label" v-i18n>Fan-made</div>
+              <div class="create-game-subsection-label" v-i18n>Fan-made</div>
 
-                            <input type="checkbox" name="ares" id="ares-checkbox" v-model="expansions.ares">
-                            <label for="ares-checkbox" id="ares-label" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-ares"></div>
-                                <span v-i18n>Ares</span>&nbsp;<a :href="wikiUrls.ares" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="ares" id="ares-checkbox" v-model="expansions.ares">
+              <label for="ares-checkbox" id="ares-label" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-ares"></div>
+                <span v-i18n>Ares</span>&nbsp;<a :href="wikiUrls.ares" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <div v-if="expansions.ares" class="create-game-suboptions" role="group" aria-labelledby="ares-label">
-                                <input type="checkbox" v-model="aresExtremeVariant" id="aresExtremeVariantVariant-checkbox">
-                                <label for="aresExtremeVariantVariant-checkbox">
-                                    <div class="create-game-expansion-icon expansion-icon-ares"></div>
-                                    <span v-i18n>Extreme</span> &nbsp;<a :href="wikiUrls.aresExtreme" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                                </label>
-                            </div>
+              <div v-if="expansions.ares" class="create-game-suboptions" role="group" aria-labelledby="ares-label">
+                <input type="checkbox" v-model="aresExtremeVariant" id="aresExtremeVariantVariant-checkbox">
+                <label for="aresExtremeVariantVariant-checkbox">
+                  <div class="create-game-expansion-icon expansion-icon-ares"></div>
+                  <span v-i18n>Extreme</span> &nbsp;<a :href="wikiUrls.aresExtreme" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                </label>
+              </div>
 
-                            <input type="checkbox" name="community" id="communityCards-checkbox" v-model="expansions.community">
-                            <label for="communityCards-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-community"></div>
-                                <span v-i18n>Community</span>&nbsp;<a :href="wikiUrls.community" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="community" id="communityCards-checkbox" v-model="expansions.community">
+              <label for="communityCards-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-community"></div>
+                <span v-i18n>Community</span>&nbsp;<a :href="wikiUrls.community" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <input type="checkbox" name="themoon" id="themoon-checkbox" v-model="expansions.moon">
-                            <label for="themoon-checkbox" id="themoon-label" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-themoon"></div>
-                                <span v-i18n>The Moon</span>&nbsp;<a :href="wikiUrls.moon" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="themoon" id="themoon-checkbox" v-model="expansions.moon">
+              <label for="themoon-checkbox" id="themoon-label" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-themoon"></div>
+                <span v-i18n>The Moon</span>&nbsp;<a :href="wikiUrls.moon" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <div v-if="expansions.moon" class="create-game-suboptions" role="group" aria-labelledby="themoon-label">
-                              <input type="checkbox" v-model="requiresMoonTrackCompletion" id="requiresMoonTrackCompletion-checkbox">
-                              <label for="requiresMoonTrackCompletion-checkbox">
-                                  <span v-i18n>Mandatory Moon Terraforming</span>
-                              </label>
+              <div v-if="expansions.moon" class="create-game-suboptions" role="group" aria-labelledby="themoon-label">
+                <input type="checkbox" v-model="requiresMoonTrackCompletion" id="requiresMoonTrackCompletion-checkbox">
+                <label for="requiresMoonTrackCompletion-checkbox">
+                  <span v-i18n>Mandatory Moon Terraforming</span>
+                </label>
 
-                              <input type="checkbox" v-model="moonStandardProjectVariant" id="moonStandardProjectVariant2-checkbox">
-                              <label for="moonStandardProjectVariant2-checkbox">
-                                  <span v-i18n>Standard Project Variant #2</span>&nbsp;<a :href="wikiUrls.moonStandardProjectVariant" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                              </label>
+                <input type="checkbox" v-model="moonStandardProjectVariant" id="moonStandardProjectVariant2-checkbox">
+                <label for="moonStandardProjectVariant2-checkbox">
+                  <span v-i18n>Standard Project Variant #2</span>&nbsp;<a :href="wikiUrls.moonStandardProjectVariant" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                </label>
 
-                              <input type="checkbox" v-model="moonStandardProjectVariant1" id="moonStandardProjectVariant1-checkbox">
-                              <label for="moonStandardProjectVariant1-checkbox">
-                                  <span v-i18n>Standard Project Variant #1</span>&nbsp;<a :href="wikiUrls.moonStandardProjectVariant" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                              </label>
+                <input type="checkbox" v-model="moonStandardProjectVariant1" id="moonStandardProjectVariant1-checkbox">
+                <label for="moonStandardProjectVariant1-checkbox">
+                  <span v-i18n>Standard Project Variant #1</span>&nbsp;<a :href="wikiUrls.moonStandardProjectVariant" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                </label>
 
-                              <div class="create-game-subsection-label" style="margin-top: 4px;">
-                                <label for="custom-moon-board-code" v-i18n>Custom Moon board code (optional)</label>
-                                <textarea
-                                  id="custom-moon-board-code"
-                                  rows="2"
-                                  style="width: 100%; font-family: monospace; font-size: 11px;"
-                                  placeholder="Paste a TMBS1… code from the Moon map editor"
-                                  v-model="customMoonBoardCodeInput"
-                                  @input="applyCustomMoonBoardCode"></textarea>
-                                <div v-if="customMoonBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customMoonBoardCodeError }}</div>
-                                <div v-else-if="customMoonBoardName !== ''" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom Moon board: {{ customMoonBoardName }}</div>
-                              </div>
-                            </div>
+                <PresentationHost :hosts="creationHosts.moon" />
+              </div>
 
-                            <input type="checkbox" name="pathfinders" id="pathfinders-checkbox" v-model="expansions.pathfinders">
-                            <label for="pathfinders-checkbox" id="pathfinders-label" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-pathfinders"></div>
-                                <span v-i18n>Pathfinders</span>&nbsp;<a :href="wikiUrls.pathfinders" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
-                            <div v-if="expansions.pathfinders" class="create-game-suboptions" role="group" aria-labelledby="pathfinders-label">
-                                <input type="checkbox" name="betterMars" id="betterMars-checkbox" v-model="expansions.betterMars">
-                                <label for="betterMars-checkbox">
-                                    <span v-i18n>BetterMars</span>&nbsp;<span title="A fan expansion: Mars-flavoured card variants">(&#945;)</span>&nbsp;<a :href="wikiUrls.betterMars" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                                </label>
-                            </div>
+              <input type="checkbox" name="pathfinders" id="pathfinders-checkbox" v-model="expansions.pathfinders">
+              <label for="pathfinders-checkbox" id="pathfinders-label" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-pathfinders"></div>
+                <span v-i18n>Pathfinders</span>&nbsp;<a :href="wikiUrls.pathfinders" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
+              <div v-if="expansions.pathfinders" class="create-game-suboptions" role="group" aria-labelledby="pathfinders-label">
+                <input type="checkbox" name="betterMars" id="betterMars-checkbox" v-model="expansions.betterMars">
+                <label for="betterMars-checkbox">
+                  <span v-i18n>BetterMars</span>&nbsp;<span title="A fan expansion: Mars-flavoured card variants">(&#945;)</span>&nbsp;<a :href="wikiUrls.betterMars" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                </label>
+              </div>
 
-                            <input type="checkbox" name="ceo" id="ceo-checkbox" v-model="expansions.ceo">
-                            <label for="ceo-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-ceo"></div>
-                                <span v-i18n>CEOs</span>&nbsp;<a :href="wikiUrls.ceo" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="ceo" id="ceo-checkbox" v-model="expansions.ceo">
+              <label for="ceo-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-ceo"></div>
+                <span v-i18n>CEOs</span>&nbsp;<a :href="wikiUrls.ceo" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <input type="checkbox" name="starwars" id="starwars-checkbox" v-model="expansions.starwars">
-                            <label for="starwars-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-starwars"></div>
-                                <span v-i18n>Star Wars</span><span> </span>&nbsp;<a :href="wikiUrls.starwars" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="starwars" id="starwars-checkbox" v-model="expansions.starwars">
+              <label for="starwars-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-starwars"></div>
+                <span v-i18n>Star Wars</span><span> </span>&nbsp;<a :href="wikiUrls.starwars" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <input type="checkbox" name="ceo" id="underworld-checkbox" v-model="expansions.underworld">
-                            <label for="underworld-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-underworld"></div>
-                                <span v-i18n>Underworld 2</span><span></span>&nbsp;<a :href="wikiUrls.underworld" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="ceo" id="underworld-checkbox" v-model="expansions.underworld">
+              <label for="underworld-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-underworld"></div>
+                <span v-i18n>Underworld 2</span><span></span>&nbsp;<a :href="wikiUrls.underworld" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <input type="checkbox" name="deltaProject" id="deltaProject-checkbox" v-model="expansions.deltaProject">
-                            <label for="deltaProject-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-deltaProject"></div>
-                                <span v-i18n>Delta Project</span>&nbsp;<span title="Alpha — work in progress">(&#945;)</span><span></span>&nbsp;<a :href="wikiUrls.deltaProject" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="deltaProject" id="deltaProject-checkbox" v-model="expansions.deltaProject">
+              <label for="deltaProject-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-deltaProject"></div>
+                <span v-i18n>Delta Project</span>&nbsp;<span title="Alpha — work in progress">(&#945;)</span><span></span>&nbsp;<a :href="wikiUrls.deltaProject" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <input type="checkbox" name="sillyfication" id="sillyfication-checkbox" v-model="expansions.sillyfication">
-                            <label for="sillyfication-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-sillyfication"></div>
-                                <span v-i18n>Sillyfication</span>&nbsp;<span title="A silly fan expansion">(&#945;)</span>&nbsp;<a :href="wikiUrls.sillyfication" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="sillyfication" id="sillyfication-checkbox" v-model="expansions.sillyfication">
+              <label for="sillyfication-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-sillyfication"></div>
+                <span v-i18n>Sillyfication</span>&nbsp;<span title="A silly fan expansion">(&#945;)</span>&nbsp;<a :href="wikiUrls.sillyfication" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
 
-                            <input type="checkbox" name="customCards" id="customCards-checkbox" v-model="expansions.customCards">
-                            <label for="customCards-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-customCards"></div>
-                                <span v-i18n>Custom Cards</span>&nbsp;<span title="Community-submitted cards, approved on /cards">(&#945;)</span>
-                            </label>
+              <input type="checkbox" name="customCards" id="customCards-checkbox" v-model="expansions.customCards">
+              <label for="customCards-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-customCards"></div>
+                <span v-i18n>Custom Cards</span>&nbsp;<span title="Community-submitted cards, approved on /cards">(&#945;)</span>
+              </label>
 
-                            <input type="checkbox" name="conglomerates" id="conglomerates-checkbox" v-model="expansions.conglomerates">
-                            <label for="conglomerates-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-conglomerates"></div>
-                                <span v-i18n>Conglomerates</span>&nbsp;<span title="A fan expansion: 2v2 team play">(&#945;)</span>&nbsp;<a :href="wikiUrls.conglomerates" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="conglomerates" id="conglomerates-checkbox" v-model="expansions.conglomerates">
+              <label for="conglomerates-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-conglomerates"></div>
+                <span v-i18n>Conglomerates</span>&nbsp;<span title="A fan expansion: 2v2 team play">(&#945;)</span>&nbsp;<a :href="wikiUrls.conglomerates" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <input type="checkbox" name="corporateBetterments" id="corporateBetterments-checkbox" v-model="expansions.corporateBetterments">
-                            <label for="corporateBetterments-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-corporateBetterments"></div>
-                                <span v-i18n>Corporate Betterments</span>&nbsp;<span title="A fan expansion">(&#945;)</span>&nbsp;<a :href="wikiUrls.corporateBetterments" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="corporateBetterments" id="corporateBetterments-checkbox" v-model="expansions.corporateBetterments">
+              <label for="corporateBetterments-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-corporateBetterments"></div>
+                <span v-i18n>Corporate Betterments</span>&nbsp;<span title="A fan expansion">(&#945;)</span>&nbsp;<a :href="wikiUrls.corporateBetterments" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <input type="checkbox" name="idesOfMars" id="idesOfMars-checkbox" v-model="expansions.idesOfMars">
-                            <label for="idesOfMars-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-idesOfMars"></div>
-                                <span v-i18n>Ides of Mars</span>&nbsp;<span title="A fan expansion">(&#945;)</span>&nbsp;<a :href="wikiUrls.idesOfMars" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="idesOfMars" id="idesOfMars-checkbox" v-model="expansions.idesOfMars">
+              <label for="idesOfMars-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-idesOfMars"></div>
+                <span v-i18n>Ides of Mars</span>&nbsp;<span title="A fan expansion">(&#945;)</span>&nbsp;<a :href="wikiUrls.idesOfMars" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <input type="checkbox" name="robAntilles" id="robAntilles-checkbox" v-model="expansions.robAntilles">
-                            <label for="robAntilles-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-robAntilles"></div>
-                                <span v-i18n>Rob Antilles</span>&nbsp;<span title="A fan expansion">(&#945;)</span>&nbsp;<a :href="wikiUrls.robAntilles" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="robAntilles" id="robAntilles-checkbox" v-model="expansions.robAntilles">
+              <label for="robAntilles-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-robAntilles"></div>
+                <span v-i18n>Rob Antilles</span>&nbsp;<span title="A fan expansion">(&#945;)</span>&nbsp;<a :href="wikiUrls.robAntilles" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <input type="checkbox" name="industries" id="industries-checkbox" v-model="expansions.industries">
-                            <label for="industries-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-industries"></div>
-                                <span v-i18n>Industries</span>&nbsp;<span title="A fan expansion: 7 new standard projects placing industry tiles that raise production and distribute resources nearby">(&#945;)</span>&nbsp;<a :href="wikiUrls.industries" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="industries" id="industries-checkbox" v-model="expansions.industries">
+              <label for="industries-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-industries"></div>
+                <span v-i18n>Industries</span>&nbsp;<span title="A fan expansion: 7 new standard projects placing industry tiles that raise production and distribute resources nearby">(&#945;)</span>&nbsp;<a :href="wikiUrls.industries" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <input type="checkbox" name="highOrbit" id="highOrbit-checkbox" v-model="expansions.highOrbit">
-                            <label for="highOrbit-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-highOrbit"></div>
-                                <span v-i18n>High Orbit</span>&nbsp;<span title="A fan expansion: adds the Infrastructure tag and 'Silver' cards, which exist as several physical copies in the deck so multiple players can each own their own">(&#945;)</span>&nbsp;<a :href="wikiUrls.highOrbit" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" name="highOrbit" id="highOrbit-checkbox" v-model="expansions.highOrbit">
+              <label for="highOrbit-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-highOrbit"></div>
+                <span v-i18n>High Orbit</span>&nbsp;<span title="A fan expansion: adds the Infrastructure tag and 'Silver' cards, which exist as several physical copies in the deck so multiple players can each own their own">(&#945;)</span>&nbsp;<a :href="wikiUrls.highOrbit" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <input type="checkbox" name="solaris" id="solaris-checkbox" v-model="expansions.solaris">
-                            <label for="solaris-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-solaris"></div>
-                                <span v-i18n>Solaris</span>&nbsp;<span title="A fan expansion: adds the Galactic tag on a set of very expensive, high-payoff cards, plus a wide mix of Turmoil-integrated project cards">(&#945;)</span>&nbsp;<a :href="wikiUrls.solaris" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
-                        </div>
+              <input type="checkbox" name="solaris" id="solaris-checkbox" v-model="expansions.solaris">
+              <label for="solaris-checkbox" class="expansion-button">
+                <div class="create-game-expansion-icon expansion-icon-solaris"></div>
+                <span v-i18n>Solaris</span>&nbsp;<span title="A fan expansion: adds the Galactic tag on a set of very expensive, high-payoff cards, plus a wide mix of Turmoil-integrated project cards">(&#945;)</span>&nbsp;<a :href="wikiUrls.solaris" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
+            </div>
 
-                        <div class="create-game-page-column">
-                            <h4 v-i18n>Board</h4>
+            <div class="create-game-page-column">
+              <h4 v-i18n>Board</h4>
 
-                            <div v-if="customBoardCode !== undefined" class="create-game-subsection-label">
-                              <input type="radio" :value="BoardNameEnum.CUSTOM" name="board" v-model="board" id="custom-board-checkbox">
-                              <label for="custom-board-checkbox" class="expansion-button">
-                                <span class="create-game-board-hexagon create-game-random">&#x2B22;</span>
-                                <span>Custom: {{ customBoardName }}</span>
-                              </label>
-                            </div>
+              <div v-if="customBoardCode !== undefined" class="create-game-subsection-label">
+                <input type="radio" :value="BoardNameEnum.CUSTOM" name="board" v-model="board" id="custom-board-checkbox">
+                <label for="custom-board-checkbox" class="expansion-button">
+                  <span class="create-game-board-hexagon create-game-random">&#x2B22;</span>
+                  <span>Custom: {{ customBoardName }}</span>
+                </label>
+              </div>
 
-                            <div v-for="boardName in boardChoices" :key="boardName">
-                              <div v-if="boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
-                              <input type="radio" :value="boardName" name="board" v-model="board" :id="boardName+'-checkbox'">
-                              <label :for="boardName+'-checkbox'" class="expansion-button">
-                                  <span :class="getBoardColorClass(boardName)">&#x2B22;</span>
-                                  <span class="capitalized" v-i18n>{{ boardName }}</span>
-                                  <template v-if="boardName !== RandomBoardOption.OFFICIAL && boardName !== RandomBoardOption.ALL">
-                                    &nbsp;<a :href="boardHref(boardName)" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                                  </template>
-                              </label>
-                            </div>
+              <div v-for="boardName in boardChoices" :key="boardName">
+                <div v-if="boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
+                <input type="radio" :value="boardName" name="board" v-model="board" :id="boardName+'-checkbox'">
+                <label :for="boardName+'-checkbox'" class="expansion-button">
+                  <span :class="getBoardColorClass(boardName)">&#x2B22;</span>
+                  <span class="capitalized" v-i18n>{{ boardName }}</span>
+                  <template v-if="boardName !== RandomBoardOption.OFFICIAL && boardName !== RandomBoardOption.ALL">
+                    &nbsp;<a :href="boardHref(boardName)" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                  </template>
+                </label>
+              </div>
 
-                            <div class="create-game-subsection-label" style="margin-top: 8px;">
-                              <label for="custom-map-code" v-i18n>Custom map code</label>
-                              <textarea
-                                id="custom-map-code"
-                                rows="2"
-                                style="width: 100%; font-family: monospace; font-size: 11px;"
-                                placeholder="Paste a TMB3… code from the map editor"
-                                v-model="customBoardCodeInput"
-                                @input="applyCustomBoardCode"></textarea>
-                              <div v-if="customBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customBoardCodeError }}</div>
-                              <div v-else-if="customBoardCode !== undefined" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom map: {{ customBoardName }}</div>
-                            </div>
-                        </div>
+              <PresentationHost :hosts="creationHosts.mars" />
+            </div>
 
-                        <div class="create-game-page-column">
-                            <h4 v-i18n>Options</h4>
+            <div class="create-game-page-column">
+              <h4 v-i18n>Options</h4>
 
-                            <label for="startingCorpNum-checkbox">
-                            <input type="number" class="create-game-corporations-count" value="2" min="1" :max="6" v-model="startingCorporations" id="startingCorpNum-checkbox">
-                                <span v-i18n>Starting Corporations</span>
-                            </label>
+              <label for="startingCorpNum-checkbox">
+                <input type="number" class="create-game-corporations-count" value="2" min="1" :max="6" v-model="startingCorporations" id="startingCorpNum-checkbox">
+                <span v-i18n>Starting Corporations</span>
+              </label>
 
-                            <template v-if="expansions.prelude">
-                              <label for="startingPreludeENum-checkbox">
-                              <div class="create-game-expansion-icon expansion-icon-prelude"></div>
-                              <input type="number" class="create-game-corporations-count" value="4" min="4" :max="8" v-model="startingPreludes" id="startingPreludeNum-checkbox">
-                                  <span v-i18n>Starting Preludes</span>
-                              </label>
-                            </template>
+              <template v-if="expansions.prelude">
+                <label for="startingPreludeENum-checkbox">
+                  <div class="create-game-expansion-icon expansion-icon-prelude"></div>
+                  <input type="number" class="create-game-corporations-count" value="4" min="4" :max="8" v-model="startingPreludes" id="startingPreludeNum-checkbox">
+                  <span v-i18n>Starting Preludes</span>
+                </label>
+              </template>
 
-                            <template v-if="expansions.ceo">
-                              <label for="startingCEONum-checkbox">
-                              <div class="create-game-expansion-icon expansion-icon-ceo"></div>
-                              <input type="number" class="create-game-corporations-count" value="3" min="1" :max="6" v-model="startingCeos" id="startingCEONum-checkbox">
-                                  <span v-i18n>Starting CEOs</span>
-                              </label>
-                            </template>
+              <template v-if="expansions.ceo">
+                <label for="startingCEONum-checkbox">
+                  <div class="create-game-expansion-icon expansion-icon-ceo"></div>
+                  <input type="number" class="create-game-corporations-count" value="3" min="1" :max="6" v-model="startingCeos" id="startingCEONum-checkbox">
+                  <span v-i18n>Starting CEOs</span>
+                </label>
+              </template>
 
-                            <input type="checkbox" v-model="solarPhaseOption" id="WGT-checkbox" disabled>
-                            <label for="WGT-checkbox">
-                                <span v-i18n>World Government Terraforming</span>&nbsp;<a :href="wikiUrls.worldGovernmentTerraforming" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" v-model="solarPhaseOption" id="WGT-checkbox" disabled>
+              <label for="WGT-checkbox">
+                <span v-i18n>World Government Terraforming</span>&nbsp;<a :href="wikiUrls.worldGovernmentTerraforming" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <template v-if="playersCount === 1">
-                            <input type="checkbox" v-model="soloTR" id="soloTR-checkbox">
-                            <label for="soloTR-checkbox">
-                                <span v-i18n>63 TR solo mode</span>&nbsp;<a :href="wikiUrls.trSoloMode" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
-                            </template>
+              <template v-if="playersCount === 1">
+                <input type="checkbox" v-model="soloTR" id="soloTR-checkbox">
+                <label for="soloTR-checkbox">
+                  <span v-i18n>63 TR solo mode</span>&nbsp;<a :href="wikiUrls.trSoloMode" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                </label>
+              </template>
 
-                            <!-- <input type="checkbox" v-model="beginnerOption" id="beginnerOption-checkbox">
+              <!-- <input type="checkbox" v-model="beginnerOption" id="beginnerOption-checkbox">
                             <label for="beginnerOption-checkbox">
                                 <span v-i18n>Beginner Options</span>
                             </label> -->
 
-                            <input type="checkbox" v-model="undoOption" id="undo-checkbox">
-                            <label for="undo-checkbox">
-                                <span v-i18n>Undo action</span>&nbsp;<a :href="wikiUrls.allowUndo" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
-                            <input type="checkbox" v-model="undoStepOption" id="undo-step-checkbox">
-                            <label for="undo-step-checkbox">
-                                <span v-i18n>Undo one step (experimental)</span>&nbsp;<a :href="wikiUrls.undoOneStep" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
-                            <input type="checkbox" v-model="showTimers" id="timer-checkbox">
-                            <label for="timer-checkbox">
-                                <span v-i18n>Show timers</span>
-                            </label>
+              <input type="checkbox" v-model="undoOption" id="undo-checkbox">
+              <label for="undo-checkbox">
+                <span v-i18n>Undo action</span>&nbsp;<a :href="wikiUrls.allowUndo" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
+              <div v-if="undoOption">
+                <span v-i18n>Undo is now in best effort support.</span>
+                <a href="https://github.com/terraforming-mars/terraforming-mars/discussions/7647" target="_blank">&#9432;</a>
+                <br>
+                <span v-i18n>No effort will be spent to fix it.</span>
+              </div>
+              <input type="checkbox" v-model="undoStepOption" id="undo-step-checkbox">
+              <label for="undo-step-checkbox">
+                <span v-i18n>Undo one step (experimental)</span>&nbsp;<a :href="wikiUrls.undoOneStep" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
+              <input type="checkbox" v-model="showTimers" id="timer-checkbox">
+              <label for="timer-checkbox">
+                <span v-i18n>Show timers</span>
+              </label>
 
-                            <input type="checkbox" v-model="escapeVelocityMode" id="escapevelocity-checkbox">
-                            <label for="escapevelocity-checkbox">
-                                <div class="create-game-expansion-icon expansion-icon-escape-velocity"></div>
-                                <span v-i18n>Escape Velocity</span>&nbsp;<a :href="wikiUrls.escapeVelocity" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" v-model="escapeVelocityMode" id="escapevelocity-checkbox">
+              <label for="escapevelocity-checkbox">
+                <div class="create-game-expansion-icon expansion-icon-escape-velocity"></div>
+                <span v-i18n>Escape Velocity</span>&nbsp;<a :href="wikiUrls.escapeVelocity" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <label for="escapeThreshold-checkbox" v-show="escapeVelocityMode">
-                              <span v-i18n>After</span><span>&nbsp;</span>
-                              <input type="number" class="create-game-corporations-count" value="30" step="5" min="0" :max="180" v-model="escapeVelocityThreshold" id="escapeThreshold-checkbox">
-                              <span v-i18n>min</span>
-                            </label>
+              <label for="escapeThreshold-checkbox" v-show="escapeVelocityMode">
+                <span v-i18n>After</span><span>&nbsp;</span>
+                <input type="number" class="create-game-corporations-count" value="30" step="5" min="0" :max="180" v-model="escapeVelocityThreshold" id="escapeThreshold-checkbox">
+                <span v-i18n>min</span>
+              </label>
 
-                            <label for="escapeBonusSeconds-checkbox" v-show="escapeVelocityMode">
-                              <span v-i18n>Plus</span><span>&nbsp;</span>
-                              <input type="number" class="create-game-corporations-count" value="2" step="1" min="1" :max="10" v-model="escapeVelocityBonusSeconds" id="escapeBonusSeconds-checkbox">
-                              <span v-i18n>seconds per action</span>
-                            </label>
+              <label for="escapeBonusSeconds-checkbox" v-show="escapeVelocityMode">
+                <span v-i18n>Plus</span><span>&nbsp;</span>
+                <input type="number" class="create-game-corporations-count" value="2" step="1" min="1" :max="10" v-model="escapeVelocityBonusSeconds" id="escapeBonusSeconds-checkbox">
+                <span v-i18n>seconds per action</span>
+              </label>
 
-                            <label for="escapePeriod-checkbox" v-show="escapeVelocityMode">
-                              <span v-i18n>Reduce</span><span>&nbsp;</span>
-                              <input type="number" class="create-game-corporations-count" value="1" min="1" :max="10" v-model="escapeVelocityPenalty" id="escapePeriod-checkbox">
-                              <span v-i18n>VP every</span><span>&nbsp;</span>
-                              <input type="number" class="create-game-corporations-count" value="2" min="1" :max="10" v-model="escapeVelocityPeriod" id="escapePeriod-checkbox">
-                              <span v-i18n>min</span>
-                            </label>
+              <label for="escapePeriod-checkbox" v-show="escapeVelocityMode">
+                <span v-i18n>Reduce</span><span>&nbsp;</span>
+                <input type="number" class="create-game-corporations-count" value="1" min="1" :max="10" v-model="escapeVelocityPenalty" id="escapePeriod-checkbox">
+                <span v-i18n>VP every</span><span>&nbsp;</span>
+                <input type="number" class="create-game-corporations-count" value="2" min="1" :max="10" v-model="escapeVelocityPeriod" id="escapePeriod-checkbox">
+                <span v-i18n>min</span>
+              </label>
 
-                            <template v-if="expansions.prelude">
-                              <input type="checkbox" v-model="twoCorpsVariant" id="twoCorps-checkbox">
-                              <label for="twoCorps-checkbox" title="Always gain the Merger Prelude card (will be given post-draft)">
-                                    <div class="create-game-expansion-icon expansion-icon-prelude"></div>
-                                    <span v-i18n>Merger</span>&nbsp;<a :href="wikiUrls.merger" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                              </label>
-                            </template>
+              <template v-if="expansions.prelude">
+                <input type="checkbox" v-model="twoCorpsVariant" id="twoCorps-checkbox">
+                <label for="twoCorps-checkbox" title="Always gain the Merger Prelude card (will be given post-draft)">
+                  <div class="create-game-expansion-icon expansion-icon-prelude"></div>
+                  <span v-i18n>Merger</span>&nbsp;<a :href="wikiUrls.merger" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                </label>
+              </template>
 
-                            <input type="checkbox" v-model="shuffleMapOption" id="shuffleMap-checkbox">
-                            <label for="shuffleMap-checkbox">
-                                    <span v-i18n>Randomize board tiles</span>&nbsp;<a :href="wikiUrls.randomizeBoardTiles" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" v-model="shuffleMapOption" id="shuffleMap-checkbox">
+              <label for="shuffleMap-checkbox">
+                <span v-i18n>Randomize board tiles</span>&nbsp;<a :href="wikiUrls.randomizeBoardTiles" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <input type="checkbox" v-model="seededGame" id="seeded-checkbox">
-                            <label for="seeded-checkbox">
-                                <span v-i18n>Set Predefined Game</span>&nbsp;<a :href="wikiUrls.setPredefinedGame" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
+              <input type="checkbox" v-model="seededGame" id="seeded-checkbox">
+              <label for="seeded-checkbox">
+                <span v-i18n>Set Predefined Game</span>&nbsp;<a :href="wikiUrls.setPredefinedGame" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
 
-                            <div v-if="seededGame">
-                                <input type="text" name="clonedGamedId" v-model="clonedGameId" >
-                            </div>
+              <div v-if="seededGame">
+                <input type="text" name="clonedGamedId" v-model="clonedGameId">
+              </div>
 
-                            <div class="create-game-subsection-label" v-i18n>Knightbyte server settings</div>
+              <div class="create-game-subsection-label" v-i18n>Knightbyte server settings</div>
 
-                            <input type="checkbox" v-model="privateHands" id="privateHands-checkbox">
-                            <label for="privateHands-checkbox">
-                                <span v-i18n>Private hands</span>
-                            </label>
+              <input type="checkbox" v-model="privateHands" id="privateHands-checkbox">
+              <label for="privateHands-checkbox">
+                <span v-i18n>Private hands</span>
+              </label>
 
-                            <input type="checkbox" v-model="noEloGame" id="noEloGame-checkbox">
-                            <label for="noEloGame-checkbox">
-                                <span v-i18n>Training game (no ELO)</span>
-                            </label>
+              <input type="checkbox" v-model="noEloGame" id="noEloGame-checkbox">
+              <label for="noEloGame-checkbox">
+                <span v-i18n>Training game (no ELO)</span>
+              </label>
 
-                            <input type="checkbox" v-model="turnBasedGame" id="turnBasedGame-checkbox">
-                            <label for="turnBasedGame-checkbox">
-                                <span v-i18n>Async game (Telegram)</span>
-                            </label>
-                            <div v-if="turnBasedGame" class="create-game-telegram-banner">
-                              <span class="create-game-telegram-banner-label">Telegram notifications:</span>
-                              <a href="https://t.me/tm_knightbyte_bot" target="_blank" rel="noopener noreferrer">@tm_knightbyte_bot</a>
-                              <span>send <code>/start</code> there, then paste your numeric Chat ID below</span>
-                            </div>
+              <input type="checkbox" v-model="requiresDiscordLogin" id="requiresDiscordLogin-checkbox" :disabled="!discordLoginConfigured">
+              <label for="requiresDiscordLogin-checkbox">
+                <span>Require Discord login</span>
+              </label>
+              <div v-if="!discordLoginConfigured" class="form-input-hint">
+                Discord login is not configured; games are open to anyone with the player link.
+              </div>
 
-                            <input type="checkbox" v-model="botGame" id="botGame-checkbox">
-                            <label for="botGame-checkbox">
-                                <span v-i18n>Bot players</span>
-                            </label>
+              <input type="checkbox" v-model="turnBasedGame" id="turnBasedGame-checkbox">
+              <label for="turnBasedGame-checkbox">
+                <span v-i18n>Async game (Telegram)</span>
+              </label>
+              <div v-if="turnBasedGame" class="create-game-telegram-banner">
+                <span class="create-game-telegram-banner-label">Telegram notifications:</span>
+                <a href="https://t.me/tm_knightbyte_bot" target="_blank" rel="noopener noreferrer">@tm_knightbyte_bot</a>
+                <span>send <code>/start</code> there, then paste your numeric Chat ID below</span>
+              </div>
 
-                            <div class="create-game-subsection-label" v-i18n>Filter</div>
+              <input type="checkbox" v-model="botGame" id="botGame-checkbox">
+              <label for="botGame-checkbox">
+                <span v-i18n>Bot players</span>
+              </label>
 
-                            <AppButton
-                                v-if="customCorporations.length || customPreludes.length || customCeos.length || customColonies.length || bannedCards.length || includedCards.length"
-                                title="Clear custom lists" size="small" @click="clearCustomLists"/>
+              <div class="create-game-subsection-label" v-i18n>Filter</div>
 
-                            <input type="checkbox" v-model="showCorporationList" id="customCorps-checkbox">
-                            <label for="customCorps-checkbox">
-                                <span v-i18n>Custom Corporation list</span>
-                                <span v-if="customCorporations.length">&nbsp;({{ customCorporations.length }})</span>
-                            </label>
+              <AppButton
+                v-if="customCorporations.length || customPreludes.length || customCeos.length || customColonies.length || bannedCards.length || includedCards.length"
+                title="Clear custom lists" size="small" @click="clearCustomLists" />
 
-                            <template v-if="expansions.prelude">
-                              <input type="checkbox" v-model="showPreludesList" id="customPreludes-checkbox">
-                              <label for="customPreludes-checkbox">
-                                  <span v-i18n>Custom Preludes list</span>
-                                  <span v-if="customPreludes.length">&nbsp;({{ customPreludes.length }})</span>
-                              </label>
-                            </template>
+              <input type="checkbox" v-model="showCorporationList" id="customCorps-checkbox">
+              <label for="customCorps-checkbox">
+                <span v-i18n>Custom Corporation list</span>
+                <span v-if="customCorporations.length">&nbsp;({{ customCorporations.length }})</span>
+              </label>
 
-                            <template v-if="expansions.ceo">
-                            <input type="checkbox" v-model="showCeosList" id="customCeos-checkbox">
-                              <label for="customCeos-checkbox">
-                                  <span v-i18n>Custom CEOs list</span>
-                                  <span v-if="customCeos.length">&nbsp;({{ customCeos.length }})</span>
-                              </label>
-                            </template>
+              <template v-if="expansions.prelude">
+                <input type="checkbox" v-model="showPreludesList" id="customPreludes-checkbox">
+                <label for="customPreludes-checkbox">
+                  <span v-i18n>Custom Preludes list</span>
+                  <span v-if="customPreludes.length">&nbsp;({{ customPreludes.length }})</span>
+                </label>
+              </template>
 
-                            <input type="checkbox" v-model="showBannedCards" id="bannedCards-checkbox">
-                            <label for="bannedCards-checkbox">
-                                <span v-i18n>Exclude some cards</span>
-                            </label>
+              <template v-if="expansions.ceo">
+                <input type="checkbox" v-model="showCeosList" id="customCeos-checkbox">
+                <label for="customCeos-checkbox">
+                  <span v-i18n>Custom CEOs list</span>
+                  <span v-if="customCeos.length">&nbsp;({{ customCeos.length }})</span>
+                </label>
+              </template>
 
-                            <input type="checkbox" v-model="showIncludedCards" id="includedCards-checkbox">
-                            <label for="includedCards-checkbox">
-                                <span v-i18n>Include some cards</span>
-                            </label>
+              <input type="checkbox" v-model="showBannedCards" id="bannedCards-checkbox">
+              <label for="bannedCards-checkbox">
+                <span v-i18n>Exclude some cards</span>
+              </label>
 
-                            <template v-if="expansions.colonies">
-                                <input type="checkbox" v-model="showColoniesList" id="customColonies-checkbox">
-                                <label for="customColonies-checkbox">
-                                    <span v-i18n>Custom Colonies list</span>
-                                  <span v-if="customColonies.length">&nbsp;({{ customColonies.length }})</span>
-                                </label>
-                            </template>
+              <input type="checkbox" v-model="showIncludedCards" id="includedCards-checkbox">
+              <label for="includedCards-checkbox">
+                <span v-i18n>Include some cards</span>
+              </label>
 
-                            <template v-if="expansions.turmoil">
-                                <input type="checkbox" v-model="removeNegativeGlobalEventsOption" id="removeNegativeEvent-checkbox">
-                                <label for="removeNegativeEvent-checkbox">
-                                    <span v-i18n>Remove negative Global Events</span>&nbsp;<a :href="wikiUrls.removeNegativeGlobalEvents" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                                </label>
-                            </template>
+              <template v-if="expansions.colonies">
+                <input type="checkbox" v-model="showColoniesList" id="customColonies-checkbox">
+                <label for="customColonies-checkbox">
+                  <span v-i18n>Custom Colonies list</span>
+                  <span v-if="customColonies.length">&nbsp;({{ customColonies.length }})</span>
+                </label>
+              </template>
 
-                        </div>
+              <template v-if="expansions.turmoil">
+                <input type="checkbox" v-model="removeNegativeGlobalEventsOption" id="removeNegativeEvent-checkbox">
+                <label for="removeNegativeEvent-checkbox">
+                  <span v-i18n>Remove negative Global Events</span>&nbsp;<a :href="wikiUrls.removeNegativeGlobalEvents" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                </label>
+              </template>
 
-                        <div class="create-game-page-column" v-if="playersCount > 1">
-                            <h4 v-i18n>Multiplayer Options</h4>
+            </div>
 
-                            <div class="create-game-page-column-row">
-                                <div>
-                                <input type="checkbox" name="draftVariant" v-model="draftVariant" id="draft-checkbox">
-                                <label for="draft-checkbox">
-                                    <span v-i18n>Draft variant</span>
-                                </label>
-                                </div>
+            <div class="create-game-page-column" v-if="playersCount > 1">
+              <h4 v-i18n>Multiplayer Options</h4>
 
-                                <div>
-                                <input type="checkbox" name="initialDraft" v-model="initialDraft" id="initialDraft-checkbox">
-                                <label for="initialDraft-checkbox">
-                                    <span v-i18n>Initial Draft variant</span>&nbsp;<a :href="wikiUrls.initialDraft" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                                </label>
-                                </div>
-                            </div>
-                            <div class="create-game-page-column-row" v-if="initialDraft">
-                              <div>
-                                <input type="checkbox" name="initialDraftOneWay" v-model="initialDraftOneWay" id="initialDraftOneWay-checkbox">
-                                <label for="initialDraftOneWay-checkbox" title="Experimental: deal 10 project cards at once and pass in one direction.">
-                                  <span v-i18n>10-card one-way initial draft (experimental)</span>
-                                </label>
-                              </div>
-
-                              <div v-if="expansions.prelude">
-                                <input type="checkbox" name="preludeDraft" v-model="preludeDraftVariant" id="preludeDraft-checkbox">
-                                <label for="preludeDraft-checkbox">
-                                  <span v-i18n>Prelude Draft</span>
-                                </label>
-                              </div>
-
-                              <div v-if="expansions.ceo">
-                                <input type="checkbox" name="ceosDraft" v-model="ceosDraftVariant" id="ceosDraft-checkbox">
-                                <label for="ceosDraft-checkbox">
-                                  <span v-i18n>CEO Draft</span>
-                                </label>
-                              </div>
-                            </div>
-
-                            <input type="checkbox" v-model="randomFirstPlayer" id="randomFirstPlayer-checkbox">
-                            <label for="randomFirstPlayer-checkbox">
-                                <span v-i18n>Random first player</span>
-                            </label>
-
-                            <input type="checkbox" name="randomMAToggle" id="randomMA-checkbox" :checked="isRandomMAEnabled()" @change="randomMAToggle()">
-                            <label for="randomMA-checkbox">
-                                <span v-i18n>Random Milestones/Awards</span>&nbsp;<a :href="wikiUrls.randomMilestonesAndAwards" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
-
-                            <div class="create-game-page-column-row" v-if="isRandomMAEnabled()">
-                                <div>
-                                <input type="radio" name="randomMAOption" v-model="randomMA" :value="getRandomMaOptionType('limited')" id="limitedRandomMA-radio">
-                                <label class="label-randomMAOption" for="limitedRandomMA-radio">
-                                    <span v-i18n>{{ getRandomMaOptionType('limited') }}</span>
-                                </label>
-                                </div>
-
-                                <div>
-                                <input type="radio" name="randomMAOption" v-model="randomMA" :value="getRandomMaOptionType('full')" id="unlimitedRandomMA-radio">
-                                <label class="label-randomMAOption" for="unlimitedRandomMA-radio">
-                                    <span v-i18n>{{ getRandomMaOptionType('full') }}</span>
-                                </label>
-                                </div>
-                                <div>
-                                  <input type="checkbox" name="modularMA" v-model="modularMA" id="modularMA-checkbox">
-                                   <label for="modularMA-checkbox">
-                                    <span v-i18n>Official Random α</span>
-                                  </label>
-                                </div>
-                            </div>
-
-                            <div v-if="modularMA">
-                              The new Milestones and Awards are still in active development.<br>
-                              Please don't report anything unless it breaks the game.<br>
-                              These are <b>always fully random</b>.
-                            </div>
-                            <template v-if="expansions.venus">
-                                <input type="checkbox" v-model="requiresVenusTrackCompletion" id="requiresVenusTrackCompletion-checkbox">
-                                <label for="requiresVenusTrackCompletion-checkbox">
-                                    <span v-i18n>Mandatory Venus Terraforming</span> &nbsp;<a :href="wikiUrls.venusTerraforming" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                                </label>
-                            </template>
-
-                            <template v-if="randomMA !== RandomMAOptionType.NONE">
-                              <input type="checkbox" v-model="includeFanMA" id="fanMA-checkbox">
-                              <label for="fanMA-checkbox">
-                                  <span v-i18n>Include fan Milestones/Awards</span>
-                              </label>
-                            </template>
-
-                            <input type="checkbox" name="showOtherPlayersVP" v-model="showOtherPlayersVP" id="realTimeVP-checkbox">
-                            <label for="realTimeVP-checkbox">
-                                <span v-i18n>Show real-time VP</span>&nbsp;<a :href="wikiUrls.showRealtimeVP" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
-
-                            <input type="checkbox" v-model="fastModeOption" id="fastMode-checkbox">
-                            <label for="fastMode-checkbox">
-                                <span v-i18n>Fast mode</span>&nbsp;<a :href="wikiUrls.fastMode" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
-                        </div>
-
-                        <div class="create-game-players-cont">
-                            <div class="create-game-page-column">
-                                <h4 v-i18n>Players</h4>
-                            </div>
-                            <div class="container">
-                                <div class="columns">
-                                  <template v-for="(newPlayer, index) in getPlayers()" :key="index">
-                                    <div>
-                                      <div :class="'form-group col6 create-game-player '+getPlayerContainerColorClass(newPlayer.color)">
-                                          <div class="create-game-profile-picker" @click.stop>
-                                              <input
-                                                class="form-input form-inline create-game-player-name"
-                                                :class="{'is-open': isPlayerProfilePickerOpen(index)}"
-                                                :placeholder="getPlayerNamePlaceholder(index)"
-                                                autocomplete="off"
-                                                ref="playerProfileNameInput"
-                                                v-model="newPlayer.name"
-                                                @focus="openPlayerProfilePicker(newPlayer, index)"
-                                                @click.stop="openPlayerProfilePicker(newPlayer, index)"
-                                                @input="updatePlayerProfileAutocomplete(newPlayer, $event)"
-                                                @keydown.enter.stop.prevent="applyFirstFilteredPlayerProfile(newPlayer)"
-                                                @keydown.esc.stop.prevent="closePlayerProfilePicker"
-                                                @keydown.stop >
-                                              <div v-if="getPlayerProfileNameError(newPlayer) !== ''" class="form-input-hint create-game-telegram-error">
-                                                {{ getPlayerProfileNameError(newPlayer) }}
-                                              </div>
-                                              <div
-                                                v-if="isPlayerProfilePickerOpen(index)"
-                                                class="create-game-profile-menu">
-                                                  <div class="create-game-profile-option-list">
-                                                    <button
-                                                      type="button"
-                                                      class="create-game-profile-option create-game-profile-option-custom"
-                                                      @click="applyCustomNickFromPicker(newPlayer)">
-                                                        <span class="create-game-profile-avatar create-game-profile-avatar--empty">Aa</span>
-                                                        <span class="create-game-profile-option-main">
-                                                          <span class="create-game-profile-option-name">Custom nick</span>
-                                                          <span class="create-game-profile-option-meta">{{ getCustomNickMeta() }}</span>
-                                                        </span>
-                                                    </button>
-                                                    <button
-                                                      v-for="profile in getFilteredAvailablePlayerProfiles(newPlayer)"
-                                                      :key="profile.id"
-                                                      type="button"
-                                                      :class="getPlayerProfileOptionClasses(profile)"
-                                                      @click="applyPlayerProfileFromPicker(newPlayer, profile)">
-                                                        <span :class="['create-game-profile-avatar', ...getPlayerProfileAvatarClasses(profile)]">{{ getPlayerProfileInitials(profile) }}</span>
-                                                        <span class="create-game-profile-option-main">
-                                                          <span class="create-game-profile-option-name player-name">{{ profile.name }}</span>
-                                                          <span class="create-game-profile-option-meta">{{ formatPlayerProfileMeta(profile) }}</span>
-                                                        </span>
-                                                        <span class="create-game-profile-color-swatch" :title="getColorTitle(profile.preferredColor)">
-                                                          <span :class="'create-game-colorbox '+getPlayerCubeColorClass(profile.preferredColor)"></span>
-                                                        </span>
-                                                    </button>
-                                                    <div v-if="getFilteredAvailablePlayerProfiles(newPlayer).length === 0" class="create-game-profile-empty">No matching players</div>
-                                                  </div>
-                                              </div>
-                                          </div>
-                                          <div class="create-game-page-color-row">
-                                              <template v-for="(color, colorIndex) in getPlayerPaletteColors(newPlayer)" :key="color">
-                                                <div :class="{'create-game-color-custom-start': colorIndex === DEFAULT_PLAYER_COLORS.length}">
-                                                  <input type="radio" :value="color" :name="'playerColor' + (index + 1)" :checked="newPlayer.color === color" :disabled="expansions.conglomerates || isPlayerColorTaken(newPlayer, color)" :id="'radioBox' + color + (index + 1)" @change="applyDefaultPlayerColor(newPlayer, color)">
-                                                  <label :for="'radioBox' + color + (index + 1)" :title="getColorTitle(color)">
-                                                      <div :class="'create-game-colorbox '+getPlayerCubeColorClass(color)"></div>
-                                                  </label>
-                                                </div>
-                                              </template>
-                                          </div>
-                                          <div v-if="expansions.conglomerates" class="form-group">
-                                              <label class="form-label">
-                                                  <span v-i18n>Team</span>
-                                                  <select class="form-select form-inline" v-model.number="newPlayer.team" @change="forceConglomeratesColors()">
-                                                      <option v-for="team in conglomeratesTeamNumbers()" :key="team" :value="team">{{ $t('Team') }} {{ team + 1 }}</option>
-                                                  </select>
-                                              </label>
-                                          </div>
-                                          <div>
-                                              <!-- <template v-if="beginnerOption"> -->
-                                                  <label v-if="isBeginnerToggleEnabled()" class="form-switch form-inline create-game-beginner-option-label">
-                                                      <input type="checkbox" v-model="newPlayer.beginner">
-                                                      <i class="form-icon"></i> <span v-i18n>Beginner?</span>&nbsp;<a :href="wikiUrls.beginnerCorporation" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                                                  </label>
-                                                  <label v-if="botGame" class="form-switch form-inline" style="margin-top: 8px;">
-                                                      <input type="checkbox" v-model="newPlayer.isBot">
-                                                      <i class="form-icon"></i> <span>Bot</span>
-                                                  </label>
-
-                                                  <label class="form-label">
-                                                      <input type="number" class="form-input form-inline player-handicap" value="0" min="0" :max="10" v-model.number="newPlayer.handicap" >
-                                                      <i class="form-icon"></i><span v-i18n>TR Boost</span>&nbsp;<a :href="wikiUrls.trBoost" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                                                  </label>
-                                                  <label v-if="expansions.prelude" class="form-label">
-                                                      <input type="number" class="form-input form-inline player-handicap" value="2" min="0" :max="2" v-model.number="newPlayer.preludeHandicap" >
-                                                      <i class="form-icon"></i><span v-i18n>Preludes</span>
-                                                  </label>
-                                              <!-- </template> -->
-                                              <div v-if="turnBasedGame" class="create-game-telegram-row">
-                                                  <label class="form-label create-game-telegram-label" :for="'telegramId' + (index + 1)">Telegram ID</label>
-                                                  <input
-                                                    :id="'telegramId' + (index + 1)"
-                                                    type="text"
-                                                    :class="['form-input', 'form-inline', 'create-game-telegram-input', {'is-error': getTelegramIdError(newPlayer.telegramID) !== ''}]"
-                                                    inputmode="numeric"
-                                                    autocomplete="off"
-                                                    placeholder="Telegram ID"
-                                                    v-model="newPlayer.telegramID"
-                                                    @blur="normalizeAndRememberTelegramId(newPlayer)"
-                                                  >
-                                                  <div v-if="getTelegramIdError(newPlayer.telegramID) !== ''" class="form-input-hint create-game-telegram-error">
-                                                    {{ getTelegramIdError(newPlayer.telegramID) }}
-                                                  </div>
-                                              </div>
-
-                                              <label class="form-radio form-inline" v-if="!randomFirstPlayer">
-                                                  <input type="radio" name="firstIndex" :value="index + 1" v-model="firstIndex">
-                                                  <i class="form-icon"></i> <span v-i18n>Goes First?</span>
-                                              </label>
-                                          </div>
-                                      </div>
-                                    </div>
-                                  </template>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+              <div class="create-game-page-column-row">
+                <div>
+                  <input type="checkbox" name="draftVariant" v-model="draftVariant" id="draft-checkbox">
+                  <label for="draft-checkbox">
+                    <span v-i18n>Draft variant</span>
+                  </label>
                 </div>
 
-                <div class="create-game-action-row">
-                    <div class="create-game-action">
-                        <label>
-                            <div class="btn btn-primary btn-action btn-lg"><i class="icon icon-upload"></i></div>
-                            <input style="display: none" type="file" accept=".json" id="settings-file" ref="file" @change="uploadSettings()">
-                        </label>
-
-                        <label>
-                            <div @click="downloadSettings()" class="btn btn-primary btn-action btn-lg"><i class="icon icon-download"></i></div>
-                        </label>
-
-                        <AppButton class="create-game-action-gap" title="Reset" size="big" @click="resetSettings"/>
-                        <AppButton class="create-game-action-gap" title="Create game" size="big" @click="createGame" :disabled="hasBlockingValidationErrors"/>
-                        <span v-if="hasBlockingValidationErrors" class="create-game-custom-preludes-warning create-game-validation-blocker" @click="showValidationErrors = true">&#9888;&#xFE0E;</span>
-                        <span v-else-if="hasValidationProblems" class="create-game-validation-warning" @click="showValidationErrors = true">&#9888;&#xFE0F;</span>
-                    </div>
+                <div>
+                  <input type="checkbox" name="initialDraft" v-model="initialDraft" id="initialDraft-checkbox">
+                  <label for="initialDraft-checkbox">
+                    <span v-i18n>Initial Draft variant</span>&nbsp;<a :href="wikiUrls.initialDraft" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                  </label>
                 </div>
+              </div>
+              <div class="create-game-page-column-row" v-if="initialDraft">
+                <div>
+                  <input type="checkbox" name="initialDraftOneWay" v-model="initialDraftOneWay" id="initialDraftOneWay-checkbox">
+                  <label for="initialDraftOneWay-checkbox" title="Experimental: deal 10 project cards at once and pass in one direction.">
+                    <span v-i18n>10-card one-way initial draft (experimental)</span>
+                  </label>
+                </div>
+
+                <div v-if="expansions.prelude">
+                  <input type="checkbox" name="preludeDraft" v-model="preludeDraftVariant" id="preludeDraft-checkbox">
+                  <label for="preludeDraft-checkbox">
+                    <span v-i18n>Prelude Draft</span>
+                  </label>
+                </div>
+
+                <div v-if="expansions.ceo">
+                  <input type="checkbox" name="ceosDraft" v-model="ceosDraftVariant" id="ceosDraft-checkbox">
+                  <label for="ceosDraft-checkbox">
+                    <span v-i18n>CEO Draft</span>
+                  </label>
+                </div>
+              </div>
+
+              <input type="checkbox" v-model="randomFirstPlayer" id="randomFirstPlayer-checkbox">
+              <label for="randomFirstPlayer-checkbox">
+                <span v-i18n>Random first player</span>
+              </label>
+
+              <input type="checkbox" name="randomMAToggle" id="randomMA-checkbox" :checked="isRandomMAEnabled()" @change="randomMAToggle()">
+              <label for="randomMA-checkbox">
+                <span v-i18n>Random Milestones/Awards</span>&nbsp;<a :href="wikiUrls.randomMilestonesAndAwards" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
+
+              <div class="create-game-page-column-row" v-if="isRandomMAEnabled()">
+                <div>
+                  <input type="radio" name="randomMAOption" v-model="randomMA" :value="getRandomMaOptionType('limited')" id="limitedRandomMA-radio">
+                  <label class="label-randomMAOption" for="limitedRandomMA-radio">
+                    <span v-i18n>{{ getRandomMaOptionType('limited') }}</span>
+                  </label>
+                </div>
+
+                <div>
+                  <input type="radio" name="randomMAOption" v-model="randomMA" :value="getRandomMaOptionType('full')" id="unlimitedRandomMA-radio">
+                  <label class="label-randomMAOption" for="unlimitedRandomMA-radio">
+                    <span v-i18n>{{ getRandomMaOptionType('full') }}</span>
+                  </label>
+                </div>
+                <div>
+                  <input type="checkbox" name="modularMA" v-model="modularMA" id="modularMA-checkbox">
+                  <label for="modularMA-checkbox">
+                    <span v-i18n>Official Random α</span>
+                  </label>
+                </div>
+              </div>
+
+              <div v-if="modularMA">
+                The new Milestones and Awards are still in active development.<br>
+                Please don't report anything unless it breaks the game.<br>
+                These are <b>always fully random</b>.
+              </div>
+              <template v-if="expansions.venus">
+                <input type="checkbox" v-model="requiresVenusTrackCompletion" id="requiresVenusTrackCompletion-checkbox">
+                <label for="requiresVenusTrackCompletion-checkbox">
+                  <span v-i18n>Mandatory Venus Terraforming</span> &nbsp;<a :href="wikiUrls.venusTerraforming" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                </label>
+              </template>
+
+              <template v-if="randomMA !== RandomMAOptionType.NONE">
+                <input type="checkbox" v-model="includeFanMA" id="fanMA-checkbox">
+                <label for="fanMA-checkbox">
+                  <span v-i18n>Include fan Milestones/Awards</span>
+                </label>
+              </template>
+
+              <input type="checkbox" name="showOtherPlayersVP" v-model="showOtherPlayersVP" id="realTimeVP-checkbox">
+              <label for="realTimeVP-checkbox">
+                <span v-i18n>Show real-time VP</span>&nbsp;<a :href="wikiUrls.showRealtimeVP" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
+
+              <input type="checkbox" v-model="fastModeOption" id="fastMode-checkbox">
+              <label for="fastMode-checkbox">
+                <span v-i18n>Fast mode</span>&nbsp;<a :href="wikiUrls.fastMode" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </label>
             </div>
 
-            <div class="changelog"><a :href="wikiUrls.changelog" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Read our changelog to get the latest updates.</u></a></div>
-            <div class="discord-invite">
-              (<span v-i18n>Looking for people to play with</span>? <a :href="constants.DISCORD_INVITE" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Join us on Discord</u></a>.)
-            </div>
-
-            <CorporationsFilter
-                ref="corporationsFilter"
-                v-show="showCorporationList"
-                v-if="showCorporationList"
-                @corporation-list-changed="updateCustomCorporations"
-                :expansions="expansions"
-                :selected="customCorporations"
-                :selectable="getSelectableCustomCorporations()"
-                @close="showCorporationList = false"
-            />
-
-            <PreludesFilter
-                ref="preludesFilter"
-                v-show="showPreludesList"
-                v-if="showPreludesList"
-                @prelude-list-changed="updateCustomPreludes"
-                :expansions="expansions"
-                :selected="customPreludes"
-                :selectable="getSelectableCustomPreludes()"
-                @close="showPreludesList = false"
-            />
-
-            <ColoniesFilter
-                ref="coloniesFilter"
-                v-show="showColoniesList"
-                v-if="showColoniesList"
-                @colonies-list-changed="updateCustomColonies"
-                :expansions="expansions"
-                :selected="customColonies"
-                @close="showColoniesList = false"
-            />
-
-            <CeosFilter
-                ref="ceosFilter"
-                v-show="showCeosList"
-                v-if="showCeosList"
-                @ceo-list-changed="updateCustomCeos"
-                :expansions="expansions"
-                :selected="customCeos"
-                @close="showCeosList = false"
-            />
-
-            <div class="create-game--block" v-if="showBannedCards">
-              <CardsFilter
-                  ref="cardsFilter"
-                  @cards-list-changed="updateBannedCards"
-                  :title="'Cards to exclude from the game'"
-                  :hint="'Start typing the card name to exclude'"
-              />
-            </div>
-
-            <div class="create-game--block" v-if="showIncludedCards">
-              <CardsFilter
-                  ref="cardsFilter2"
-                  @cards-list-changed="updateIncludedCards"
-                  :title="'Cards to include in the game'"
-                  :hint="'Start typing the card name to include'"
-              />
-            </div>
-          <PreferencesIcon/>
-          <ValidationErrorsPopup v-if="showValidationErrors" :errors="validationErrors" @close="showValidationErrors = false"/>
+            <PresentationHost :hosts="creationHosts.players" />
+          </div>
         </div>
+
+        <div class="create-game-action-row">
+          <div class="create-game-action">
+            <label for="settings-file">
+              <div class="btn btn-primary btn-action btn-lg"><i class="icon icon-upload"></i></div>
+
+            </label>
+
+            <label>
+              <div @click="downloadSettings()" class="btn btn-primary btn-action btn-lg"><i class="icon icon-download"></i></div>
+            </label>
+
+            <AppButton class="create-game-action-gap" title="Reset" size="big" @click="resetSettings" />
+            <AppButton class="create-game-action-gap" title="Create game" size="big" @click="createGame" :disabled="hasBlockingValidationErrors" />
+            <span v-if="hasBlockingValidationErrors" class="create-game-custom-preludes-warning create-game-validation-blocker" @click="showValidationErrors = true">&#9888;&#xFE0E;</span>
+            <span v-else-if="hasValidationProblems" class="create-game-validation-warning" @click="showValidationErrors = true">&#9888;&#xFE0F;</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="changelog"><a :href="wikiUrls.changelog" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Read our changelog to get the latest updates.</u></a></div>
+      <div class="discord-invite">
+        (<span v-i18n>Looking for people to play with</span>? <a :href="constants.DISCORD_INVITE" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Join us on Discord</u></a>.)
+      </div>
+
+      <PresentationHost v-for="kind in filterKinds" :key="kind" :hosts="creationHosts[kind]" />
+
+
+    </template>
+    <InputPortal :target="creationHosts.players.target.value"><div class="create-game-players-cont">
+      <div class="create-game-page-column">
+        <h4 v-i18n>Players</h4>
+      </div>
+      <div class="container">
+        <div class="columns">
+          <template v-for="(newPlayer, index) in getPlayers()" :key="index">
+            <div>
+              <div :class="['form-group col6 create-game-player', getPlayerContainerColorClass(newPlayer.color), creationControls ? 'create-game-player--' + newPlayer.color : '', {'create-game-player--ai': creationControls && newPlayer.isBot}]">
+                <div class="create-game-profile-picker" :class="{'create-game-player-top': creationControls}" @click.stop>
+                  <span v-if="creationControls" class="create-game-player-position"><component :is="creationControls.seat" :kind="newPlayer.isBot ? 'ai' : 'human'" :size="20" />{{ index + 1 }}</span>
+                  <input
+                    class="form-input form-inline create-game-player-name"
+                    :class="{'is-open': isPlayerProfilePickerOpen(index)}"
+                    :placeholder="getPlayerNamePlaceholder(index)"
+                    autocomplete="off"
+                    ref="playerProfileNameInput"
+                    v-model="newPlayer.name"
+                    @focus="openPlayerProfilePicker(newPlayer, index)"
+                    @click.stop="openPlayerProfilePicker(newPlayer, index)"
+                    @input="updatePlayerProfileAutocomplete(newPlayer, $event)"
+                    @keydown.enter.stop.prevent="applyFirstFilteredPlayerProfile(newPlayer)"
+                    @keydown.esc.stop.prevent="closePlayerProfilePicker"
+                    @keydown.stop>
+                  <div v-if="getPlayerProfileNameError(newPlayer) !== ''" class="form-input-hint create-game-telegram-error">
+                    {{ getPlayerProfileNameError(newPlayer) }}
+                  </div>
+                  <div
+                    v-if="isPlayerProfilePickerOpen(index)"
+                    class="create-game-profile-menu">
+                    <div class="create-game-profile-option-list">
+                      <button
+                        type="button"
+                        class="create-game-profile-option create-game-profile-option-custom"
+                        @click="applyCustomNickFromPicker(newPlayer)">
+                        <span class="create-game-profile-avatar create-game-profile-avatar--empty">Aa</span>
+                        <span class="create-game-profile-option-main">
+                          <span class="create-game-profile-option-name">Custom nick</span>
+                          <span class="create-game-profile-option-meta">{{ getCustomNickMeta() }}</span>
+                        </span>
+                      </button>
+                      <button
+                        v-for="profile in getFilteredAvailablePlayerProfiles(newPlayer)"
+                        :key="profile.id"
+                        type="button"
+                        :class="getPlayerProfileOptionClasses(profile)"
+                        @click="applyPlayerProfileFromPicker(newPlayer, profile)">
+                        <span :class="['create-game-profile-avatar', ...getPlayerProfileAvatarClasses(profile)]">{{ getPlayerProfileInitials(profile) }}</span>
+                        <span class="create-game-profile-option-main">
+                          <span class="create-game-profile-option-name player-name">{{ profile.name }}</span>
+                          <span class="create-game-profile-option-meta">{{ formatPlayerProfileMeta(profile) }}</span>
+                        </span>
+                        <span class="create-game-profile-color-swatch" :title="getColorTitle(profile.preferredColor)">
+                          <span :class="'create-game-colorbox '+getPlayerCubeColorClass(profile.preferredColor)"></span>
+                        </span>
+                      </button>
+                      <div v-if="getFilteredAvailablePlayerProfiles(newPlayer).length === 0" class="create-game-profile-empty">No matching players</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="create-game-page-color-row" :class="{'create-game-swatches': creationControls}">
+                  <template v-for="(color, colorIndex) in getPlayerPaletteColors(newPlayer)" :key="color">
+                    <div :class="{'create-game-color-custom-start': colorIndex === DEFAULT_PLAYER_COLORS.length}">
+                      <input type="radio" :value="color" :name="'playerColor' + (index + 1)" :checked="newPlayer.color === color" :disabled="expansions.conglomerates || isPlayerColorTaken(newPlayer, color)" :id="'radioBox' + color + (index + 1)" @change="applyDefaultPlayerColor(newPlayer, color)">
+                      <label :for="'radioBox' + color + (index + 1)" :title="getColorTitle(color)" :class="{'create-game-swatch': creationControls, 'create-game-swatch--selected': creationControls && newPlayer.color === color}">
+                        <component v-if="creationControls" :is="creationControls.cube" :color="color" :view="newPlayer.color === color ? 'slight' : 'top'" :size="newPlayer.color === color ? 17 : 16" :animated="true" />
+                        <div v-else :class="'create-game-colorbox '+getPlayerCubeColorClass(color)"></div>
+                      </label>
+                    </div>
+                  </template>
+                </div>
+                <div v-if="expansions.conglomerates" class="form-group">
+                  <label class="form-label">
+                    <span v-i18n>Team</span>
+                    <select class="form-select form-inline" v-model.number="newPlayer.team" @change="forceConglomeratesColors()">
+                      <option v-for="team in conglomeratesTeamNumbers()" :key="team" :value="team">{{ $t('Team') }} {{ team + 1 }}</option>
+                    </select>
+                  </label>
+                </div>
+                <div>
+                  <!-- <template v-if="beginnerOption"> -->
+                  <label v-if="isBeginnerToggleEnabled()" class="form-switch form-inline create-game-beginner-option-label" :class="{'create-game-player-toggle': creationControls}">
+                    <component v-if="creationControls" :is="creationControls.toggle" v-model="newPlayer.beginner" ariaLabel="Beginner?" />
+                    <input v-else type="checkbox" v-model="newPlayer.beginner">
+                    <i class="form-icon"></i> <span v-i18n>Beginner?</span>&nbsp;<a :href="wikiUrls.beginnerCorporation" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                  </label>
+                  <label v-if="botGame" class="form-switch form-inline" style="margin-top: 8px;" :class="{'create-game-player-toggle': creationControls}">
+                    <component v-if="creationControls" :is="creationControls.toggle" :modelValue="newPlayer.isBot ?? false" @update:modelValue="newPlayer.isBot = $event" ariaLabel="Bot" />
+                    <input v-else type="checkbox" v-model="newPlayer.isBot">
+                    <i class="form-icon"></i> <span>Bot</span>
+                  </label>
+
+                  <label class="form-label" :class="{'create-game-player-toggle': creationControls}">
+                    <component v-if="creationControls" :is="creationControls.stepper" v-model="newPlayer.handicap" :min="0" :max="10" />
+                    <input v-else type="number" class="form-input form-inline player-handicap" value="0" min="0" :max="10" v-model.number="newPlayer.handicap">
+                    <i class="form-icon"></i><span v-i18n>TR Boost</span>&nbsp;<a :href="wikiUrls.trBoost" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                  </label>
+                  <label v-if="expansions.prelude" class="form-label" :class="{'create-game-player-toggle': creationControls}">
+                    <component v-if="creationControls" :is="creationControls.stepper" :modelValue="newPlayer.preludeHandicap ?? 2" :min="0" :max="2" @update:modelValue="newPlayer.preludeHandicap = $event" />
+                    <input v-else type="number" class="form-input form-inline player-handicap" value="2" min="0" :max="2" v-model.number="newPlayer.preludeHandicap">
+                    <i class="form-icon"></i><span v-i18n>Preludes</span>
+                  </label>
+                  <!-- </template> -->
+                  <div v-if="turnBasedGame" class="create-game-telegram-row">
+                    <label class="form-label create-game-telegram-label" :for="'telegramId' + (index + 1)">Telegram ID</label>
+                    <input
+                      :id="'telegramId' + (index + 1)"
+                      type="text"
+                      :class="['form-input', 'form-inline', 'create-game-telegram-input', {'is-error': getTelegramIdError(newPlayer.telegramID) !== ''}]"
+                      inputmode="numeric"
+                      autocomplete="off"
+                      placeholder="Telegram ID"
+                      v-model="newPlayer.telegramID"
+                      @blur="normalizeAndRememberTelegramId(newPlayer)"
+                    >
+                    <div v-if="getTelegramIdError(newPlayer.telegramID) !== ''" class="form-input-hint create-game-telegram-error">
+                      {{ getTelegramIdError(newPlayer.telegramID) }}
+                    </div>
+                  </div>
+                  <div v-if="!newPlayer.isBot && newPlayer.aiLevel === undefined && discordLoginConfigured" class="create-game-telegram-row">
+                    <label class="form-label create-game-telegram-label" :for="'discordId' + (index + 1)">Discord ID</label>
+                    <input
+                      :id="'discordId' + (index + 1)"
+                      type="text"
+                      :class="['form-input', 'form-inline', 'create-game-telegram-input', {'is-error': getDiscordIdError(newPlayer) !== ''}]"
+                      inputmode="numeric"
+                      autocomplete="off"
+                      :placeholder="requiresDiscordLogin ? 'Discord ID' : 'Optional Discord ID'"
+                      title="Discord Developer Mode → Copy User ID"
+                      v-model="newPlayer.discordId"
+                      @blur="normalizeDiscordId(newPlayer)"
+                    >
+                    <div v-if="getDiscordIdError(newPlayer) !== ''" class="form-input-hint create-game-telegram-error">
+                      {{ getDiscordIdError(newPlayer) }}
+                    </div>
+                  </div>
+
+                  <label class="form-radio form-inline" v-if="!randomFirstPlayer">
+                    <input type="radio" name="firstIndex" :value="index + 1" v-model="firstIndex">
+                    <i class="form-icon"></i> <span v-i18n>Goes First?</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div></InputPortal>
+    <InputPortal :target="creationHosts.mars.target.value"><div class="create-game-subsection-label" style="margin-top: 8px;">
+      <label for="custom-map-code" v-i18n>Custom map code</label>
+      <textarea
+        id="custom-map-code"
+        rows="2"
+        style="width: 100%; font-family: monospace; font-size: 11px;"
+        placeholder="Paste a TMB3… code from the map editor"
+        v-model="customBoardCodeInput"
+        @input="applyCustomBoardCode"></textarea>
+      <div v-if="customBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customBoardCodeError }}</div>
+      <div v-else-if="customBoardCode !== undefined" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom map: {{ customBoardName }}</div>
+    </div></InputPortal>
+    <InputPortal :target="creationHosts.moon.target.value"><div class="create-game-subsection-label" style="margin-top: 4px;">
+      <label for="custom-moon-board-code" v-i18n>Custom Moon board code (optional)</label>
+      <textarea
+        id="custom-moon-board-code"
+        rows="2"
+        style="width: 100%; font-family: monospace; font-size: 11px;"
+        placeholder="Paste a TMBS1… code from the Moon map editor"
+        v-model="customMoonBoardCodeInput"
+        @input="applyCustomMoonBoardCode"></textarea>
+      <div v-if="customMoonBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customMoonBoardCodeError }}</div>
+      <div v-else-if="customMoonBoardName !== ''" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom Moon board: {{ customMoonBoardName }}</div>
+    </div></InputPortal>
+    <InputPortal :target="creationHosts.venus.target.value"><div class="create-game-subsection-label" style="margin-top: 4px;">
+      <label for="custom-venus-board-code" v-i18n>Custom Venus Phase 2 board code (optional)</label>
+      <textarea
+        id="custom-venus-board-code"
+        rows="2"
+        style="width: 100%; font-family: monospace; font-size: 11px;"
+        placeholder="Paste a TMBS1… code from the Venus map editor"
+        v-model="customVenusSurfaceBoardCodeInput"
+        @input="applyCustomVenusSurfaceBoardCode"></textarea>
+      <div v-if="customVenusSurfaceBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customVenusSurfaceBoardCodeError }}</div>
+      <div v-else-if="customVenusSurfaceBoardName !== ''" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom Venus board: {{ customVenusSurfaceBoardName }}</div>
+    </div></InputPortal>
+    <InputPortal :target="creationHosts.corporations.target.value"><CorporationsFilter
+      :embedded="creationPresentation !== undefined"
+      ref="corporationsFilter"
+      v-show="showCorporationList"
+      v-if="showCorporationList"
+      @corporation-list-changed="updateCustomCorporations"
+      :expansions="expansions"
+      :selected="customCorporations"
+      :selectable="getSelectableCustomCorporations()"
+      @close="showCorporationList = false"
+    /></InputPortal>
+    <InputPortal :target="creationHosts.preludes.target.value"><PreludesFilter
+      :embedded="creationPresentation !== undefined"
+      ref="preludesFilter"
+      v-show="showPreludesList"
+      v-if="showPreludesList"
+      @prelude-list-changed="updateCustomPreludes"
+      :expansions="expansions"
+      :selected="customPreludes"
+      :selectable="getSelectableCustomPreludes()"
+      @close="showPreludesList = false"
+    /></InputPortal>
+    <InputPortal :target="creationHosts.colonies.target.value"><ColoniesFilter
+      :embedded="creationPresentation !== undefined"
+      ref="coloniesFilter"
+      v-show="showColoniesList"
+      v-if="showColoniesList"
+      @colonies-list-changed="updateCustomColonies"
+      :expansions="expansions"
+      :selected="customColonies"
+      @close="showColoniesList = false"
+    /></InputPortal>
+    <InputPortal :target="creationHosts.ceos.target.value"><CeosFilter
+      :embedded="creationPresentation !== undefined"
+      ref="ceosFilter"
+      v-show="showCeosList"
+      v-if="showCeosList"
+      @ceo-list-changed="updateCustomCeos"
+      :expansions="expansions"
+      :selected="customCeos"
+      @close="showCeosList = false"
+    /></InputPortal>
+    <InputPortal :target="creationHosts.banned.target.value"><div class="create-game--block" v-if="showBannedCards">
+      <CardsFilter
+        ref="cardsFilter"
+        @cards-list-changed="updateBannedCards"
+        :title="'Cards to exclude from the game'"
+        :hint="'Start typing the card name to exclude'"
+      />
+    </div></InputPortal>
+    <InputPortal :target="creationHosts.included.target.value"><div class="create-game--block" v-if="showIncludedCards">
+      <CardsFilter
+        ref="cardsFilter2"
+        @cards-list-changed="updateIncludedCards"
+        :title="'Cards to include in the game'"
+        :hint="'Start typing the card name to include'"
+      />
+    </div></InputPortal>
+    <input style="display: none" type="file" accept=".json" id="settings-file" ref="file" @change="uploadSettings()">
+    <PreferencesIcon />
+    <ValidationErrorsPopup v-if="showValidationErrors" :errors="validationErrors" @close="showValidationErrors = false" />
+  </div>
 </template>
 
 <script lang="ts">
 import * as constants from '@/common/constants';
 
 import {defineComponent, nextTick} from 'vue';
+import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
+import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import {CreateEditor, CreatePresentationBinding, useCreateControls, useCreatePresentation} from '@/client/wrybit/create/presentation';
+import {defaultCeoSelection} from './ceoSelection';
+import {useBoardPreview} from './useBoardPreview';
+import type {BoardPreviewRequest} from '@/common/models/BoardPreviewModel';
+import type {CustomListBinding} from '@/client/wrybit/create/presentation';
+import {projectCreateModel, setCreateField} from './createGamePresentation';
 import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, getPlayerIdentityByName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
 import {
   buildPlayerProfilesFromEloPlayers,
@@ -851,7 +907,6 @@ import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {decodeCustomBoard} from '@/common/boards/customBoardCodec';
 import {decodeSimpleBoard} from '@/common/boards/simpleBoardCodec';
-import {boardOptions} from '@/common/boards/randomBoardOptions';
 import {CardName} from '@/common/cards/CardName';
 import {CardType} from '@/common/cards/CardType';
 import {Expansion, GameModule} from '@/common/cards/GameModule';
@@ -877,10 +932,14 @@ import {BoardNameType, NewGameConfig, NewPlayerModel, normalizePreludeHandicap} 
 import {vueRoot} from '@/client/components/vueRoot';
 import {CreateGameModel} from './CreateGameModel';
 import {paths} from '@/common/app/paths';
+import raw_settings from '@/genfiles/settings.json';
+import {statusCode} from '@/common/http/statusCode';
+import {redirectToLogin} from '@/client/utils/loginRedirect';
 import {JSONProcessor} from './JSONProcessor';
 import {defaultCreateGameModel} from './defaultCreateGameModel';
 import {CreateGameSettingsStorage} from './CreateGameSettingsStorage';
 import {TemplateManager, GameTemplate} from './TemplateManager';
+import {decodeSettingsHash, encodeSettingsHash} from './settingsLink';
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 import {RULEBOOK_URLS, WIKI, WIKI_URLS} from '@/client/utils/WikiLinks';
 import {setDocumentTitle} from '@/client/utils/documentTitle';
@@ -988,6 +1047,10 @@ type ApplySettingsOptions = {
 
 export default defineComponent({
   name: 'CreateGameForm',
+  setup() {
+    const creationHosts = {players: createInputHosts(), mars: createInputHosts(), moon: createInputHosts(), venus: createInputHosts(), corporations: createInputHosts(), preludes: createInputHosts(), ceos: createInputHosts(), colonies: createInputHosts(), banned: createInputHosts(), included: createInputHosts()} satisfies Record<CreateEditor, ReturnType<typeof createInputHosts>>;
+    return {...useBoardPreview(), creationHosts, filterKinds: ['corporations', 'preludes', 'colonies', 'ceos', 'banned', 'included'] as const, creationPresentation: useCreatePresentation(), creationControls: useCreateControls()};
+  },
   data(): CreateGameModel & FormModel {
     return {
       ...defaultCreateGameModel(),
@@ -1015,6 +1078,8 @@ export default defineComponent({
     };
   },
   components: {
+    PresentationHost,
+    InputPortal,
     AppButton,
     CardsFilter,
     CeosFilter,
@@ -1132,6 +1197,12 @@ export default defineComponent({
         this.initialDraftOneWay = false;
       }
     },
+    'boardPreviewRequest': {
+      immediate: true,
+      handler(value: BoardPreviewRequest | undefined) {
+        this.loadBoardPreview(value);
+      },
+    },
     showCorporationList(value: boolean) {
       if (value === true && !this.uploading) {
         this.customCorporations = this.getDefaultCustomCorporations();
@@ -1203,6 +1274,9 @@ export default defineComponent({
     if (cloneId) {
       void this.loadRematchSetup(cloneId as GameId);
     } else {
+      if (!['board', 'customBoard', 'customMoonBoard', 'customVenusSurfaceBoard'].some((key) => urlParams.has(key))) {
+        void this.restoreSettingsLink();
+      }
       this.adoptCustomBoardFromEditor();
       this.adoptCustomMoonBoardFromEditor();
       this.adoptCustomVenusSurfaceBoardFromEditor();
@@ -1213,6 +1287,53 @@ export default defineComponent({
     document.removeEventListener('click', this.closePlayerProfilePickerFromDocument);
   },
   computed: {
+    /** Any AI seat forces a training game: results against the computer never count for ELO. */
+    hasAiPlayers(): boolean {
+      return this.players.slice(0, this.playersCount).some((player) => player.aiLevel !== undefined);
+    },
+    discordLoginConfigured(): boolean {
+      return raw_settings.discordClientId !== '';
+    },
+    boardPreviewRequest(): BoardPreviewRequest | undefined {
+      if (this.creationPresentation === undefined || this.seededGame) {
+        return undefined;
+      }
+      return {board: this.board, seed: this.seed, shuffleMapOption: this.shuffleMapOption,
+        expansions: {...this.expansions}, includedCards: [...this.includedCards], customBoardCode: this.customBoardCode || undefined};
+    },
+    customListBindings(): Array<CustomListBinding> {
+      const corporationPool = this.getSelectableCustomCorporations();
+      const corporationExclusions = new Set(this.normalizeCustomCardSelection([...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS], corporationPool));
+      const preludePool = this.getSelectableCustomPreludes();
+      const preludeExclusions = new Set(this.normalizeCustomCardSelection(this.getActiveDefaultCustomPreludeExclusions(), preludePool));
+      return [
+        {kind: 'corporations', title: 'Custom Corporation list', selected: this.customCorporations,
+          baseline: corporationPool.filter((name) => !corporationExclusions.has(name)), host: this.creationHosts.corporations},
+        {kind: 'preludes', title: 'Custom Preludes list', selected: this.customPreludes,
+          baseline: preludePool.filter((name) => !preludeExclusions.has(name)), host: this.creationHosts.preludes},
+        {kind: 'ceos', title: 'Custom CEOs list', selected: this.customCeos,
+          baseline: defaultCeoSelection(this.expansions), host: this.creationHosts.ceos},
+      ];
+    },
+    creationBinding(): CreatePresentationBinding {
+      return {model: projectCreateModel(this), hosts: this.creationHosts, customLists: this.customListBindings,
+        boardPreview: this.boardPreviewRequest === undefined ? undefined : {...this.boardPreviewState,
+          showBoardName: this.board === RandomBoardOption.ALL || this.board === RandomBoardOption.OFFICIAL,
+          canRedraw: this.board === RandomBoardOption.ALL || this.board === RandomBoardOption.OFFICIAL || (this.shuffleMapOption && this.board !== BoardName.CUSTOM),
+          redraw: this.redrawBoardPreview},
+        setField: (key, value) => setCreateField(this, key, value),
+        setExpansion: (key, enabled) => {
+          this.expansions[key] = enabled;
+        },
+        boards: this.boards, wikiUrls: this.wikiUrls, boardClass: this.getBoardColorClass, boardHref: this.boardHref,
+        agendasEnabled: this.isPoliticalAgendasExtensionEnabled(), toggleAgendas: this.politicalAgendasExtensionToggle,
+        hasValidationProblems: this.hasValidationProblems, hasBlockingValidationErrors: this.hasBlockingValidationErrors,
+        validationErrors: this.validationErrors, showValidation: () => {
+          this.showValidationErrors = true;
+        },
+        importSettings: () => this.typedRefs.file.click(), exportSettings: this.downloadSettings, copySettingsLink: this.copySettingsLink,
+        reset: this.resetSettings, create: this.createGame, clearCustomLists: this.clearCustomLists};
+    },
     wikiUrls(): typeof RULEBOOK_URLS & typeof WIKI_URLS {
       return {...RULEBOOK_URLS, ...WIKI_URLS};
     },
@@ -1233,7 +1354,7 @@ export default defineComponent({
         customPreludes: this.customPreludes,
         bannedCards: this.bannedCards,
         includedCards: this.includedCards,
-        boards: this.boards,
+        boards: [this.board as BoardName],
         seed: this.seed,
         solarPhaseOption: this.solarPhaseOption,
         aresExtremeVariant: this.aresExtremeVariant,
@@ -1241,7 +1362,8 @@ export default defineComponent({
         undoOption: this.undoOption,
         undoStepOption: this.undoStepOption,
         privateHands: this.privateHands,
-        noEloGame: this.noEloGame,
+        requiresDiscordLogin: this.requiresDiscordLogin,
+        noEloGame: this.noEloGame || this.hasAiPlayers,
         turnBasedGame: this.turnBasedGame,
         botGame: this.botGame,
         showTimers: this.showTimers,
@@ -1313,28 +1435,10 @@ export default defineComponent({
     },
     board: {
       get(): BoardName | RandomBoardOption {
-        const selected = this.boards;
-        if (selected.length === 1) {
-          return selected[0];
-        }
-        const official = boardOptions(RandomBoardOption.OFFICIAL);
-        if (selected.length === official.length && official.every((board) => selected.includes(board))) {
-          return RandomBoardOption.OFFICIAL;
-        }
-        const all = boardOptions(RandomBoardOption.ALL);
-        if (selected.length === all.length && all.every((board) => selected.includes(board))) {
-          return RandomBoardOption.ALL;
-        }
-        return selected[0];
+        return this.boards[0] ?? BoardName.THARSIS;
       },
       set(value: BoardName | RandomBoardOption) {
-        if (value === RandomBoardOption.OFFICIAL) {
-          this.boards = boardOptions(RandomBoardOption.OFFICIAL);
-        } else if (value === RandomBoardOption.ALL) {
-          this.boards = boardOptions(RandomBoardOption.ALL);
-        } else {
-          this.boards = [value as BoardName];
-        }
+        this.boards = [value as BoardName];
       },
     },
     boardChoices() {
@@ -1356,6 +1460,36 @@ export default defineComponent({
     },
   },
   methods: {
+    toggleAiPlayer(player: NewPlayerModel, index: number, event: Event): void {
+      const autoName = `AI ${index + 1}`;
+      const enabled = (event.target as HTMLInputElement).checked;
+      if (!enabled) {
+        if (player.name === autoName) {
+          player.name = '';
+        }
+        player.aiLevel = undefined;
+        return;
+      }
+      player.aiLevel = player.aiLevel ?? 'normal';
+      player.isBot = false;
+      player.telegramID = '';
+      if (player.name.trim() === '') {
+        player.name = autoName;
+      }
+      this.noEloGame = true;
+    },
+    redrawBoardPreview() {
+      const request = this.boardPreviewRequest;
+      if (request === undefined) {
+        return;
+      }
+      const randomBoard = request.board === RandomBoardOption.ALL || request.board === RandomBoardOption.OFFICIAL;
+      if (request.shuffleMapOption && request.board !== BoardName.CUSTOM && !randomBoard) {
+        this.seed = Math.random();
+      } else {
+        this.loadBoardPreview(request);
+      }
+    },
     // Deep-link from the Map Library: "Play this map" on an official entry sets ?board=<name>
     // to preselect a real board via the normal radio mechanism -- never through the
     // customBoardCode path, so official gameplay is untouched.
@@ -1472,6 +1606,46 @@ export default defineComponent({
       } catch (e) {
         this.customVenusSurfaceBoardName = '';
         this.customVenusSurfaceBoardCodeError = e instanceof Error ? e.message : String(e);
+      }
+    },
+    async copySettingsLink(): Promise<boolean> {
+      try {
+        const url = new URL(window.location.href);
+        url.search = '';
+        url.hash = encodeSettingsHash(this);
+        window.history.replaceState(window.history.state, '', url);
+        try {
+          await navigator.clipboard.writeText(url.href);
+          return true;
+        } catch {
+          vueRoot(this).showAlert('Copy link', 'Copy the settings link from the address bar.');
+          return false;
+        }
+      } catch (e) {
+        vueRoot(this).showAlert('Copy link', e instanceof Error ? e.message : String(e));
+        return false;
+      }
+    },
+    async restoreSettingsLink() {
+      try {
+        const settings = decodeSettingsHash(window.location.hash);
+        if (settings === undefined) {
+          return;
+        }
+        // Let the saved preset finish before applying an explicit shared preset.
+        await nextTick();
+        this.seededGame = false;
+        this.clonedGameId = undefined;
+        this.preludeDraftVariant = undefined;
+        this.ceosDraftVariant = undefined;
+        const processor = this.applySettings(settings);
+        await nextTick();
+        this.seed = settings.seed as number;
+        if (processor.warnings.length > 0) {
+          this.showSettingsLoadResult('Settings link', processor);
+        }
+      } catch (e) {
+        vueRoot(this).showAlert('Settings link', e instanceof Error ? e.message : String(e));
       }
     },
     restoreLastSettings() {
@@ -2345,6 +2519,26 @@ export default defineComponent({
       }
       return 'Use digits only. Open @tm_knightbyte_bot and send /start first.';
     },
+    normalizeDiscordId(player: NewPlayerModel) {
+      player.discordId = (player.discordId ?? '').trim();
+    },
+    getDiscordIdError(player: NewPlayerModel): string {
+      if (player.isBot === true || player.aiLevel !== undefined) {
+        return '';
+      }
+      const discordId = (player.discordId ?? '').trim();
+      if (discordId === '') {
+        return this.requiresDiscordLogin ? 'Discord ID is required.' : '';
+      }
+      if (!/^[1-9][0-9]*$/.test(discordId)) {
+        return 'Use digits only.';
+      }
+      const duplicate = this.getPlayers().some((other) => other !== player && (other.discordId ?? '').trim() === discordId);
+      if (duplicate) {
+        return 'This Discord ID is already used by another player.';
+      }
+      return '';
+    },
     conglomeratesTeamCount(): number {
       return Math.max(1, Math.floor(this.playersCount / 2));
     },
@@ -2620,6 +2814,7 @@ export default defineComponent({
       }
 
       players.forEach((player) => {
+        player.discordId = this.discordLoginConfigured ? (player.discordId ?? '').trim() : '';
         player.telegramID = turnBasedGame ? this.normalizeTelegramId(player.telegramID) : '';
         player.preludeHandicap = normalizePreludeHandicap(player.preludeHandicap);
         if (turnBasedGame) {
@@ -2648,7 +2843,7 @@ export default defineComponent({
       const customPreludes = this.customPreludes;
       const bannedCards = this.bannedCards;
       const includedCards = this.includedCards;
-      const boards = this.boards;
+      const board = this.board;
       const seed = this.seed;
       const politicalAgendasExtension = this.politicalAgendasExtension;
       const undoOption = this.undoOption;
@@ -2710,7 +2905,7 @@ export default defineComponent({
         customPreludes,
         bannedCards,
         includedCards,
-        boards,
+        boards: [board as BoardName],
         customBoardCode: this.board === BoardName.CUSTOM ? this.customBoardCode : undefined,
         customMoonBoardCode: this.customMoonBoardCodeError === '' && this.customMoonBoardCodeInput.trim() !== '' ?
           this.customMoonBoardCodeInput.trim() : undefined,
@@ -2725,7 +2920,7 @@ export default defineComponent({
         showTimers,
         fastModeOption,
         privateHands,
-        noEloGame,
+        noEloGame: noEloGame || this.hasAiPlayers,
         turnBasedGame,
         botGame,
         removeNegativeGlobalEventsOption,
@@ -2799,15 +2994,26 @@ export default defineComponent({
       // Auto-save current settings as last used
       new CreateGameSettingsStorage().saveSettings(TemplateManager.serializeFormState(this));
 
+      const invalidDiscordPlayer = this.getPlayers().find((player) => this.getDiscordIdError(player) !== '');
+      if (invalidDiscordPlayer !== undefined) {
+        alert(this.getDiscordIdError(invalidDiscordPlayer));
+        return;
+      }
+
       fetch(paths.API_CREATEGAME, {'method': 'POST', 'body': dataToSend, 'headers': {'Content-Type': 'application/json'}})
-        .then((response) => response.text())
-        .then((text) => {
-          try {
-            const json = JSON.parse(text);
-            onSuccess(json);
-          } catch (err) {
-            throw new Error(text);
+        .then((response) => {
+          if (response.status === statusCode.unauthorized || response.status === statusCode.forbidden) {
+            redirectToLogin();
+            return;
           }
+          return response.text().then((text) => {
+            try {
+              const json = JSON.parse(text);
+              onSuccess(json);
+            } catch (err) {
+              throw new Error(text);
+            }
+          });
         })
         .catch((error: Error) => {
           alert(error.message);

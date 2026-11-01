@@ -1,5 +1,6 @@
 <template>
   <ModuleItemFilter
+    :embedded="embedded"
     title="CEOs"
     :groups="GROUPS"
     :itemsByGroup="ALL_CARDS_BY_MODULE"
@@ -18,16 +19,10 @@
 import {defineComponent} from 'vue';
 import ModuleItemFilter from './ModuleItemFilter.vue';
 import {CardName} from '@/common/cards/CardName';
-import {Expansion, GameModule, GAME_MODULES, MODULE_NAMES, EXPANSIONS} from '@/common/cards/GameModule';
-import {byModule, byType, getCard, getCards} from '@/client/cards/ClientCardManifest';
+import {Expansion, GameModule, GAME_MODULES, MODULE_NAMES} from '@/common/cards/GameModule';
+import {byType, getCard, getCards} from '@/client/cards/ClientCardManifest';
 import {CardType} from '@/common/cards/CardType';
-import {toName} from '@/common/utils/utils';
-
-function ceoCardNames(module: GameModule): Array<CardName> {
-  return getCards(byModule(module))
-    .filter(byType(CardType.CEO))
-    .map(toName);
-}
+import {defaultCeoSelection} from './ceoSelection';
 
 const interim = GAME_MODULES.map((module) => [module, [] as Array<CardName>]);
 const ALL_CARDS_BY_MODULE: Record<GameModule, Array<CardName>> = Object.fromEntries(interim);
@@ -43,12 +38,13 @@ export default defineComponent({
   components: {ModuleItemFilter},
   emits: ['ceo-list-changed', 'close'],
   props: {
+    embedded: {type: Boolean, default: false},
     expansions: {type: Object as () => Record<Expansion, boolean>, required: true},
     selected: {type: Array as () => Array<CardName>, required: true},
   },
   data() {
     const initialSelected: Array<CardName> = this.selected.length > 0 ? [...this.selected] :
-      ceoCardNames('base').concat(...EXPANSIONS.map((expansion) => this.expansions[expansion] ? ceoCardNames(expansion) : []));
+      defaultCeoSelection(this.expansions);
     return {initialSelected};
   },
   computed: {

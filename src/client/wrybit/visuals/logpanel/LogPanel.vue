@@ -1,0 +1,709 @@
+<template>
+  <div ref="root" class="log-container">
+    <div class="log-search" v-show="!showsMilestonesAwards">
+      <label for="wrybit-log-search" v-i18n>Search displayed logs</label>
+      <input id="wrybit-log-search" class="form-input" type="search" v-model="searchQuery" @keydown.esc.stop.prevent="searchQuery = ''">
+      <button v-if="searchQuery" type="button" class="btn" @click="searchQuery = ''" v-i18n>Clear search</button>
+    </div>
+    <LogGenerationList
+      ref="generationList"
+      :max="viewModel.game.generation"
+      :selected="showsMilestonesAwards ? -1 : selectedGeneration"
+      :lastSoloGeneration="lastSoloGeneration"
+      @selected="selectGeneration">
+      <!-- Desktop: milestones & awards as the first tab of the same box -->
+      <template v-if="hasMilestonesAwards" #before>
+        <div class="or-tabs log-milestones-tabs" role="tablist">
+          <button type="button" role="tab"
+            :aria-selected="showsMilestonesAwards"
+            :class="['or-tab', 'or-tab--tone-milestones', {'or-tab--active': showsMilestonesAwards}]"
+            data-test="log-milestones-tab"
+            @click.prevent="showMilestonesAwards">{{ milestonesAwardsTitle }}</button>
+        </div>
+      </template>
+    </LogGenerationList>
+    <div v-docked-tab :class="panelClasses" role="tabpanel">
+      <!-- One continuous stream of all generations; the tabs above follow the scroll position -->
+      <div v-show="!showsMilestonesAwards" id="logpanel-scrollable" ref="scrollBody" class="panel-body" @scroll="onScroll" @mouseenter="pointerEntered" @mousemove="pointerMoved" @mouseleave="pointerLeft">
+        <p v-if="loadError" role="status"><span v-i18n>Unable to load logs.</span> <button type="button" @click="loadStream(true)" v-i18n>Retry</button></p>
+        <p v-if="searchQuery.trim() && !filteredSections.some((section) => section.messages.length)" role="status" v-i18n>No matching logs in this view.</p>
+        <section v-for="section in filteredSections" :key="section.generation" class="log-generation" :data-generation="section.generation">
+          <h3 class="log-generation-title">
+            <span class="log-generation-marker" aria-hidden="true">{{ section.generation }}</span>{{ generationTitle(section.generation) }}
+          </h3>
+          <LogMessageComponent v-for="(message, index) in section.messages" :key="index" :data-log-row="section.generation + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @mouseenter="messageHovered(message, $event)" @spaceClicked="$emit('spaceClicked', $event)" />
+        </section>
+      </div>
+      <div v-if="hasMilestonesAwards" v-show="showsMilestonesAwards" class="log-milestones">
+        <MilestoneAwardTable :milestones="viewModel.game.milestones" :awards="viewModel.game.awards" :players="viewModel.players" :viewerColor="viewModel.thisPlayer?.color" scrollable />
+      </div>
+      <button
+        v-show="showScrollToBottomButton && !showsMilestonesAwards"
+        type="button"
+        class="log-latest-button"
+        :aria-label="$t('Latest logs')"
+        :title="$t('Latest logs')"
+        data-test="log-latest"
+        @click="showLatestLogs"
+      >
+        <svg class="log-latest-button-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <path d="M12 5v14M19 12l-7 7-7-7" />
+        </svg>
+      </button>
+    </div>
+    <div class="log-player-filters" v-if="viewModel.players.length > 1" v-show="!showsMilestonesAwards">
+      <button type="button" class="log-player-filter" :aria-pressed="selectedPlayerColor === undefined" @click="selectedPlayerColor = undefined" v-i18n>All</button>
+      <button v-for="player in viewModel.players" :key="player.color" type="button"
+        :class="['log-player-filter', 'player_bg_color_' + player.color]" :aria-pressed="selectedPlayerColor === player.color"
+        @click="selectedPlayerColor = player.color">{{ player.name }}</button>
+    </div>
+    <LogMessageInspector ref="messageInspector" :viewModel="viewModel" @pinnedClosed="drawnCardsClosed" />
+    <LogCardsZoom v-if="zoomedMessage !== undefined" :message="zoomedMessage" :players="viewModel.players" @close="closeZoom" />
+  </div>
+</template>
+
+<script lang="ts">
+
+import {defineComponent, markRaw} from 'vue';
+import {Color} from '@/common/Color';
+import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
+import {logSearchText} from '@/client/components/logpanel/logSearchText';
+import {vDockedTab} from '@/client/wrybit/visuals/common/DockedTab';
+import {translateTextWithParams} from '@/client/directives/i18n';
+import {LogMessage} from '@/common/logs/LogMessage';
+import {LogMessageType} from '@/common/logs/LogMessageType';
+import {ViewModel} from '@/common/models/PlayerModel';
+import {SoundManager} from '@/client/utils/SoundManager';
+import {getPreferences} from '@/client/utils/PreferencesManager';
+import {logMessageItemCount, needsModalPreview} from '@/client/wrybit/visuals/logpanel/logMessageContent';
+import {activeSectionIndex, edgeFadesOf, findScrollContainer, HEADER_SCROLL_GAP, maxScrollTopOf, readingLineOf, scrollContainerTo, ScrollContainer, scrollTopOf} from '@/client/wrybit/visuals/logpanel/logScroll';
+import LogMessageComponent from '@/client/wrybit/visuals/logpanel/LogMessageComponent.vue';
+import LogMessageInspector from '@/client/wrybit/visuals/logpanel/LogMessageInspector.vue';
+import LogGenerationList from '@/client/wrybit/visuals/logpanel/LogGenerationList.vue';
+import LogCardsZoom from '@/client/wrybit/visuals/logpanel/LogCardsZoom.vue';
+import MilestoneAwardTable from '@/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardTable.vue';
+import {milestonesAwardsLabel} from '@/client/wrybit/visuals/milestoneAwardTable/milestonesAwardsLabel';
+import {appendedLogMessages, fetchLogStream, GenerationLog} from './logStream';
+import {milestonesAwardsFocusState} from '@/client/wrybit/visuals/logpanel/milestonesAwardsFocus';
+import {latestDrawnCards} from '@/client/wrybit/visuals/logpanel/drawnCards';
+
+const BOTTOM_SCROLL_THRESHOLD = 24; // Roughly one line of log text.
+
+// After a tab click the smooth scroll counts as finished once no scroll event came for this long
+const PROGRAMMATIC_SCROLL_SETTLE_MS = 150;
+
+// Content of the box: the log stream or (desktop) the milestones & awards table
+type LogView = 'log' | 'milestones';
+
+type ViewState = {
+  // Participant the state belongs to (another game starts at the end of its log)
+  id: string,
+  // Whether it was this player's turn: only a change of turn switches the box automatically,
+  // otherwise the reader's own choice survives the remount after every update
+  acting: boolean,
+  view: LogView,
+  // True if the reader was at the end of the log, and so should stay at the end
+  // of whatever is newest after a remount.
+  following: boolean,
+  // Scroll offset of the stream when the reader was somewhere in the history
+  scrollTop: number,
+  searchQuery: string,
+  selectedPlayerColor: Color | undefined,
+};
+
+// The game view remounts on every update (App.vue bumps its key): the reading position survives here
+const viewStates = new Map<string, ViewState>();
+
+type Refs = {
+  root: HTMLElement | undefined;
+  scrollBody: HTMLElement | undefined;
+  generationList: {$el: HTMLElement} | undefined;
+  messageInspector: InstanceType<typeof LogMessageInspector>;
+};
+
+type Internals = {
+  alive: boolean,
+  viewerId: string,
+  controller: AbortController | undefined,
+  requestRevision: number,
+  programmaticScrollTimer: number | undefined,
+  scrollFrame: number | undefined,
+  scrollFramePending: boolean,
+  resizeObserver: ResizeObserver | undefined,
+  lastHeight: number,
+  // Mouse over the log: the reader is looking at something, new entries don't move the box
+  pointerOverLog: boolean,
+  // New entries arrived while the mouse was over the log: catch up once it leaves
+  newEntriesWhileHovered: boolean,
+};
+
+type LogPanelModel = {
+  searchQuery: string,
+  selectedPlayerColor: Color | undefined,
+  loadError: boolean,
+  sections: Array<GenerationLog>,
+  view: LogView,
+  // Generation whose tab is highlighted: follows the scroll position, or the tab just clicked
+  selectedGeneration: number,
+  showScrollToBottomButton: boolean,
+  // True while the reader is at the end of the log, which then keeps following new entries
+  following: boolean,
+  // Log line whose cards are currently shown in the carousel modal (only with zoomCarousel)
+  zoomedMessage: LogMessage | undefined,
+  // View before a milestone/award choice switched the box to the table; restored when the choice closes
+  viewBeforeFocus: LogView | undefined,
+  // Newly drawn cards are shown by themselves (drawnCards.ts): the view before, restored once they close
+  viewBeforeDrawnCards: LogView | undefined,
+  // The carousel (mobile) shows newly drawn cards, not a line the reader tapped
+  zoomShowsDrawnCards: boolean,
+  // Timers and observers of this instance; raw, so they don't trigger re-renders
+  internals: Internals,
+};
+
+function withoutGenerationLines(messages: Array<LogMessage>): Array<LogMessage> {
+  return messages.filter((message) => message.type !== LogMessageType.NEW_GENERATION || message.canceled);
+}
+
+function toSections(stream: Array<GenerationLog>): Array<GenerationLog> {
+  return stream.map((section) => ({generation: section.generation, messages: withoutGenerationLines(section.messages)}));
+}
+
+export default defineComponent({
+  name: 'LogPanel',
+  props: {
+    viewModel: {
+      type: Object as () => ViewModel,
+      required: true,
+    },
+    // Offers milestones & awards as the first tab (desktop; mobile shows them in the players screen)
+    milestonesAwards: {
+      type: Boolean,
+      default: false,
+    },
+    // It's this player's turn: the box then opens on milestones & awards, otherwise on the current generation
+    acting: {
+      type: Boolean,
+      default: false,
+    },
+    // Mobile view: tapping opens the line's cards as a carousel in a modal, no hover preview
+    zoomCarousel: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  data(): LogPanelModel {
+    return {
+      searchQuery: '',
+      selectedPlayerColor: undefined,
+      loadError: false,
+      sections: [],
+      view: 'log',
+      selectedGeneration: -1,
+      showScrollToBottomButton: false,
+      following: true,
+      zoomedMessage: undefined,
+      viewBeforeFocus: undefined,
+      viewBeforeDrawnCards: undefined,
+      zoomShowsDrawnCards: false,
+      internals: markRaw({alive: true, viewerId: '', controller: undefined, requestRevision: 0, programmaticScrollTimer: undefined, scrollFrame: undefined, scrollFramePending: false, resizeObserver: undefined, lastHeight: 0, pointerOverLog: false, newEntriesWhileHovered: false}),
+    };
+  },
+  directives: {
+    dockedTab: vDockedTab,
+  },
+  components: {
+    LogMessageComponent,
+    LogMessageInspector,
+    LogGenerationList,
+    LogCardsZoom,
+    MilestoneAwardTable,
+  },
+  // drawnCards / drawnCardsClosed: newly drawn cards open by themselves and closed again (mobile switches to the log and back)
+  emits: ['spaceClicked', 'drawnCards', 'drawnCardsClosed'],
+  methods: {
+    generationTitle(generation: number): string {
+      return translateTextWithParams('Generation ${0}', [String(generation)]);
+    },
+    // With mouse/trackpad, hover opens the preview; click is only for touch devices without hover
+    canHover(): boolean {
+      return typeof window.matchMedia === 'function' && window.matchMedia('(hover: hover)').matches;
+    },
+    messageClicked(message: LogMessage) {
+      if (this.zoomCarousel) {
+        if (logMessageItemCount(message) > 0) {
+          this.zoomedMessage = message;
+        }
+        return;
+      }
+      // Many cards: always on click, as a modal over the right column
+      if (needsModalPreview(message)) {
+        this.typedRefs.messageInspector.showModal(message);
+      } else if (!this.canHover()) {
+        this.typedRefs.messageInspector.show(message);
+      }
+    },
+    // ---------- Newly drawn cards ----------
+    // Jump to the end of the log and show the line's cards as if hovered, until the next click anywhere
+    showDrawnCards(message: LogMessage): void {
+      const revision = this.internals.requestRevision;
+      const current = () => this.internals.alive && revision === this.internals.requestRevision;
+      this.$emit('drawnCards');
+      if (this.zoomCarousel) {
+        this.zoomShowsDrawnCards = true;
+        this.zoomedMessage = message;
+        return;
+      }
+      if (this.view !== 'log') {
+        this.viewBeforeDrawnCards = this.view;
+        this.view = 'log';
+      }
+      this.following = true;
+      this.$nextTick(() => {
+        if (!current()) {
+          return;
+        }
+        this.restorePosition();
+        // After the scroll to the end: the line's place decides where the cards appear
+        requestAnimationFrame(() => {
+          if (!current()) {
+            return;
+          }
+          const row = this.drawnCardsRow(message);
+          row?.scrollIntoView({block: 'nearest'});
+          const rect = row?.getBoundingClientRect();
+          // Many cards don't fit next to the line: as a modal over the column, like a click on such a line
+          const position = rect === undefined || needsModalPreview(message) ? undefined : {x: rect.left + rect.width / 2, y: rect.top + rect.height / 2};
+          this.typedRefs.messageInspector.pinPreview(message, position);
+        });
+      });
+    },
+    drawnCardsRow(message: LogMessage): HTMLElement | undefined {
+      for (const section of this.sections) {
+        const index = section.messages.indexOf(message);
+        if (index !== -1) {
+          return this.typedRefs.scrollBody?.querySelector<HTMLElement>(`[data-log-row="${section.generation}-${index}"]`) ?? undefined;
+        }
+      }
+      return undefined;
+    },
+    drawnCardsClosed(): void {
+      if (this.viewBeforeDrawnCards !== undefined) {
+        this.view = this.viewBeforeDrawnCards;
+        this.viewBeforeDrawnCards = undefined;
+      }
+      this.$emit('drawnCardsClosed');
+    },
+    closeZoom(): void {
+      this.zoomedMessage = undefined;
+      if (this.zoomShowsDrawnCards) {
+        this.zoomShowsDrawnCards = false;
+        this.$emit('drawnCardsClosed');
+      }
+    },
+    messageHovered(message: LogMessage, event: MouseEvent) {
+      // Lines with many cards have no hover preview (it would overflow the window), only click
+      if (this.zoomCarousel || !this.canHover()) {
+        return;
+      }
+      if (needsModalPreview(message)) {
+        // Otherwise the previous row's preview would stay next to this row
+        this.typedRefs.messageInspector.hidePreview();
+        return;
+      }
+      // Preview at the top right of the mouse, in window coordinates (position: fixed), so the column overflow doesn't clip it
+      this.typedRefs.messageInspector.preview(message, {x: event.clientX, y: event.clientY});
+    },
+    // The preview hangs on the pointer and moves with it
+    pointerMoved(event: MouseEvent) {
+      if (this.zoomCarousel) {
+        return;
+      }
+      this.typedRefs.messageInspector.follow({x: event.clientX, y: event.clientY});
+    },
+    messageUnhovered() {
+      this.typedRefs.messageInspector.hidePreview();
+    },
+    pointerEntered() {
+      this.internals.pointerOverLog = true;
+    },
+    pointerLeft() {
+      this.messageUnhovered();
+      this.internals.pointerOverLog = false;
+      if (this.internals.newEntriesWhileHovered) {
+        this.internals.newEntriesWhileHovered = false;
+        this.following = true;
+        this.restorePosition();
+      }
+    },
+    // ---------- Scrolling ----------
+    scrollContainer(): ScrollContainer {
+      return findScrollContainer(this.typedRefs.scrollBody);
+    },
+    // On mobile the log sits on a hidden screen most of the time: page scrolling there belongs to another screen.
+    // On desktop the stream is hidden while milestones & awards fill the box.
+    isVisible(): boolean {
+      return !this.showsMilestonesAwards && (this.typedRefs.scrollBody?.getClientRects().length ?? 0) > 0;
+    },
+    showMilestonesAwards(): void {
+      this.view = 'milestones';
+    },
+    // A milestone/award choice opened or closed in the action tabs (milestonesAwardsFocus.ts)
+    applyMilestonesAwardsFocus(focused: boolean): void {
+      if (focused) {
+        if (this.view !== 'milestones') {
+          this.viewBeforeFocus = this.view;
+          this.view = 'milestones';
+        }
+        return;
+      }
+      const previous = this.viewBeforeFocus;
+      this.viewBeforeFocus = undefined;
+      // Only back if the reader didn't pick another tab in the meantime
+      if (previous === 'log' && this.view === 'milestones') {
+        this.view = 'log';
+        this.$nextTick(() => this.revealGeneration(this.selectedGeneration));
+      }
+    },
+    sectionElements(): Array<HTMLElement> {
+      return Array.from(this.typedRefs.scrollBody?.querySelectorAll<HTMLElement>('.log-generation') ?? []);
+    },
+    // Distance from the reading line to a generation's header, in pixels of the scroll container
+    offsetToGeneration(generation: number, container: ScrollContainer): number | undefined {
+      const section = this.sectionElements().find((element) => element.dataset.generation === String(generation));
+      if (section === undefined) {
+        return undefined;
+      }
+      return section.getBoundingClientRect().top - readingLineOf(container, this.typedRefs.generationList?.$el);
+    },
+    // Tab click: scroll smoothly to that generation's header. The tab stays selected even if the
+    // end of the log is reached before the header gets to the top.
+    selectGeneration(generation: number): void {
+      this.selectedGeneration = generation;
+      if (this.showsMilestonesAwards) {
+        // Back from milestones & awards: the stream was hidden, so jump there without animation
+        this.view = 'log';
+        this.$nextTick(() => this.revealGeneration(generation));
+        return;
+      }
+      const container = this.scrollContainer();
+      const offset = this.offsetToGeneration(generation, container);
+      if (offset === undefined) {
+        return;
+      }
+      this.startProgrammaticScroll();
+      scrollContainerTo(container, scrollTopOf(container) + offset - HEADER_SCROLL_GAP, 'smooth');
+    },
+    // Current generation: its newest entries (and keep following); older ones: their header
+    revealGeneration(generation: number): void {
+      if (!this.internals.alive) {
+        return;
+      }
+      const container = this.scrollContainer();
+      if (generation === this.generation) {
+        this.following = true;
+        scrollContainerTo(container, Number.MAX_SAFE_INTEGER);
+      } else {
+        const offset = this.offsetToGeneration(generation, container);
+        if (offset !== undefined) {
+          scrollContainerTo(container, scrollTopOf(container) + offset - HEADER_SCROLL_GAP);
+        }
+      }
+      this.updateScrollState();
+    },
+    showLatestLogs(): void {
+      this.searchQuery = '';
+      this.selectedPlayerColor = undefined;
+      this.selectedGeneration = this.generation;
+      this.following = true;
+      this.startProgrammaticScroll();
+      scrollContainerTo(this.scrollContainer(), Number.MAX_SAFE_INTEGER, 'smooth');
+    },
+    // While scrolling to a clicked tab, the tabs must not jump through the generations in between
+    startProgrammaticScroll(): void {
+      const internals = this.internals;
+      window.clearTimeout(internals.programmaticScrollTimer);
+      internals.programmaticScrollTimer = window.setTimeout(() => this.endProgrammaticScroll(), PROGRAMMATIC_SCROLL_SETTLE_MS);
+    },
+    endProgrammaticScroll(): void {
+      this.internals.programmaticScrollTimer = undefined;
+      this.updateScrollState();
+    },
+    onScroll(): void {
+      const internals = this.internals;
+      if (internals.programmaticScrollTimer !== undefined) {
+        // Still moving towards the clicked tab: wait until the movement settles
+        this.startProgrammaticScroll();
+        return;
+      }
+      if (internals.scrollFramePending) {
+        return;
+      }
+      internals.scrollFramePending = true;
+      internals.scrollFrame = window.requestAnimationFrame(() => {
+        internals.scrollFramePending = false;
+        this.updateScrollState();
+        this.updateSelectedFromScroll();
+      });
+    },
+    // The page scrolls on mobile: only react while the log is the visible screen and scrolls with the page
+    onWindowScroll(): void {
+      if (this.isVisible() && this.scrollContainer() === window) {
+        this.onScroll();
+      }
+    },
+    updateSelectedFromScroll(): void {
+      if (this.sections.length === 0) {
+        return;
+      }
+      const container = this.scrollContainer();
+      if (this.isNearBottom(container)) {
+        this.selectedGeneration = this.sections[this.sections.length - 1].generation;
+        return;
+      }
+      const tops = this.sectionElements().map((element) => element.getBoundingClientRect().top);
+      const index = activeSectionIndex(tops, readingLineOf(container, this.typedRefs.generationList?.$el));
+      this.selectedGeneration = this.sections[index]?.generation ?? this.generation;
+    },
+    updateScrollState(): void {
+      if (!this.internals.alive) {
+        return;
+      }
+      const container = this.scrollContainer();
+      const nearBottom = this.isNearBottom(container);
+      this.showScrollToBottomButton = !nearBottom;
+      this.following = nearBottom;
+      this.updateEdgeFades(container);
+    },
+    // Soft fade at the top/bottom edge of the box. Set as CSS variables directly on the element:
+    // it changes with every scroll frame and must not trigger a re-render.
+    updateEdgeFades(container: ScrollContainer): void {
+      const body = this.typedRefs.scrollBody;
+      if (body === undefined) {
+        return;
+      }
+      // When the page scrolls (mobile) the box has no edges of its own
+      const fades = container === body ? edgeFadesOf(body) : {top: 0, bottom: 0};
+      body.style.setProperty('--wrybit-log-fade-top', `${fades.top}px`);
+      body.style.setProperty('--wrybit-log-fade-bottom', `${fades.bottom}px`);
+    },
+    isNearBottom(container: ScrollContainer): boolean {
+      return maxScrollTopOf(container) - scrollTopOf(container) <= BOTTOM_SCROLL_THRESHOLD;
+    },
+    // Puts the reader back where they were: at the end, or at the stored offset in the history
+    restorePosition(): void {
+      if (!this.internals.alive) {
+        return;
+      }
+      if (!this.isVisible()) {
+        return;
+      }
+      const container = this.scrollContainer();
+      if (this.following) {
+        scrollContainerTo(container, Number.MAX_SAFE_INTEGER);
+        this.selectedGeneration = this.generation;
+      } else {
+        scrollContainerTo(container, viewStates.get(this.viewModel.id)?.scrollTop ?? 0);
+        this.updateSelectedFromScroll();
+      }
+      this.updateScrollState();
+    },
+    // Mobile: the log screen was hidden and is shown again (the page jumps to its top) –
+    // show the end of the log instead of generation 1
+    onResize(): void {
+      if (!this.internals.alive) {
+        return;
+      }
+      const height = this.typedRefs.root?.offsetHeight ?? 0;
+      const becameVisible = this.internals.lastHeight === 0 && height > 0;
+      this.internals.lastHeight = height;
+      if (becameVisible && this.scrollContainer() === window) {
+        this.following = true;
+        this.restorePosition();
+      }
+    },
+    // keepPosition: update in place (new view model) – a reader in the history stays where they are
+    async loadStream(keepPosition = false): Promise<void> {
+      const internals = this.internals;
+      internals.controller?.abort();
+      const controller = new AbortController();
+      internals.controller = controller;
+      const revision = ++internals.requestRevision;
+      const current = () => internals.alive && !controller.signal.aborted && revision === internals.requestRevision;
+      const {id, game: {generation, gameAge}} = this.viewModel;
+      this.loadError = false;
+      try {
+        const stream = await fetchLogStream(id, generation, gameAge, controller.signal);
+        if (!current()) {
+          return;
+        }
+        const previous = this.sections;
+        this.sections = toSections(stream);
+        const appended = appendedLogMessages(previous, this.sections);
+        const drawn = keepPosition ? latestDrawnCards(appended, this.viewModel.thisPlayer?.color) : undefined;
+        if (drawn !== undefined) {
+          this.showDrawnCards(drawn);
+          return;
+        }
+        if (appended.length > 0 && keepPosition) {
+          if (internals.pointerOverLog) {
+            internals.newEntriesWhileHovered = true;
+          } else if (!this.searchQuery.trim() && this.selectedPlayerColor === undefined) {
+            this.following = true;
+          }
+        }
+        if (getPreferences().enable_sounds && window.location.search.includes('experimental=1')) {
+          SoundManager.newLog();
+        }
+        this.$nextTick(() => {
+          if (!current()) {
+            return;
+          }
+          if (keepPosition && !this.following) {
+            this.updateScrollState();
+          } else {
+            this.restorePosition();
+          }
+        });
+      } catch (error) {
+        if (!current()) {
+          return;
+        }
+        controller.abort();
+        this.loadError = true;
+        console.error('error updating messages, unable to reach server', error);
+      }
+    },
+  },
+  computed: {
+    logSnapshotKey(): string {
+      return JSON.stringify([this.viewModel.id, this.generation, this.viewModel.game.gameAge]);
+    },
+    filteredSections(): Array<GenerationLog> {
+      const query = this.searchQuery.trim().toLowerCase().replace(/\s+/g, ' ');
+      const player = this.viewModel.players.find((item) => item.color === this.selectedPlayerColor);
+      return this.sections.map((section) => ({...section, messages: section.messages.filter((message) => {
+        if (player !== undefined && message.playerId !== player.id && message.type !== LogMessageType.NEW_GENERATION &&
+          !message.data.some((datum) => datum.type === LogMessageDataType.PLAYER && datum.value === player.color)) {
+          return false;
+        }
+        return !query || logSearchText(message, this.viewModel.players, (text) => this.$t(text)).includes(query) ||
+          logSearchText(message, this.viewModel.players, (text) => text).includes(query);
+      })}));
+    },
+    typedRefs(): Refs {
+      return this.$refs as unknown as Refs;
+    },
+    generation(): number {
+      return this.viewModel.game.generation;
+    },
+    hasMilestonesAwards(): boolean {
+      return this.milestonesAwards && this.viewModel.players.length > 1 && !getPreferences().hide_awards_and_milestones;
+    },
+    showsMilestonesAwards(): boolean {
+      return this.hasMilestonesAwards && this.view === 'milestones';
+    },
+    milestonesAwardsTitle(): string {
+      return milestonesAwardsLabel((text) => this.$t(text));
+    },
+    panelClasses(): Array<string> {
+      const tone = this.showsMilestonesAwards ? ['or-tab-panel--tone-milestones', 'log-panel--milestones'] : ['or-tab-panel--view'];
+      return ['panel', 'log-panel', 'or-tab-panel', ...tone];
+    },
+    milestonesAwardsFocused(): boolean {
+      return milestonesAwardsFocusState.requests > 0;
+    },
+    lastSoloGeneration(): number | undefined {
+      return this.viewModel.players.length === 1 ? this.viewModel.game.lastSoloGeneration : undefined;
+    },
+  },
+  watch: {
+    milestonesAwardsFocused(focused: boolean): void {
+      this.applyMilestonesAwardsFocus(focused);
+    },
+    // The game view is no longer remounted on every update (upstream b669327): load the new entries in place
+    logSnapshotKey(): void {
+      if (this.viewModel.id !== this.internals.viewerId) {
+        this.internals.viewerId = this.viewModel.id;
+        this.sections = [];
+        this.searchQuery = '';
+        this.selectedPlayerColor = undefined;
+        this.zoomedMessage = undefined;
+        this.viewBeforeFocus = undefined;
+        this.viewBeforeDrawnCards = undefined;
+        this.zoomShowsDrawnCards = false;
+        this.internals.newEntriesWhileHovered = false;
+        this.typedRefs.messageInspector.hide();
+        this.following = true;
+        this.view = this.acting ? 'milestones' : 'log';
+        this.loadStream();
+      } else {
+        this.loadStream(true);
+      }
+    },
+    // A change of turn decides the box anew, as on mount: own turn → milestones & awards, otherwise the log
+    acting(acting: boolean): void {
+      const view: LogView = acting ? 'milestones' : 'log';
+      if (this.viewBeforeFocus !== undefined) {
+        // An open milestone/award choice keeps the box; closing it returns to the new view
+        this.viewBeforeFocus = view;
+        return;
+      }
+      if (this.view !== view) {
+        this.view = view;
+        if (view === 'log') {
+          this.following = true;
+          this.$nextTick(() => this.restorePosition());
+        }
+      }
+    },
+  },
+  mounted() {
+    this.internals.viewerId = this.viewModel.id;
+    const previousState = viewStates.get(this.viewModel.id);
+    // A change of turn (or the first mount) decides the box anew: own turn → milestones & awards,
+    // otherwise the end of the log. Without a change the reader's view stays as it was.
+    const restoredState = previousState?.acting === this.acting ? previousState : undefined;
+    this.searchQuery = restoredState?.searchQuery ?? '';
+    this.selectedPlayerColor = restoredState?.selectedPlayerColor;
+    this.view = restoredState?.view ?? (this.acting ? 'milestones' : 'log');
+    // Either the view starts fresh, or the reader was at the end, which may have grown since the previous instance unmounted
+    this.following = restoredState === undefined || restoredState.following;
+    this.selectedGeneration = this.generation;
+    if (this.milestonesAwardsFocused) {
+      this.applyMilestonesAwardsFocus(true);
+    }
+    // The server remains the owner of every generation, including canceled history.
+    this.sections = [];
+    this.internals.lastHeight = this.typedRefs.root?.offsetHeight ?? 0;
+    window.addEventListener('scroll', this.onWindowScroll, {passive: true});
+    if (typeof ResizeObserver !== 'undefined' && this.typedRefs.root !== undefined) {
+      this.internals.resizeObserver = new ResizeObserver(() => this.onResize());
+      this.internals.resizeObserver.observe(this.typedRefs.root);
+    }
+    this.loadStream();
+  },
+  beforeUnmount() {
+    const container = this.scrollContainer();
+    viewStates.set(this.viewModel.id, {
+      id: this.viewModel.id,
+      searchQuery: this.searchQuery,
+      selectedPlayerColor: this.selectedPlayerColor,
+      acting: this.acting,
+      // An open milestone/award choice re-applies its focus after the remount; the reader's own view is kept
+      view: this.viewBeforeFocus ?? this.view,
+      following: this.isVisible() ? this.isNearBottom(container) : this.following,
+      scrollTop: this.isVisible() ? scrollTopOf(container) : viewStates.get(this.viewModel.id)?.scrollTop ?? 0,
+    });
+    this.internals.alive = false;
+    this.internals.requestRevision++;
+    this.internals.controller?.abort();
+    window.removeEventListener('scroll', this.onWindowScroll);
+    window.clearTimeout(this.internals.programmaticScrollTimer);
+    if (this.internals.scrollFramePending && this.internals.scrollFrame !== undefined) {
+      window.cancelAnimationFrame(this.internals.scrollFrame);
+    }
+    this.internals.resizeObserver?.disconnect();
+  },
+});
+
+</script>

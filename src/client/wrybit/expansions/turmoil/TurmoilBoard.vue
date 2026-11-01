@@ -122,7 +122,7 @@ import DelegateFigure from '@/client/wrybit/inputs/DelegateFigure.vue';
 import TurmoilEventCard from './TurmoilEventCard.vue';
 import {CHAIR_CENTER, FIGURE_RATIO, GRADIENT_RADIUS, HEMICYCLE_HEIGHT, HEMICYCLE_WIDTH, chairPath as makeChairPath, wedge} from './turmoilHemicycle';
 
-const props = defineProps<{turmoil: TurmoilModel, viewer?: PublicPlayerModel, generation: number, moreParties: boolean}>();
+const props = defineProps<{turmoil: TurmoilModel, viewer?: PublicPlayerModel, generation: number, moreParties: boolean, betterMars: boolean}>();
 const CHAIR_SEAT_OFFSET = 72;
 const prefix = useId();
 const chairPath = makeChairPath();
@@ -147,6 +147,6 @@ function gradientId(party: PartyName): string {
 }
 function details(name: PartyName) {
   const party: PartyModel = props.turmoil.parties.find((item) => item.name === name) ?? {name, partyLeader: undefined, delegates: []};
-  return partyCardDetails(props.turmoil, party, props.moreParties);
+  return partyCardDetails(props.turmoil, party, props.moreParties, props.betterMars);
 }
 </script>

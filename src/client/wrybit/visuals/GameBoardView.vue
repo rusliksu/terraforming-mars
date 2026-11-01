@@ -18,7 +18,7 @@
     <template #colonies>
       <ColoniesBoard :colonies="game.colonies" :players="players" :viewer="viewer" />
     </template>
-    <template #turmoil><TurmoilBoard v-if="game.turmoil" :turmoil="game.turmoil" :viewer="viewer" :generation="game.generation" :moreParties="game.gameOptions.expansions.moreParties" /></template>
+    <template #turmoil><TurmoilBoard v-if="game.turmoil" :turmoil="game.turmoil" :viewer="viewer" :generation="game.generation" :moreParties="game.gameOptions.expansions.moreParties" :betterMars="game.gameOptions.expansions.betterMars" /></template>
     <template #paths><PlanetsBoard v-if="game.pathfinders" :model="game.pathfinders" :gameOptions="game.gameOptions" /></template>
     <template #delta><DeltaBoard :players="players" :viewerColor="viewer?.color" /></template>
     <template #venus><Teleport :to="boardZoomTarget ?? 'body'" :disabled="boardZoomTarget === undefined || zoomBoard !== 'venus'">

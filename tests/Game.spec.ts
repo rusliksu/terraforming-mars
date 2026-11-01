@@ -317,6 +317,14 @@ describe('Game', () => {
     expect(messages()).to.include('blue raised the :i:venus: scale 3 step(s)');
   });
 
+  it('Logs ocean placements with the ocean icon', () => {
+    const [game, player] = testGame(2);
+
+    addOcean(player, '34');
+
+    expect(game.gameLog.map(formatMessage)).to.include('blue placed :i:ocean: tile at 34');
+  });
+
   it('Venus moves 1% per step above 30% on Amazonis Planitia', () => {
     const [game, player] = testGame(2, {venusNextExtension: true, boardName: BoardName.AMAZONIS_PLANITIA});
     setVenusScaleLevel(game, 28);

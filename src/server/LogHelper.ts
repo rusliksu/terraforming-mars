@@ -27,7 +27,9 @@ export class LogHelper {
   }
 
   static logTilePlacement(player: IPlayer, space: Space, tileType: TileType) {
-    this.logBoardTileAction(player, space, tileTypeToString[tileType] + ' tile');
+    // Ocean tiles read as the board's ocean icon instead of the word, like the parameter lines.
+    const description = tileType === TileType.OCEAN ? ':i:ocean: tile' : tileTypeToString[tileType] + ' tile';
+    this.logBoardTileAction(player, space, description);
   }
 
   static logBoardTileAction(player: IPlayer, space: Space, description: string, action: string = 'placed') {

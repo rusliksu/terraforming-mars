@@ -140,7 +140,10 @@ each(@players, {
 // Reserved identities with a light persona surface: the classic bar prints their text in a dark
 // tone, while the table palette above is tuned for the muted default tints and forces white.
 // Keep the persona surface untouched and switch only the text inside the row.
-.players-table-light-identity(@text) {
+// The corporation line is drawn lighter than the name on purpose, but the reserved surfaces differ
+// in brightness enough that one opacity is not enough: each persona picks the value that keeps the
+// line readable (at least 4.5:1 against its own tint).
+.players-table-light-identity(@text; @corp-opacity: 0.78) {
   .players-table-name,
   .players-table-counter,
   .players-table-tag-strip-item,
@@ -150,7 +153,7 @@ each(@players, {
 
   .players-table-corporation {
     color: @text;
-    opacity: 0.78;
+    opacity: @corp-opacity;
   }
 
   .players-table-counter--zero,
@@ -187,11 +190,11 @@ each(@players, {
   }
 }
 
-.players-table-row--gold { .players-table-light-identity(#000000); }
+.players-table-row--gold { .players-table-light-identity(#000000; 0.88); }
 .players-table-row--pearl { .players-table-light-identity(#102027); }
-.players-table-row--vanger { .players-table-light-identity(#001f00); }
-.players-table-row--saturn { .players-table-light-identity(#2b1d08); }
-.players-table-row--saturnrings { .players-table-light-identity(#241a0b); }
+.players-table-row--vanger { .players-table-light-identity(#001f00; 0.88); }
+.players-table-row--saturn { .players-table-light-identity(#2b1d08; 1); }
+.players-table-row--saturnrings { .players-table-light-identity(#241a0b; 1); }
 
 // When the tag columns are auto-hidden, the same row grows a compact strip of tag icons.
 // The strip is a grid item spanning all columns, so the fixed-height row becomes auto-sized.

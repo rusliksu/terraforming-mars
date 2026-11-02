@@ -38,6 +38,12 @@ describe('Wrybit compiled visual styles', () => {
     expect(declaration('.wrybit-ui .players-table-row--gold .players-table-counter', 'color')).eq('#000000');
     expect(declaration('.wrybit-ui .players-table-row--saturn .players-table-name', 'color')).eq('#2b1d08');
     expect(declaration('.wrybit-ui .players-table-row--saturnrings .players-table-name', 'color')).eq('#241a0b');
+    // The corporation line stays lighter than the name, and the dimmer persona surfaces fade it less
+    expect(declaration('.wrybit-ui .players-table-row--pearl .players-table-corporation', 'opacity')).eq('0.78');
+    expect(declaration('.wrybit-ui .players-table-row--gold .players-table-corporation', 'opacity')).eq('0.88');
+    expect(declaration('.wrybit-ui .players-table-row--vanger .players-table-corporation', 'opacity')).eq('0.88');
+    expect(declaration('.wrybit-ui .players-table-row--saturn .players-table-corporation', 'opacity')).eq('1');
+    expect(declaration('.wrybit-ui .players-table-row--saturnrings .players-table-corporation', 'opacity')).eq('1');
     stylesheet.walkDecls((decl) => {
       for (const match of decl.value.matchAll(/url\(['"]?([^'")]+)['"]?\)/g)) {
         expect(match[1].replace(/^\.\//, '')).matches(/^assets\//);

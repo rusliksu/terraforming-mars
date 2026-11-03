@@ -235,6 +235,16 @@ each(@party-palette, {
   @name: extract(@value, 1);
   @color: extract(@value, 2);
   @text: extract(@value, 3);
+  @logo: replace(@name, '_', '-');
+
+  .log-party-name--@{name} {
+    // Panel colors are tuned for filled banners; lighten them for text on the dark log.
+    color: mix(@color, #fff, 78%);
+  }
+
+  .log-party-logo--@{logo} {
+    background-image: url("./assets/parties/@{logo}.png");
+  }
 
   .board-party--@{name} {
     --party-panel-color: mix(@color, #fff, 22%);

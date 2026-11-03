@@ -10,6 +10,9 @@
         <span v-if="data.type === undefined || data.value === undefined"></span>
         <span v-else-if="data.type === LogMessageDataType.PLAYER" class="log-player" :class="'player_bg_color_' + data.value"> {{ getPlayerName(data.value) }} </span>
         <span v-else-if="data.type === LogMessageDataType.CARD" v-html="cardToHtml(data)"></span>
+        <span v-else-if="data.type === LogMessageDataType.PARTY" class="log-party">
+          <span class="log-party-logo" :class="'log-party-logo--' + partyLogoSlug(data.value)"></span><span class="log-party-name" :class="'log-party-name--' + partySlug(data.value)" v-i18n>{{ data.value }}</span>
+        </span>
         <span v-else-if="data.type === LogMessageDataType.GLOBAL_EVENT" class="log-card background-color-global-event" v-i18n>
           {{ data.value }}
         </span>
@@ -170,6 +173,12 @@ export default defineComponent({
     getPlayerName(color: Color) {
       const player = this.viewModel.players.find((player) => player.color === color);
       return player?.name ?? color;
+    },
+    partySlug(party: string): string {
+      return party.toLowerCase().split(' ').join('_');
+    },
+    partyLogoSlug(party: string): string {
+      return party.toLowerCase().split(' ').join('-');
     },
   },
   computed: {

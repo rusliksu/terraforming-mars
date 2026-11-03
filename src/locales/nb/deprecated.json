@@ -29,6 +29,7 @@
   "Neutral player received ${0} M€ from ${1} owner (${2})": "Nøytral spiller fikk ${0} M€ fra ${1} eier (${2})",
   "${0} gained 0 M€ from ${1} action.": "${0} fikk 0 M€ fra ${1}-handlingen.",
   "${0} gained ${1} M€ from ${2} ocean(s)": "${0} fikk ${1} M€ fra ${2} hav",
+  "${0} gained ${1}:r:mc: from ${2} ocean(s)": "${0} fikk ${1}:r:mc: fra ${2} hav",
   "${0} converted ${1} units of energy to heat": "${0} konverterte ${1} enheter med energi til varme",
   "${0} spent 1 steel and 1 energy to gain 3 plants.": "${0} brukte 1 stål og 1 energi for å få 3 planter.",
   "${0} spent ${1} energy": "${0} brukte ${1} energi",

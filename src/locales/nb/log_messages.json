@@ -325,7 +325,7 @@
 	"${0} returned ${1} to their hand": "${0} returnerte ${1} til hånden sin",
 	"${0} gained 0:r:mc: from ${1} action.": "${0} fikk 0:r:mc: fra ${1}-handlingen.",
 	"${0} gained ${1} M€ from ${2} action.": "${0} fikk ${1} M€ fra ${2}-handlingen.",
-	"${0} gained ${1}:r:mc: from ${2} ocean(s)": "${0} fikk ${1}:r:mc: fra ${2} hav",
+	"${0} gained ${1}:r:mc: from ${2} :i:ocean:": "${0} fikk ${1}:r:mc: fra ${2} :i:ocean:",
 	"${0} cannot afford to use the ${1} effect": "${0} har ikke råd til å bruke ${1}-effekten",
 
 	"${0} gained ${1}:i:tr:": "${0} fikk ${1}:i:tr:",

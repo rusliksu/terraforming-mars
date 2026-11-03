@@ -325,6 +325,18 @@ describe('Game', () => {
     expect(game.gameLog.map(formatMessage)).to.include('blue placed :i:ocean: tile at 34');
   });
 
+  it('Logs the ocean adjacency bonus with the ocean icon', () => {
+    const [game, player] = testGame(2);
+    const ocean = addOcean(player, '34');
+    player.oceanBonus = 2;
+    const landSpace = game.board.getAdjacentSpaces(ocean)
+      .find((space) => space.spaceType === SpaceType.LAND && space.tile === undefined);
+
+    addCity(player, landSpace!.id);
+
+    expect(game.gameLog.map(formatMessage)).to.include('blue gained 2:r:mc: from 1 :i:ocean:');
+  });
+
   it('Venus moves 1% per step above 30% on Amazonis Planitia', () => {
     const [game, player] = testGame(2, {venusNextExtension: true, boardName: BoardName.AMAZONIS_PLANITIA});
     setVenusScaleLevel(game, 28);

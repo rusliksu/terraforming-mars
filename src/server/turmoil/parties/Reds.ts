@@ -92,7 +92,7 @@ class RedsPolicy02 implements IPolicy {
     if (amountToPay > 0) {
       player.game.defer(new SelectPaymentDeferred(player, amountToPay, {title: 'Select how to pay for tile placement'}))
         .andThen((payment) => {
-          player.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+          player.game.log('${0} paid ${1}:r:mc: for Turmoil ${2} policy', (b) =>
             b.player(player).number(paymentTotal(payment)).partyName(PartyName.REDS));
           return undefined;
         });
@@ -172,7 +172,7 @@ class RedsPolicy03 implements IPolicy {
 
     game.defer(new SelectPaymentDeferred(player, 4, {title: TITLES.payForPartyAction(PartyName.REDS)}))
       .andThen((payment) => {
-        game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+        game.log('${0} paid ${1}:r:mc: for Turmoil ${2} policy', (b) =>
           b.player(player).number(paymentTotal(payment)).partyName(PartyName.REDS));
         const orOptions = new OrOptions();
 

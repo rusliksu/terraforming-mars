@@ -75,5 +75,7 @@
   "${0} for ${1} is blocking 1 TR": "Das ${0} ist die Blockierung von 1 TW für ${1}",
   "${0} gained ${1} TR from ${2}": "${0} erhielt ${1} TW von ${2}",
   "${0} gained ${1} TR": "${0} erhielt ${1} TW",
+  "${0} has the most ${1} tags and earns 1VP": "${0} besitzt die meisten ${1}-Symbole und erhält 1 SP",
+  "${0} has the most ${1} tags and earns 2VP": "${0} besitzt die meisten ${1}-Symbole und erhält 2 SP",
   "${0} lost ${1} TR": "${0} verlor ${1} TW"
 }

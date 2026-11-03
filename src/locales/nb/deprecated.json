@@ -53,5 +53,7 @@
   "${0} cannot turn ${1} face down to gain 3 TR because of unaffordable Reds policy cost": "${0} kan ikke snu ${1} for å få 3 TR fordi de kan ikke betale for De Rødes politikk",
   "${0} turned ${1} face down to gain 3 TR": "${0} snudde ${1} for å få 3 TR",
   "${0} gained ${1} TR": "${0} fikk ${1} TR",
+  "${0} has the most ${1} tags and earns 1VP": "${0} har flest ${1}-merker og får 1SP",
+  "${0} has the most ${1} tags and earns 2VP": "${0} har flest ${1}-merker og får 2SP",
   "${0} lost ${1} TR": "${0} mistet ${1} TR"
 }

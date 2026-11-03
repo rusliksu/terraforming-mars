@@ -73,5 +73,7 @@
   "${0} for ${1} is blocking 1 TR": "${0} ${1}:lle estää 1 MKL-askeleen",
   "${0} gained ${1} TR from ${2}": "${0} nosti MKL:äänsä ${1} askelta lähteestä ${2}",
   "${0} gained ${1} TR": "${0} nosti MKL:äänsä ${1} askelta",
+  "${0} has the most ${1} tags and earns 1VP": "${0} on pelannut eniten ${1}-ympyröitä ja ansaitsee 1VP",
+  "${0} has the most ${1} tags and earns 2VP": "${0} on pelannut eniten ${1}-ympyröitä ja ansaitsee 2VP",
   "${0} lost ${1} TR": "${0} laski MKL:äänsä ${1} askelta"
 }

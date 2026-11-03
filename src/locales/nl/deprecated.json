@@ -34,5 +34,7 @@
   "${0} cannot turn ${1} face down to gain 3 TR because of unaffordable Reds policy cost": "${0} kan ${1} niet omdraaien om 3 TN te krijgen vanwege de hoge kosten van het DE RODEN-beleid",
   "${0} turned ${1} face down to gain 3 TR": "${0} heeft ${1} omgedraaid om 3 TN te krijgen",
   "${0} gained ${1} TR": "${0} kreeg ${1} TN",
+  "${0} has the most ${1} tags and earns 1VP": "${0} heeft de meeste ${1}-labels en verdient 1 OP",
+  "${0} has the most ${1} tags and earns 2VP": "${0} heeft de meeste ${1}-labels en verdient 2 OP",
   "${0} lost ${1} TR": "${0} verloor ${1} TN"
 }

@@ -128,11 +128,11 @@ export class PathfindersExpansion {
 
     if (typeof(from) === 'object') {
       game.log('${0} raised the ${1} planetary track ${2} step(s)', (b) => {
-        b.player(from).string(tag).number(distance);
+        b.player(from).string(`:tag:${tag}:`).number(distance);
       });
     } else {
       game.log('Global Event ${0} raised the ${1} planetary track ${2} step(s)', (b) => {
-        b.globalEventName(from).string(tag).number(distance);
+        b.globalEventName(from).string(`:tag:${tag}:`).number(distance);
       });
     }
 
@@ -189,11 +189,11 @@ export class PathfindersExpansion {
     switch (reward) {
     case '1vp':
       game.pathfindersData?.vps.push({id: player.id, tag, points: 1});
-      game.log('${0} has the most ${1} tags and earns 1VP', (b) => b.player(player).string(tag));
+      game.log('${0} has the most ${1} tags and earns 1:i:vp:', (b) => b.player(player).string(`:tag:${tag}:`));
       break;
     case '2vp':
       game.pathfindersData?.vps.push({id: player.id, tag, points: 2});
-      game.log('${0} has the most ${1} tags and earns 2VP', (b) => b.player(player).string(tag));
+      game.log('${0} has the most ${1} tags and earns 2:i:vp:', (b) => b.player(player).string(`:tag:${tag}:`));
       break;
     case '3mc':
       player.stock.add(Resource.MEGACREDITS, 3, {log: true});

@@ -72,5 +72,7 @@
   "${0} for ${1} is blocking 1 TR": "${0} pour ${1} bloque 1 NT",
   "${0} gained ${1} TR": "${0} a gagné ${1} NT",
   "${0} lost ${1} TR": "${0} a perdu ${1} NT",
+  "${0} has the most ${1} tags and earns 1VP": "${0} a le plus de badges ${1} et gagne 1 PV",
+  "${0} has the most ${1} tags and earns 2VP": "${0} a le plus de badges ${1} et gagne 2 PV",
   "${0} gained ${1} TR from ${2}": "${0} a gagné ${1} NT de ${2}"
 }

@@ -19,16 +19,12 @@ $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "lib\TmReleaseGuards.ps1")
 
 $cliIgnoredRealtimeGameIds = @(Assert-TmIgnoredRealtimeGameIds -GameIds $IgnoredRealtimeGameId)
-$ignoredRealtimeGameIdLedgerPath = Get-TmIgnoredRealtimeGameIdLedgerPath -Path $IgnoredRealtimeGameIdFile -ExplicitOnly
-$ledgerIgnoredRealtimeGameIds = @()
-if ($null -ne $ignoredRealtimeGameIdLedgerPath) {
-    $ledgerIgnoredRealtimeGameIds = @(Read-TmIgnoredRealtimeGameIdLedger -Path $ignoredRealtimeGameIdLedgerPath)
-}
+# The operator ledger is loaded by default so a promotion cannot silently skip it.
+# Pass -IgnoredRealtimeGameIdFile to point at a different ledger.
+$ignoredRealtimeGameIdLedgerPath = Get-TmIgnoredRealtimeGameIdLedgerPath -Path $IgnoredRealtimeGameIdFile
+$ledgerIgnoredRealtimeGameIds = @(Read-TmIgnoredRealtimeGameIdLedger -Path $ignoredRealtimeGameIdLedgerPath)
 $ignoredRealtimeGameIds = @(Merge-TmIgnoredRealtimeGameIds -Primary $ledgerIgnoredRealtimeGameIds -Additional $cliIgnoredRealtimeGameIds)
-$ignoredRealtimeGameIdLedgerLabel = "not supplied"
-if ($null -ne $ignoredRealtimeGameIdLedgerPath) {
-    $ignoredRealtimeGameIdLedgerLabel = $ignoredRealtimeGameIdLedgerPath
-}
+$ignoredRealtimeGameIdLedgerLabel = $ignoredRealtimeGameIdLedgerPath
 
 # Every ignored game is echoed before the locked remote gate runs, so the exception
 # stays auditable even when the ids come from the operator ledger.

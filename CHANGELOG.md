@@ -27,6 +27,7 @@ All notable changes to the custom Terraforming Mars server are recorded here.
 - Colonies are rendered as the familiar classic colony cards in a two-column card grid, with the compact fleet hangar below.
 - Keyboard-shortcut caps are larger in game buttons/tabs and in the interface help.
 - Mobile player header no longer shows the legal footer over the menu, and the desktop layout switch is hidden on phones.
+- When it is not your turn, the empty action panel no longer keeps half of the left column: it shrinks to the status line and the cards panel fills the column.
 
 ## [2026-10-29] - Production UI release
 

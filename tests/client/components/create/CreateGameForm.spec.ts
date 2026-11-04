@@ -2,6 +2,7 @@ import {mount, shallowMount} from '@vue/test-utils';
 import {creationTransport, globalConfig} from './creationTestConfig';
 import {expect} from 'chai';
 import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
+import BoardSelector from '@/client/components/create/BoardSelector.vue';
 import {CreateGameSettingsStorage} from '@/client/components/create/CreateGameSettingsStorage';
 import {sharedEloState} from '@/client/utils/elo';
 import {ColonyName} from '@/common/colonies/ColonyName';
@@ -176,6 +177,24 @@ describe('CreateGameForm', () => {
     await field.setValue('garbage');
     expect((wrapper.vm as any).customBoardCode).to.be.undefined;
     expect((wrapper.vm as any).customBoardCodeError).to.not.eq('');
+  });
+
+  it('picks the board with the selector instead of a board list', () => {
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    expect(wrapper.findComponent(BoardSelector).exists()).is.true;
+    expect(wrapper.find('#hellas-checkbox').exists()).is.false;
+  });
+
+  it('sends every selected board, so one of them is picked at random', async () => {
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    const vm = wrapper.vm as any;
+    vm.playersCount = 2;
+    vm.boards = [BoardName.HELLAS, BoardName.ELYSIUM];
+    await wrapper.vm.$nextTick();
+
+    expect(vm.newGameConfig.boards).deep.eq([BoardName.HELLAS, BoardName.ELYSIUM]);
+    const payload = JSON.parse(await vm.serializeSettings());
+    expect(payload.boards).deep.eq([BoardName.HELLAS, BoardName.ELYSIUM]);
   });
 
 

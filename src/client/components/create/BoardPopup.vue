@@ -16,16 +16,22 @@
         <h3 v-i18n>{{ group.label }}</h3>
         <div class="create-game-board-list">
           <div v-for="boardName in group.boards" :key="boardName">
-            <input type="checkbox" :value="boardName" :checked="selectedBoards.includes(boardName)" @change="select(boardName, $event)" :id="boardName+'-checkbox'">
-            <label :for="boardName+'-checkbox'" class="expansion-button">
-              <span class="create-game-board-hexagon" :class="boardColorClass(boardName)">&#x2B22;</span>
-              <span class="capitalized" v-i18n>{{ boardName }}</span>
-              <template v-if="boardName === BoardName.AMAZONIS_PLANITIA">&nbsp;<span title="In development">(α)</span></template>
-              &nbsp;<a :href="boardHref(boardName)" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+            <input type="checkbox" :value="boardName" :checked="selectedBoards.includes(boardName)" :disabled="boardName === BoardName.CUSTOM && multiple" @change="select(boardName, $event)" :id="boardName+'-checkbox'">
+            <label :for="boardName+'-checkbox'" class="expansion-button" :title="boardName === BoardName.CUSTOM && multiple ? 'A custom map is always played on its own' : undefined">
+              <template v-if="boardName === BoardName.CUSTOM">
+                <span class="create-game-board-hexagon create-game-random">&#x2B22;</span>
+                <span v-i18n>Custom</span>:&nbsp;<span>{{ customBoardName }}</span>
+              </template>
+              <template v-else>
+                <span class="create-game-board-hexagon" :class="boardColorClass(boardName)">&#x2B22;</span>
+                <span class="capitalized" v-i18n>{{ boardName }}</span>
+                <template v-if="boardName === BoardName.AMAZONIS_PLANITIA">&nbsp;<span title="In development">(α)</span></template>
+                &nbsp;<a v-if="WIKI_ANCHORS[boardName] !== ''" :href="boardHref(boardName)" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+              </template>
             </label>
           </div>
         </div>
-        <button class="create-game-board-button create-game-board-random" @click="randomSelection(group.randomBoards)" v-i18n>{{ group.randomTitle }}</button>
+        <button v-if="group.randomTitle !== ''" class="create-game-board-button create-game-board-random" @click="randomSelection(group.randomBoards)" v-i18n>{{ group.randomTitle }}</button>
       </div>
     </div>
     <div class="create-game-board-shuffle">
@@ -39,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref} from 'vue';
+import {computed, ref, watch} from 'vue';
 import PopupPanel from '@/client/components/common/PopupPanel.vue';
 import {BoardName} from '@/common/boards/BoardName';
 import {boardColorClass} from '@/client/components/create/boardOptions';
@@ -77,6 +83,8 @@ const props = defineProps<{
   boards: Array<BoardName>;
   /** True when the board's tiles are randomized. */
   shuffleMap: boolean;
+  /** Name of the loaded map-code board; adds it to the choices, always on its own. */
+  customBoardName?: string;
 }>();
 
 /** Boards currently checked in the popup. */
@@ -117,7 +125,7 @@ const FAN_GROUP_BOARDS = [
   BoardName.HOLLANDIA,
 ] as const;
 
-const groups: ReadonlyArray<BoardGroup> = [
+const BASE_GROUPS: ReadonlyArray<BoardGroup> = [
   {
     label: 'Official',
     boards: OFFICIAL_GROUP_BOARDS,
@@ -130,7 +138,22 @@ const groups: ReadonlyArray<BoardGroup> = [
     randomTitle: 'Random All',
     randomBoards: [...OFFICIAL_GROUP_BOARDS, ...FAN_GROUP_BOARDS],
   },
-] as const;
+];
+
+/** The board groups shown, with the loaded map-code board as its own group. */
+const groups = computed<ReadonlyArray<BoardGroup>>(() => props.customBoardName === undefined ? BASE_GROUPS :
+  [...BASE_GROUPS, {label: 'Custom', boards: [BoardName.CUSTOM], randomTitle: '', randomBoards: []}]);
+
+// A custom map needs its own layout code, so it is never part of a random draw.
+watch(multiple, (isMultiple) => {
+  if (isMultiple && selectedBoards.value.includes(BoardName.CUSTOM)) {
+    selectedBoards.value = selectedBoards.value.filter((board) => board !== BoardName.CUSTOM);
+    if (selectedBoards.value.length === 0) {
+      selectedBoards.value = [BoardName.THARSIS];
+    }
+    emit('update:boards', [...selectedBoards.value]);
+  }
+});
 
 /** The wiki URL describing `boardName`. */
 function boardHref(boardName: BoardName): string {

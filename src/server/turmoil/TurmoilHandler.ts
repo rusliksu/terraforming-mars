@@ -194,7 +194,7 @@ export class TurmoilHandler {
       const policyId = player.game.gameOptions.morePartiesExpansion ? 'kp01' : 'kp02';
       if (PartyHooks.shouldApplyPolicy(player, PartyName.KELVINISTS, policyId)) {
         player.stock.add(Resource.MEGACREDITS, steps * 3);
-        player.game.log('${0} gained ${1} M€ from Turmoil ${2} policy', (b) =>
+        player.game.log('${0} gained ${1}:r:mc: from Turmoil ${2} policy', (b) =>
           b.player(player).number(steps * 3).partyName(PartyName.KELVINISTS));
       }
     }

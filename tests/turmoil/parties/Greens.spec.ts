@@ -46,7 +46,7 @@ describe('Greens', () => {
 
     addGreenery(player, '10');
     expect(player.megaCredits).to.eq(4);
-    expect(game.gameLog.map(formatMessage)).includes('blue gained 4 M€ from Turmoil Greens policy');
+    expect(game.gameLog.map(formatMessage)).includes('blue gained 4:r:mc: from Turmoil Greens policy');
   });
 
   it('Ruling policy 2: When you place a tile, gain 1 plant', () => {

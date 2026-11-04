@@ -321,15 +321,15 @@ describe('Turmoil', () => {
     setRulingPartyByName(game, PartyName.GREENS, 'gp03');
     TurmoilHandler.applyOnCardPlayedEffect(player, new ProtectedValley());
     runAllActions(game);
-    expectLog('${0} gained ${1} M€ from Turmoil ${2} policy');
+    expectLog('${0} gained ${1}:r:mc: from Turmoil ${2} policy');
 
     setRulingPartyByName(game, PartyName.MARS, 'mp02');
     TurmoilHandler.applyOnCardPlayedEffect(player, new StripMine());
-    expectLog('${0} gained ${1} M€ from Turmoil ${2} policy', PartyName.MARS);
+    expectLog('${0} gained ${1}:r:mc: from Turmoil ${2} policy', PartyName.MARS);
 
     setRulingPartyByName(game, PartyName.KELVINISTS, 'kp02');
     game.increaseTemperature(player, 1);
-    expectLog('${0} gained ${1} M€ from Turmoil ${2} policy', PartyName.KELVINISTS);
+    expectLog('${0} gained ${1}:r:mc: from Turmoil ${2} policy', PartyName.KELVINISTS);
 
     setRulingPartyByName(game, PartyName.KELVINISTS, 'kp04');
     game.addTile(player, game.board.getAvailableSpacesOnLand(player)[0], {tileType: TileType.CITY});

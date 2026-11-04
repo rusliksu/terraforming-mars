@@ -88,7 +88,7 @@ describe('ActionLogRow', () => {
     const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played Great Dam', []);
     const production = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 2 energy production', []);
     production.effect = {kind: 'resource', resource: 'energy', production: true, amount: 2, player: 'blue'};
-    const oceanBonus = new LogMessage(LogMessageType.DEFAULT, '${0} gained ${1} M€ from ${2} ocean(s)', [
+    const oceanBonus = new LogMessage(LogMessageType.DEFAULT, '${0} gained ${1}:r:mc: from ${2} :i:ocean:', [
       {type: LogMessageDataType.PLAYER, value: 'blue'},
       {type: LogMessageDataType.RAW_STRING, value: '6'},
       {type: LogMessageDataType.RAW_STRING, value: '3'},

@@ -86,7 +86,7 @@ describe('Reds', () => {
     player.increaseTerraformRating();
     game.deferredActions.runNext();
     expect(player.megaCredits).to.eq(0);
-    expect(game.gameLog.map(formatMessage)).includes('blue paid 3 M€ for Turmoil Reds policy');
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 3:r:mc: for Turmoil Reds policy');
   });
 
   it('Ruling policy 2: When you place a tile, pay 3 M€ or as much as possible', () => {
@@ -138,7 +138,7 @@ describe('Reds', () => {
     runAllActions(game);
 
     expect(player.megaCredits).to.eq(0);
-    expect(game.gameLog.map(formatMessage)).includes('blue paid 3 M€ for Turmoil Reds policy');
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 3:r:mc: for Turmoil Reds policy');
   });
 
   it('Ruling policy 2: reports a partial payment when the player cannot pay in full', () => {
@@ -149,7 +149,7 @@ describe('Reds', () => {
     runAllActions(game);
 
     expect(player.megaCredits).to.eq(0);
-    expect(game.gameLog.map(formatMessage)).includes('blue paid 2 M€ for Turmoil Reds policy');
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 2:r:mc: for Turmoil Reds policy');
   });
 
   it('Ruling policy 3: states who used the party action and what was actually paid', () => {
@@ -162,7 +162,7 @@ describe('Reds', () => {
     runAllActions(game);
 
     expect(player.megaCredits).to.eq(3);
-    expect(game.gameLog.map(formatMessage)).includes('blue paid 4 M€ for Turmoil Reds policy');
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 4:r:mc: for Turmoil Reds policy');
   });
 
   it('Ruling policy 3: Pay 4 M€ to reduce a non-maxed global parameter 1 step', () => {

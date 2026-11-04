@@ -116,8 +116,15 @@ function globalIconCount(amount: number): number {
   return count >= 1 && count <= 3 ? count : 1;
 }
 
+// Saved replays keep the message they were recorded with, before the ocean and M€ icons.
+const OCEAN_BONUS_MESSAGES = [
+  '${0} gained ${1}:r:mc: from ${2} :i:ocean:',
+  '${0} gained ${1}:r:mc: from ${2} ocean(s)',
+  '${0} gained ${1} M€ from ${2} ocean(s)',
+];
+
 function oceanBonusEffect(message: LogMessage): EffectSummary | undefined {
-  if (message.message !== '${0} gained ${1} M€ from ${2} ocean(s)' || message.data.length !== 3 ||
+  if (!OCEAN_BONUS_MESSAGES.includes(message.message) || message.data.length !== 3 ||
       message.data[0].type !== LogMessageDataType.PLAYER ||
       message.data[1].type !== LogMessageDataType.RAW_STRING ||
       message.data[2].type !== LogMessageDataType.RAW_STRING) {

@@ -44,6 +44,10 @@ describe('Wrybit compiled visual styles', () => {
     expect(declaration('.wrybit-ui .players-table-row--vanger .players-table-corporation', 'opacity')).eq('0.88');
     expect(declaration('.wrybit-ui .players-table-row--saturn .players-table-corporation', 'opacity')).eq('1');
     expect(declaration('.wrybit-ui .players-table-row--saturnrings .players-table-corporation', 'opacity')).eq('1');
+    // Idle action block (not this player's turn) shrinks so the cards panel fills the column
+    const idleActions = '.wrybit-ui .player-home--fixed:not(.player-home--acting) .player-home-columns__main > .player_home_block--actions';
+    expect(declaration(idleActions, 'flex')).eq('0 1 auto');
+    expect(declaration(idleActions, 'min-height')).eq('0');
     stylesheet.walkDecls((decl) => {
       for (const match of decl.value.matchAll(/url\(['"]?([^'")]+)['"]?\)/g)) {
         expect(match[1].replace(/^\.\//, '')).matches(/^assets\//);

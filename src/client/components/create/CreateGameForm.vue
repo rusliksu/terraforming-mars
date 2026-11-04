@@ -273,27 +273,11 @@
             </div>
 
             <div class="create-game-page-column">
-              <h4 v-i18n>Board</h4>
-
-              <div v-if="customBoardCode !== undefined" class="create-game-subsection-label">
-                <input type="radio" :value="BoardNameEnum.CUSTOM" name="board" v-model="board" id="custom-board-checkbox">
-                <label for="custom-board-checkbox" class="expansion-button">
-                  <span class="create-game-board-hexagon create-game-random">&#x2B22;</span>
-                  <span>Custom: {{ customBoardName }}</span>
-                </label>
-              </div>
-
-              <div v-for="boardName in boardChoices" :key="boardName">
-                <div v-if="boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
-                <input type="radio" :value="boardName" name="board" v-model="board" :id="boardName+'-checkbox'">
-                <label :for="boardName+'-checkbox'" class="expansion-button">
-                  <span :class="getBoardColorClass(boardName)">&#x2B22;</span>
-                  <span class="capitalized" v-i18n>{{ boardName }}</span>
-                  <template v-if="boardName !== RandomBoardOption.OFFICIAL && boardName !== RandomBoardOption.ALL">
-                    &nbsp;<a :href="boardHref(boardName)" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                  </template>
-                </label>
-              </div>
+              <BoardSelector
+                v-model:boards="boards"
+                v-model:shuffleMap="shuffleMapOption"
+                :customBoardName="customBoardCode !== undefined ? customBoardName : undefined"
+              />
 
               <PresentationHost :hosts="creationHosts.mars" />
             </div>
@@ -392,10 +376,6 @@
                 </label>
               </template>
 
-              <input type="checkbox" v-model="shuffleMapOption" id="shuffleMap-checkbox">
-              <label for="shuffleMap-checkbox">
-                <span v-i18n>Randomize board tiles</span>&nbsp;<a :href="wikiUrls.randomizeBoardTiles" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-              </label>
 
               <input type="checkbox" v-model="seededGame" id="seeded-checkbox">
               <label for="seeded-checkbox">
@@ -886,6 +866,7 @@ import {defineComponent, nextTick} from 'vue';
 import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
 import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
 import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import BoardSelector from '@/client/components/create/BoardSelector.vue';
 import {CreateEditor, CreatePresentationBinding, useCreateControls, useCreatePresentation} from '@/client/wrybit/create/presentation';
 import {defaultCeoSelection} from './ceoSelection';
 import {useBoardPreview} from './useBoardPreview';
@@ -905,6 +886,7 @@ import {
 import type {PlayerProfile} from '@/common/PlayerProfiles';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
+import {boardOptions} from '@/common/boards/randomBoardOptions';
 import {decodeCustomBoard} from '@/common/boards/customBoardCodec';
 import {decodeSimpleBoard} from '@/common/boards/simpleBoardCodec';
 import {CardName} from '@/common/cards/CardName';
@@ -1080,6 +1062,7 @@ export default defineComponent({
   components: {
     PresentationHost,
     InputPortal,
+    BoardSelector,
     AppButton,
     CardsFilter,
     CeosFilter,
@@ -1294,12 +1277,34 @@ export default defineComponent({
     discordLoginConfigured(): boolean {
       return raw_settings.discordClientId !== '';
     },
+    /** Every board the Wrybit layout can offer; a custom board needs its own map code. */
+    availableBoards(): Array<BoardName> {
+      return boardOptions(RandomBoardOption.ALL);
+    },
+    /** The board the (Wrybit) board preview draws: the chosen board, or a random example for a multi-board pick. */
+    previewBoard(): BoardNameType {
+      const boards = this.boards as ReadonlyArray<BoardNameType>;
+      if (boards.length === 1) {
+        return boards[0];
+      }
+      const officialBoards: ReadonlyArray<BoardNameType> = boardOptions(RandomBoardOption.OFFICIAL);
+      return boards.every((board) => officialBoards.includes(board)) ? RandomBoardOption.OFFICIAL : RandomBoardOption.ALL;
+    },
+    /** True when more than one board can be drawn, including the legacy single random options. */
+    isMultiBoardSelection(): boolean {
+      const boards = this.boards as ReadonlyArray<BoardNameType>;
+      return boards.length > 1 || boards.includes(RandomBoardOption.OFFICIAL) || boards.includes(RandomBoardOption.ALL);
+    },
+    isCustomBoardSelection(): boolean {
+      return this.boards.includes(BoardName.CUSTOM);
+    },
     boardPreviewRequest(): BoardPreviewRequest | undefined {
       if (this.creationPresentation === undefined || this.seededGame) {
         return undefined;
       }
-      return {board: this.board, seed: this.seed, shuffleMapOption: this.shuffleMapOption,
-        expansions: {...this.expansions}, includedCards: [...this.includedCards], customBoardCode: this.customBoardCode || undefined};
+      return {board: this.previewBoard, seed: this.seed, shuffleMapOption: this.shuffleMapOption,
+        expansions: {...this.expansions}, includedCards: [...this.includedCards],
+        customBoardCode: this.isCustomBoardSelection ? this.customBoardCode : undefined};
     },
     customListBindings(): Array<CustomListBinding> {
       const corporationPool = this.getSelectableCustomCorporations();
@@ -1318,14 +1323,14 @@ export default defineComponent({
     creationBinding(): CreatePresentationBinding {
       return {model: projectCreateModel(this), hosts: this.creationHosts, customLists: this.customListBindings,
         boardPreview: this.boardPreviewRequest === undefined ? undefined : {...this.boardPreviewState,
-          showBoardName: this.board === RandomBoardOption.ALL || this.board === RandomBoardOption.OFFICIAL,
-          canRedraw: this.board === RandomBoardOption.ALL || this.board === RandomBoardOption.OFFICIAL || (this.shuffleMapOption && this.board !== BoardName.CUSTOM),
+          showBoardName: this.isMultiBoardSelection,
+          canRedraw: this.isMultiBoardSelection || (this.shuffleMapOption && !this.isCustomBoardSelection),
           redraw: this.redrawBoardPreview},
         setField: (key, value) => setCreateField(this, key, value),
         setExpansion: (key, enabled) => {
           this.expansions[key] = enabled;
         },
-        boards: this.boards, wikiUrls: this.wikiUrls, boardClass: this.getBoardColorClass, boardHref: this.boardHref,
+        boards: this.availableBoards, wikiUrls: this.wikiUrls, boardClass: this.getBoardColorClass, boardHref: this.boardHref,
         agendasEnabled: this.isPoliticalAgendasExtensionEnabled(), toggleAgendas: this.politicalAgendasExtensionToggle,
         hasValidationProblems: this.hasValidationProblems, hasBlockingValidationErrors: this.hasBlockingValidationErrors,
         validationErrors: this.validationErrors, showValidation: () => {
@@ -1354,7 +1359,7 @@ export default defineComponent({
         customPreludes: this.customPreludes,
         bannedCards: this.bannedCards,
         includedCards: this.includedCards,
-        boards: [this.board as BoardName],
+        boards: this.boards,
         seed: this.seed,
         solarPhaseOption: this.solarPhaseOption,
         aresExtremeVariant: this.aresExtremeVariant,
@@ -1418,12 +1423,6 @@ export default defineComponent({
     typedRefs(): Refs {
       return this.$refs as Refs;
     },
-    RandomBoardOption(): typeof RandomBoardOption {
-      return RandomBoardOption;
-    },
-    BoardNameEnum(): typeof BoardName {
-      return BoardName;
-    },
     RandomMAOptionType(): typeof RandomMAOptionType {
       return RandomMAOptionType;
     },
@@ -1440,23 +1439,6 @@ export default defineComponent({
       set(value: BoardName | RandomBoardOption) {
         this.boards = [value as BoardName];
       },
-    },
-    boardChoices() {
-      return [
-        BoardName.THARSIS,
-        BoardName.HELLAS,
-        BoardName.ELYSIUM,
-        RandomBoardOption.OFFICIAL,
-        BoardName.UTOPIA_PLANITIA,
-        BoardName.VASTITAS_BOREALIS_NOVA,
-        BoardName.TERRA_CIMMERIA_NOVA,
-        BoardName.ARABIA_TERRA,
-        BoardName.AMAZONIS,
-        BoardName.TERRA_CIMMERIA,
-        BoardName.VASTITAS_BOREALIS,
-        BoardName.HOLLANDIA,
-        RandomBoardOption.ALL,
-      ];
     },
   },
   methods: {
@@ -1483,8 +1465,7 @@ export default defineComponent({
       if (request === undefined) {
         return;
       }
-      const randomBoard = request.board === RandomBoardOption.ALL || request.board === RandomBoardOption.OFFICIAL;
-      if (request.shuffleMapOption && request.board !== BoardName.CUSTOM && !randomBoard) {
+      if (request.shuffleMapOption && !this.isCustomBoardSelection && !this.isMultiBoardSelection) {
         this.seed = Math.random();
       } else {
         this.loadBoardPreview(request);
@@ -2843,7 +2824,6 @@ export default defineComponent({
       const customPreludes = this.customPreludes;
       const bannedCards = this.bannedCards;
       const includedCards = this.includedCards;
-      const board = this.board;
       const seed = this.seed;
       const politicalAgendasExtension = this.politicalAgendasExtension;
       const undoOption = this.undoOption;
@@ -2905,8 +2885,8 @@ export default defineComponent({
         customPreludes,
         bannedCards,
         includedCards,
-        boards: [board as BoardName],
-        customBoardCode: this.board === BoardName.CUSTOM ? this.customBoardCode : undefined,
+        boards: this.boards,
+        customBoardCode: this.isCustomBoardSelection ? this.customBoardCode : undefined,
         customMoonBoardCode: this.customMoonBoardCodeError === '' && this.customMoonBoardCodeInput.trim() !== '' ?
           this.customMoonBoardCodeInput.trim() : undefined,
         customVenusSurfaceBoardCode: this.customVenusSurfaceBoardCodeError === '' && this.customVenusSurfaceBoardCodeInput.trim() !== '' ?

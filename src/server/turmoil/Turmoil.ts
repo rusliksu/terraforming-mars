@@ -477,6 +477,7 @@ export class Turmoil {
         ConglomeratesExpansion.rewardRulingTeam(game, this.rulingParty);
       }
     }
+    game.log('The ruling party is: ${0}', (b) => b.partyName(this.rulingParty.name));
 
     let newChairman = this.rulingParty.partyLeader || 'NEUTRAL';
     if (game.beholdTheEmperor === true && this.chairman !== undefined) {

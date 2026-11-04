@@ -32,5 +32,8 @@ describe('ByElection', () => {
     const rulingParty = turmoil.rulingParty;
     expect(rulingParty.name).to.eq(PartyName.MARS);
     expect(turmoil.politicalAgendasData.agendas.get(PartyName.MARS)).deep.eq({bonusId: 'mb01', policyId: 'mp01'});
+
+    const log = game.gameLog.find((message) => message.message === 'The ruling party is: ${0}');
+    expect(log?.data[0].value).to.eq(PartyName.MARS);
   });
 });

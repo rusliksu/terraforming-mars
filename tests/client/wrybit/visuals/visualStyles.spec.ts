@@ -49,13 +49,13 @@ describe('Wrybit compiled visual styles', () => {
     expect(declaration(idleActions, 'flex')).eq('0 1 auto');
     expect(declaration(idleActions, 'min-height')).eq('0');
     // Tag cells stack the icon above the count; unplayed tags recede and the event group has a divider
-    expect(declaration('.wrybit-ui .players-table-cell--tag .tag-count', 'zoom')).eq('0.6');
+    expect(declaration('.wrybit-ui .players-table-cell--tag .tag-count', 'zoom')).eq('0.95');
     expect(declaration('.wrybit-ui .players-table-cell--tag-empty .tag-count', 'opacity')).eq('0.45');
     expect(declaration('.wrybit-ui .players-table-tag-separator::after', 'width')).eq('1px');
-    expect(declaration('.wrybit-ui .players-table-counter', 'font-size')).eq('18px');
+    expect(declaration('.wrybit-ui .players-table-counter', 'font-size')).eq('21px');
     // The header row is gone: the controls sit above the table and the score cells stack their icons
     expect(declaration('.wrybit-ui .players-table-controls', 'display')).eq('flex');
-    expect(declaration('.wrybit-ui .players-table-cell--score .tag-count', 'zoom')).eq('0.5');
+    expect(declaration('.wrybit-ui .players-table-cell--score .tag-count', 'zoom')).eq('0.75');
     stylesheet.walkDecls((decl) => {
       for (const match of decl.value.matchAll(/url\(['"]?([^'")]+)['"]?\)/g)) {
         expect(match[1].replace(/^\.\//, '')).matches(/^assets\//);

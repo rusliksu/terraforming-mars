@@ -11,6 +11,8 @@ import {
   DEFAULT_PLAYER_COLORS,
 } from '@/common/Color';
 import {BoardName} from '@/common/boards/BoardName';
+import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
+import {boardOptions} from '@/common/boards/randomBoardOptions';
 import {DEFAULT_EXPANSIONS} from '@/common/cards/GameModule';
 import {JSONObject} from '@/common/Types';
 import {NewGameConfig} from '@/common/game/NewGameConfig';
@@ -197,6 +199,17 @@ describe('CreateGameForm', () => {
     expect(payload.boards).deep.eq([BoardName.HELLAS, BoardName.ELYSIUM]);
   });
 
+
+  it('restores a legacy random board selection as the boards it stands for', async () => {
+    new CreateGameSettingsStorage(window.localStorage).saveSettings(createGameSettings({
+      boards: [RandomBoardOption.ALL],
+    }));
+
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.vm as any).boards).deep.eq(boardOptions(RandomBoardOption.ALL));
+  });
 
   it('restores the last saved game settings on load', async () => {
     new CreateGameSettingsStorage(window.localStorage).saveSettings(createGameSettings({

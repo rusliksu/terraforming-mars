@@ -15,6 +15,7 @@ All notable changes to the custom Terraforming Mars server are recorded here.
 - Player table rows and resource/tag icons are larger and easier to scan.
 - Every player row now carries the tag icons itself: tags the player has not played stay in place dimmed, the event-tag group is set off by a divider, and the tag counters are larger.
 - The player-table header row is gone: every row now carries its own resource, tag and score icons, and the game menu plus the section toggles sit in a compact strip above the table.
+- The player-table sections follow the classic bar: resources, then hand cards, actions, VP, TR and the played-cards count, then the tags on the right. The section toggles are gone (the table always shows everything) and rows, icons and counters are larger, closer to the classic player bar.
 - Narrow player table keeps VP/TR/cards/actions plus compact goods and played-tag strips instead of showing only resource numbers; the timer stays visible next to a passed status.
 - Reserved player fleets use a coloured hull instead of the neutral grey shuttle; the bottom Fleets area lists only ships that have not launched.
 - Player-table rows for light reserved identities (pearl, gold, saturn ...) switch the text inside the row to the persona's classic dark tone, so the white counters and the muted corporation name no longer disappear on the light surface.

@@ -1,7 +1,7 @@
 <template>
   <div :class="['players-table', {'players-table--escape-velocity': escapeVelocity}]" :style="{'--wrybit-players-table-columns': template, '--wrybit-players-table-cell-count': cellCount}">
     <!-- Player list as a table (only visible in the two-column layout, see players_table.less) -->
-    <PlayersTableHeader :visibility="effectiveVisibility" :autoHidden="fitted.autoHidden" @toggle="toggleSection" />
+    <PlayersTableHeader />
     <div class="players-table-rows">
       <PlayersTableRow v-for="row in rows" :key="row.player.color"
         :player="row.player" :readOnly="readOnly"
@@ -34,14 +34,12 @@ import {playerGoods} from '@/client/wrybit/visuals/overview/playerGoods';
 import {measureGoodsBoxWidths} from '@/client/wrybit/visuals/overview/goodsBoxWidths';
 import {mobileLandscape, mobileLayout} from '@/client/wrybit/visuals/common/mobileLayout';
 import {
-  DESKTOP_SECTION_ORDER, GOODS_COUNT, MOBILE_SECTION_ORDER, SCORE_COUNT, PlayersTableRowModel, SectionVisibility, TableSection, TagColumnGroups,
-  FittedVisibility, columnTemplate, fitToWidth, nameColumnWidth, loadPreferredSection, loadSectionVisibility, savePreferredSection, saveSectionVisibility,
+  DEFAULT_VISIBILITY, DESKTOP_SECTION_ORDER, GOODS_COUNT, MOBILE_SECTION_ORDER, SCORE_COUNT, PlayersTableRowModel, SectionVisibility, TableSection, TagColumnGroups,
+  FittedVisibility, columnTemplate, fitToWidth, nameColumnWidth,
 } from '@/client/wrybit/visuals/overview/playersTableLayout';
 
 type DataModel = {
   visibility: SectionVisibility;
-  // Most recently enabled section – stays visible longest when space is short
-  preferredSection: TableSection | undefined;
   // Width of the table; 0 while it is invisible or not yet measured
   availableWidth: number;
   resizeObserver: ResizeObserver | undefined;
@@ -69,8 +67,7 @@ export default defineComponent({
   },
   data(): DataModel {
     return {
-      visibility: loadSectionVisibility(),
-      preferredSection: loadPreferredSection(),
+      visibility: {...DEFAULT_VISIBILITY},
       availableWidth: 0,
       resizeObserver: undefined,
       goodsBoxWidths: new Array(GOODS_COUNT).fill(0),
@@ -142,7 +139,7 @@ export default defineComponent({
     fitted(): FittedVisibility {
       const wanted = {...this.visibility, tags: this.visibility.tags && this.tagColumns.length > 0};
       // The transposed table (mobile.less) grows downward, so no section has to give way for lack of space
-      return fitToWidth(wanted, this.tagColumns, this.transposed ? 0 : this.availableWidth, this.preferredSection, this.nameWidth, this.goodsBoxWidths, this.goodsCount);
+      return fitToWidth(wanted, this.tagColumns, this.transposed ? 0 : this.availableWidth, this.nameWidth, this.goodsBoxWidths, this.goodsCount);
     },
     effectiveVisibility(): SectionVisibility {
       return this.fitted.visibility;
@@ -155,7 +152,7 @@ export default defineComponent({
     cellCount(): number {
       const visibility = this.effectiveVisibility;
       const tagCells = this.tagColumns.reduce((sum, group) => sum + group.length, 0) + Math.max(0, this.tagColumns.length - 1);
-      return 1 + (visibility.goods ? this.goodsCount : 0) + (visibility.tags ? tagCells : 0) + (visibility.score ? SCORE_COUNT : 0) + 1;
+      return 1 + (visibility.goods ? this.goodsCount : 0) + (visibility.score ? SCORE_COUNT + 1 : 0) + (visibility.tags ? tagCells : 0);
     },
     template(): string {
       return columnTemplate(this.effectiveVisibility, this.tagColumns, this.nameWidth, this.goodsBoxWidths, this.goodsCount);
@@ -186,20 +183,6 @@ export default defineComponent({
       if (widths.some((width, index) => width !== this.goodsBoxWidths[index])) {
         this.goodsBoxWidths = widths;
       }
-    },
-    // A section hidden only for lack of space gets preferred (another one makes room) instead of being turned off
-    toggleSection(section: TableSection) {
-      if (this.fitted.autoHidden.includes(section)) {
-        this.preferredSection = section;
-      } else {
-        const turnedOn = !this.visibility[section];
-        this.visibility = {...this.visibility, [section]: turnedOn};
-        saveSectionVisibility(this.visibility);
-        if (turnedOn) {
-          this.preferredSection = section;
-        }
-      }
-      savePreferredSection(this.preferredSection);
     },
   },
 });

@@ -34,6 +34,13 @@ describe('Wrybit player table with our public data', () => {
       expect(wrapper.get('[data-test="tag-galactic"]').classes()).not.contains('players-table-cell--tag-empty');
       // Main tags and the event group are separated by a divider
       expect(wrapper.findAll('.players-table-row--player .players-table-tag-separator')).has.length(1);
+      // No header row: the score icons moved into the row itself, the toggles stay above the table
+      expect(wrapper.find('.players-table-head').exists()).is.false;
+      expect(wrapper.find('[data-test="toggle-tags"]').exists()).eq(true);
+      expect(wrapper.find('.players-table-cell--score .tag-vp').exists()).eq(true);
+      expect(wrapper.find('.players-table-cell--score .tag-tr').exists()).eq(true);
+      expect(wrapper.find('.players-table-cell--score .tag-cards').exists()).eq(true);
+      expect(wrapper.find('.players-table-cell--score .tag-action-card').exists()).eq(true);
       expect(wrapper.get('[data-test="tag-power"] .players-table-discount').text()).eq('-3');
       expect(wrapper.get('[data-test="discount-all"]').text()).eq('*');
       expect(wrapper.get('[data-test="vp"]').text()).eq('?');

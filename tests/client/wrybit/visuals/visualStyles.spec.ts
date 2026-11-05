@@ -50,7 +50,7 @@ describe('Wrybit compiled visual styles', () => {
     expect(declaration(idleActions, 'min-height')).eq('0');
     // Tag cells stack the icon above the count; unplayed tags recede and the event group has a divider
     expect(declaration('.wrybit-ui .players-table-cell--tag .tag-count', 'zoom')).eq('0.6');
-    expect(declaration('.wrybit-ui .players-table-cell--tag-empty .tag-count', 'opacity')).eq('0.28');
+    expect(declaration('.wrybit-ui .players-table-cell--tag-empty .tag-count', 'opacity')).eq('0.45');
     expect(declaration('.wrybit-ui .players-table-tag-separator::after', 'width')).eq('1px');
     expect(declaration('.wrybit-ui .players-table-counter', 'font-size')).eq('18px');
     stylesheet.walkDecls((decl) => {

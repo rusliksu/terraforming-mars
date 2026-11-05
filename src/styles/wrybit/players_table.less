@@ -3,11 +3,11 @@
 //   Name | Resources (stock large, production small) | Tags | Score | played cards
 // PlayersTable sets the column grid as --wrybit-players-table-columns (playersTableLayout.ts).
 
-@players-table-row-height: 78px;
-@players-table-own-row-height: 88px;
+@players-table-row-height: 92px;
+@players-table-own-row-height: 102px;
 // Escape Velocity: third line (clock) under name and corporation
-@players-table-escape-velocity-row-height: 88px;
-@players-table-escape-velocity-own-row-height: 96px;
+@players-table-escape-velocity-row-height: 102px;
+@players-table-escape-velocity-own-row-height: 110px;
 @players-table-row-gap: 4px;
 // Own row set slightly apart from the others
 @players-table-own-row-offset: 5px;
@@ -300,7 +300,7 @@ each(@players, {
   line-height: 1;
 
   .tag-count {
-    zoom: 0.95;
+    zoom: 1;
     flex: none;
   }
 }
@@ -317,7 +317,7 @@ each(@players, {
   line-height: 1;
 
   .tag-count {
-    zoom: 0.75;
+    zoom: 0.8;
     margin: 0;
     flex: none;
   }
@@ -523,8 +523,8 @@ each(@players, {
   // fit (PlayersTable: goodsBoxWidths, max-width set per column so all boxes of a column match)
   width: calc(100% - 8px);
   min-width: max-content;
-  max-width: 80px;
-  height: 60px;
+  max-width: 84px;
+  height: 72px;
   padding: 0 6px 0 9px;
   border-radius: 5px;
   background: rgba(0, 0, 0, 0.3);
@@ -532,19 +532,19 @@ each(@players, {
 }
 
 .players-table-row--me .players-table-goods {
-  height: 68px;
+  height: 80px;
 }
 
 .players-table-goods-stock {
   display: inline-flex; // Room for the shield before the number (protected stock)
   align-items: center;
   gap: 3px;
-  font-size: 28px;
+  font-size: 30px;
   color: #fff;
 }
 
 .players-table-row--me .players-table-goods-stock {
-  font-size: 31px;
+  font-size: 33px;
 }
 
 .players-table-goods--empty .players-table-goods-stock {
@@ -552,7 +552,7 @@ each(@players, {
 }
 
 .players-table-goods-production {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1;
   padding: 3px 4px 2px;
   border-radius: 3px;
@@ -656,12 +656,12 @@ each(@players, {
 // Counters (tags, score): deliberately small and quieter than the resources
 .players-table-counter {
   font-family: Prototype, sans-serif;
-  font-size: 21px;
+  font-size: 23px;
   color: @players-table-counter-color;
 }
 
 .players-table-row--me .players-table-counter {
-  font-size: 22px;
+  font-size: 24px;
 }
 
 .players-table-counter--zero {

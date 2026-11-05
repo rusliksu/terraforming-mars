@@ -24,6 +24,29 @@ function safeBoolean(val: JSONValue): boolean {
   throw new Error(`${val} is not boolean`);
 }
 
+/*
+ * Expands random-option entries in a saved board list into the boards they stand for and drops
+ * duplicates. The previous create form stored its radio value in `boards`, so older settings and
+ * links can still carry 'random official' or 'random all' there; the board picker expects a concrete
+ * board list.
+ */
+function expandLegacyBoardSelection(boards: Array<JSONValue>): Array<JSONValue> {
+  const expanded: Array<JSONValue> = [];
+  for (const board of boards) {
+    const choices = board === RandomBoardOption.OFFICIAL || board === RandomBoardOption.ALL ?
+      boardOptions(board) : [board];
+    for (const choice of choices) {
+      if (!expanded.includes(choice)) {
+        expanded.push(choice);
+      }
+    }
+  }
+  if (expanded.length === 0) {
+    return [BoardName.THARSIS];
+  }
+  return expanded;
+}
+
 export class JSONProcessor {
   public model: CreateGameModel;
   public warnings: Array<string>;
@@ -158,8 +181,8 @@ export class JSONProcessor {
         boardOptions(board) :
         [board];
     }
-    if (Array.isArray(json.boards) && json.boards.length === 0) {
-      json.boards = [BoardName.THARSIS];
+    if (Array.isArray(json.boards)) {
+      json.boards = expandLegacyBoardSelection(json.boards);
     }
 
     const ignoredFields = [

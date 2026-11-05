@@ -27,20 +27,32 @@
 
       <template v-if="section === 'score' && visibility.score">
         <div class="players-table-divider"></div>
-        <div class="players-table-cell"><span class="players-table-counter" data-test="vp">{{ victoryPoints }}</span></div>
-        <div class="players-table-cell"><span class="players-table-counter" data-test="tr">{{ player.terraformRating }}</span></div>
-        <div class="players-table-cell">
+        <div class="players-table-cell players-table-cell--score">
+          <div class="tag-count tag-vp tag-type-main tooltip tooltip-bottom" :data-tooltip="$t('Victory Points')"></div>
+          <span class="players-table-counter" data-test="vp">{{ victoryPoints }}</span>
+        </div>
+        <div class="players-table-cell players-table-cell--score">
+          <div class="tag-count tag-tr tag-type-main tooltip tooltip-bottom" :data-tooltip="$t('Terraform Rating')"></div>
+          <span class="players-table-counter" data-test="tr">{{ player.terraformRating }}</span>
+        </div>
+        <div class="players-table-cell players-table-cell--score">
+          <div class="tag-count tag-cards tag-type-main tooltip tooltip-bottom" :data-tooltip="$t('Cards in hand')"></div>
           <span class="players-table-counter" data-test="hand">{{ player.cardsInHandNbr ?? 0 }}</span>
           <span v-if="handDiscount !== ''" :class="['players-table-discount', {'players-table-discount--wide': handDiscount.length > 1}]" data-test="discount-all" :title="handDiscountTitle">{{ handDiscount.replace('*', '') }}<b v-if="handDiscount.endsWith('*')" class="players-table-discount-mark">*</b></span>
         </div>
-        <div class="players-table-cell">
+        <div class="players-table-cell players-table-cell--score">
+          <div class="tag-count tag-action-card tooltip tooltip-bottom" :data-tooltip="$t('The number of available actions on active cards')">
+            <div class="blue-stripe"></div>
+            <div class="red-arrow"></div>
+          </div>
           <span :class="['players-table-counter', {'players-table-counter--zero': player.availableBlueCardActionCount === 0}]" data-test="actions">{{ player.availableBlueCardActionCount }}</span>
         </div>
       </template>
     </template>
 
     <div class="players-table-divider"></div>
-    <div class="players-table-cell">
+    <div class="players-table-cell players-table-cell--score">
+      <div class="tag-count tag-cards tag-type-main tooltip tooltip-bottom" :data-tooltip="$t('Played cards')"></div>
       <!-- No own click handler: the click bubbles up to the row; the button stays for keyboard use -->
       <button type="button" class="players-table-played" :aria-label="$t('Played cards')" data-test="played-cards">{{ player.tableau.length }}</button>
     </div>

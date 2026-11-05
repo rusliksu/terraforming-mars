@@ -1,5 +1,5 @@
 // Player list as a table (PlayersTable.vue) – only visible in the two-column layout (player_home_columns.less).
-// Header row with icons once at the top, below it one row per player in a muted player colour:
+// One row per player in a muted player colour, each row carrying its own icons:
 //   Name | Resources (stock large, production small) | Tags | Score | played cards
 // PlayersTable sets the column grid as --wrybit-players-table-columns (playersTableLayout.ts).
 
@@ -8,7 +8,6 @@
 // Escape Velocity: third line (clock) under name and corporation
 @players-table-escape-velocity-row-height: 66px;
 @players-table-escape-velocity-own-row-height: 74px;
-@players-table-head-height: 42px;
 @players-table-row-gap: 4px;
 // Own row set slightly apart from the others
 @players-table-own-row-offset: 5px;
@@ -65,26 +64,6 @@
   border-radius: @players-table-radius;
   // Blur the galaxy background behind the rows so it doesn't shine through harshly
   backdrop-filter: blur(@players-table-blur);
-}
-
-.players-table-head {
-  // Above the player rows, otherwise they cover the tooltips of the header icons (each row is its own layer due to blur)
-  z-index: 2;
-  height: @players-table-head-height;
-  background: rgba(0, 0, 0, 0.5);
-
-  // Icons scaled down (zoom, because the icons use different background sizes)
-  .resource_icon {
-    zoom: 0.9;
-  }
-
-  .tag-count {
-    zoom: 0.75;
-  }
-
-  .tag-type-main {
-    zoom: 0.7;
-  }
 }
 
 // Rows: the icons are the information players scan first, so keep them close to their natural size.
@@ -331,6 +310,19 @@ each(@players, {
   filter: grayscale(0.5);
 }
 
+// Score cells: the label icon sits above the number, same idea as the tag cells
+.players-table-cell--score {
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1;
+
+  .tag-count {
+    zoom: 0.5;
+    margin: 0;
+    flex: none;
+  }
+}
+
 // Divider before the event-tag group: quieter than the section dividers, continuous across rows
 .players-table-tag-separator {
   position: relative;
@@ -347,7 +339,7 @@ each(@players, {
   }
 }
 
-.players-table-head .players-table-tag-separator::after {
+.players-table-rows .players-table-row:first-child .players-table-tag-separator::after {
   top: 4px;
 }
 
@@ -371,7 +363,7 @@ each(@players, {
   }
 }
 
-.players-table-head .players-table-divider::after {
+.players-table-rows .players-table-row:first-child .players-table-divider::after {
   top: 0;
 }
 
@@ -379,16 +371,14 @@ each(@players, {
   bottom: 0;
 }
 
-.players-table-head-label {
-  font-size: 11px;
-  color: #aab;
-}
-
-// Toggle at the front of the header
-.players-table-toggles {
+// Controls above the rows: the game menu and the section toggles. The header row with the column
+// icons is gone – every player row carries its own resource, tag and score icons.
+.players-table-controls {
   display: flex;
+  align-items: center;
   gap: 4px;
   padding-left: 10px;
+  margin-bottom: 8px;
 }
 
 .players-table-toggle {

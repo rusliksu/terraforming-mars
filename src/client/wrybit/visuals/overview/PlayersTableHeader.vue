@@ -27,7 +27,7 @@
       <template v-if="section === 'tags' && visibility.tags">
         <div class="players-table-divider"></div>
         <template v-for="(group, groupIndex) in tagColumns" :key="groupIndex">
-          <div v-if="groupIndex > 0"></div>
+          <div v-if="groupIndex > 0" class="players-table-tag-separator"></div>
           <div class="players-table-cell" v-for="tag in group" :key="tag" :data-test="'tag-head-' + tag">
             <Tag :tag="(tag as CardTag)" size="big" type="secondary" />
           </div>

@@ -28,6 +28,12 @@ describe('Wrybit player table with our public data', () => {
       expect(wrapper.get('[data-test="tag-galactic"]').text()).contains('2');
       // An unplayed tag stays visible with an empty counter, matching the classic player bar.
       expect(wrapper.get('[data-test="tag-animal"]').text()).contains('·');
+      // The row carries the tag icon itself; an unplayed tag keeps it in place, dimmed
+      expect(wrapper.get('[data-test="tag-galactic"] .tag-count').classes()).contains('tag-galactic');
+      expect(wrapper.get('[data-test="tag-animal"]').classes()).contains('players-table-cell--tag-empty');
+      expect(wrapper.get('[data-test="tag-galactic"]').classes()).not.contains('players-table-cell--tag-empty');
+      // Main tags and the event group are separated by a divider
+      expect(wrapper.findAll('.players-table-row--player .players-table-tag-separator')).has.length(1);
       expect(wrapper.get('[data-test="tag-power"] .players-table-discount').text()).eq('-3');
       expect(wrapper.get('[data-test="discount-all"]').text()).eq('*');
       expect(wrapper.get('[data-test="vp"]').text()).eq('?');

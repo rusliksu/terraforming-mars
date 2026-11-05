@@ -15,8 +15,9 @@
       <template v-if="section === 'tags' && visibility.tags">
         <div class="players-table-divider"></div>
         <template v-for="(group, groupIndex) in tagColumns" :key="groupIndex">
-          <div v-if="groupIndex > 0"></div>
-          <div class="players-table-cell" v-for="tag in group" :key="tag" :data-test="'tag-' + tag">
+          <div v-if="groupIndex > 0" class="players-table-tag-separator"></div>
+          <div v-for="tag in group" :key="tag" :class="['players-table-cell', 'players-table-cell--tag', {'players-table-cell--tag-empty': !tagDetail(tag).count && tagDetail(tag).discount === 0 && tagDetail(tag).substitution === undefined}]" :data-test="'tag-' + tag">
+            <Tag :tag="(tag as CardTag)" size="big" type="secondary" />
             <span :class="tagCounterClasses(tag)"><span v-if="protectedTags.includes(tag)" class="players-table-protection shield_icon" :data-test="'protection-' + tag"></span>{{ tagDetail(tag).count || '·' }}<PlayerTagSubstitution v-if="tagDetail(tag).substitution !== undefined" :tag="tagDetail(tag).substitution!" :data-test="'substitution-' + tag" /></span>
             <span v-if="tagDetail(tag).discount > 0" class="players-table-discount" :data-test="'discount-' + tag" :title="$t('Discount')">-{{ tagDetail(tag).discount }}</span>
             <PointsPerTag :points="tagDetail(tag)" />

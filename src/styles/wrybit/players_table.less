@@ -313,6 +313,48 @@ each(@players, {
   min-width: 0;
 }
 
+// Tag cells: the icon sits above the count so a player's row reads without looking up at the
+// header. A tag the player has not played stays in place but recedes.
+.players-table-cell--tag {
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1;
+
+  .tag-count {
+    zoom: 0.6;
+    flex: none;
+  }
+}
+
+.players-table-cell--tag-empty .tag-count {
+  opacity: 0.28;
+  filter: grayscale(1);
+}
+
+// Divider before the event-tag group: quieter than the section dividers, continuous across rows
+.players-table-tag-separator {
+  position: relative;
+  align-self: stretch;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 1px;
+    top: -(@players-table-row-gap / 2);
+    bottom: -(@players-table-row-gap / 2);
+    background: rgba(255, 255, 255, 0.18);
+  }
+}
+
+.players-table-head .players-table-tag-separator::after {
+  top: 4px;
+}
+
+.players-table-rows .players-table-row:last-child .players-table-tag-separator::after {
+  bottom: 4px;
+}
+
 // Separator between the sections: continuous across all rows (bridges the row gaps)
 .players-table-divider {
   position: relative;
@@ -692,12 +734,12 @@ each(@players, {
 // Counters (tags, score): deliberately small and quieter than the resources
 .players-table-counter {
   font-family: Prototype, sans-serif;
-  font-size: 15px;
+  font-size: 18px;
   color: @players-table-counter-color;
 }
 
 .players-table-row--me .players-table-counter {
-  font-size: 16px;
+  font-size: 19px;
 }
 
 .players-table-counter--zero {

@@ -48,6 +48,11 @@ describe('Wrybit compiled visual styles', () => {
     const idleActions = '.wrybit-ui .player-home--fixed:not(.player-home--acting) .player-home-columns__main > .player_home_block--actions';
     expect(declaration(idleActions, 'flex')).eq('0 1 auto');
     expect(declaration(idleActions, 'min-height')).eq('0');
+    // Tag cells stack the icon above the count; unplayed tags recede and the event group has a divider
+    expect(declaration('.wrybit-ui .players-table-cell--tag .tag-count', 'zoom')).eq('0.6');
+    expect(declaration('.wrybit-ui .players-table-cell--tag-empty .tag-count', 'opacity')).eq('0.28');
+    expect(declaration('.wrybit-ui .players-table-tag-separator::after', 'width')).eq('1px');
+    expect(declaration('.wrybit-ui .players-table-counter', 'font-size')).eq('18px');
     stylesheet.walkDecls((decl) => {
       for (const match of decl.value.matchAll(/url\(['"]?([^'")]+)['"]?\)/g)) {
         expect(match[1].replace(/^\.\//, '')).matches(/^assets\//);

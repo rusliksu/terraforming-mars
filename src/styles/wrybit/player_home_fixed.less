@@ -28,6 +28,13 @@
     flex: none;
   }
 
+  // The Wrybit player page has no sidebar: drop the space reserved for it on the left (common.less),
+  // so the player table and the two columns can use the full window width.
+  .main-container:has(> #player-home.player-home--fixed),
+  .main-container:has(> #spectator-home.player-home--fixed) {
+    margin-left: 0;
+  }
+
   .player-home--fixed .player-home-columns {
     flex: 1 1 0;
     height: auto;

@@ -37,7 +37,8 @@ const DIVIDER_WIDTH = 12;
 const TAG_GROUP_GAP = 10;
 const PLAYED_CARDS_WIDTH = 56;
 const GOODS_MIN_WIDTH = 72;
-const TAG_MIN_WIDTH = 34;
+// Tag column: the 34 px icon centred in a 42 px track keeps the classic 8 px gap between tags
+const TAG_COLUMN_WIDTH = 42;
 const SCORE_WIDTH = 44;
 export const GOODS_COUNT = 6;
 export const SCORE_COUNT = 4;
@@ -67,7 +68,7 @@ export function columnTemplate(visibility: SectionVisibility, tagColumns: TagCol
     tracks.push(divider, `repeat(${SCORE_COUNT}, ${px(SCORE_WIDTH)})`, px(PLAYED_CARDS_WIDTH));
   }
   if (visibility.tags && tagColumns.length > 0) {
-    tracks.push(divider, tagColumns.map((group) => `repeat(${group.length}, minmax(${px(TAG_MIN_WIDTH)}, ${px(TAG_MIN_WIDTH + 6)}))`).join(` ${px(TAG_GROUP_GAP)} `));
+    tracks.push(divider, tagColumns.map((group) => `repeat(${group.length}, ${px(TAG_COLUMN_WIDTH)})`).join(` ${px(TAG_GROUP_GAP)} `));
   }
   return tracks.join(' ');
 }
@@ -83,7 +84,7 @@ export function minimumWidth(visibility: SectionVisibility, tagColumns: TagColum
   }
   if (visibility.tags && tagColumns.length > 0) {
     const tagCount = tagColumns.reduce((sum, group) => sum + group.length, 0);
-    width += DIVIDER_WIDTH + tagCount * TAG_MIN_WIDTH + (tagColumns.length - 1) * TAG_GROUP_GAP;
+    width += DIVIDER_WIDTH + tagCount * TAG_COLUMN_WIDTH + (tagColumns.length - 1) * TAG_GROUP_GAP;
   }
   return width;
 }

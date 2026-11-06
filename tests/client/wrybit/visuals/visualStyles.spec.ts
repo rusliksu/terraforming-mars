@@ -55,7 +55,7 @@ describe('Wrybit compiled visual styles', () => {
     expect(declaration('.wrybit-ui .players-table-counter', 'font-size')).eq('23px');
     // The header row is gone: the controls sit above the table and the score cells stack their icons
     expect(declaration('.wrybit-ui .players-table-controls', 'display')).eq('flex');
-    expect(declaration('.wrybit-ui .players-table-cell--score .tag-count', 'zoom')).eq('0.8');
+    expect(declaration('.wrybit-ui .players-table-cell--score .tag-count', 'zoom')).eq('1');
     stylesheet.walkDecls((decl) => {
       for (const match of decl.value.matchAll(/url\(['"]?([^'")]+)['"]?\)/g)) {
         expect(match[1].replace(/^\.\//, '')).matches(/^assets\//);

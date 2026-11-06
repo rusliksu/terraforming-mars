@@ -3,11 +3,11 @@
 //   Name | Resources (stock large, production small) | Tags | Score | played cards
 // PlayersTable sets the column grid as --wrybit-players-table-columns (playersTableLayout.ts).
 
-@players-table-row-height: 92px;
-@players-table-own-row-height: 102px;
+@players-table-row-height: 112px;
+@players-table-own-row-height: 112px;
 // Escape Velocity: third line (clock) under name and corporation
-@players-table-escape-velocity-row-height: 102px;
-@players-table-escape-velocity-own-row-height: 110px;
+@players-table-escape-velocity-row-height: 122px;
+@players-table-escape-velocity-own-row-height: 122px;
 @players-table-row-gap: 4px;
 // Own row set slightly apart from the others
 @players-table-own-row-offset: 5px;
@@ -317,7 +317,7 @@ each(@players, {
   line-height: 1;
 
   .tag-count {
-    zoom: 0.8;
+    zoom: 1;
     margin: 0;
     flex: none;
   }
@@ -524,7 +524,7 @@ each(@players, {
   width: calc(100% - 8px);
   min-width: max-content;
   max-width: 84px;
-  height: 72px;
+  height: 88px;
   padding: 0 6px 0 9px;
   border-radius: 5px;
   background: rgba(0, 0, 0, 0.3);
@@ -532,7 +532,7 @@ each(@players, {
 }
 
 .players-table-row--me .players-table-goods {
-  height: 80px;
+  height: 88px;
 }
 
 .players-table-goods-stock {

@@ -30,15 +30,15 @@ export const DEFAULT_VISIBILITY: SectionVisibility = {goods: true, tags: true, s
 
 // Widths: name fixed, score fixed, only resources and tags share the free space.
 // Divider columns are wider than the gaps within a section (law of proximity).
-const NAME_WIDTH = 196;
+const NAME_WIDTH = 240;
 // Escape Velocity adds a clock line with bar, time and VP penalty below the corporation – it needs more room
 const ESCAPE_VELOCITY_NAME_WIDTH = 252;
 const DIVIDER_WIDTH = 12;
 const TAG_GROUP_GAP = 10;
-const PLAYED_CARDS_WIDTH = 54;
+const PLAYED_CARDS_WIDTH = 56;
 const GOODS_MIN_WIDTH = 72;
-const TAG_MIN_WIDTH = 33;
-const SCORE_WIDTH = 38;
+const TAG_MIN_WIDTH = 34;
+const SCORE_WIDTH = 44;
 export const GOODS_COUNT = 6;
 export const SCORE_COUNT = 4;
 

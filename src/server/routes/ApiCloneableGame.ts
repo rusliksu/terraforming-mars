@@ -150,6 +150,7 @@ export class ApiCloneableGame extends Handler {
       customCorporationsList: [...options.customCorporationsList],
       customCorporations: [...options.customCorporationsList],
       bannedCards: [...options.bannedCards],
+      bannedColonies: [...(options.bannedColonies ?? [])],
       includedCards: [...options.includedCards],
       customColoniesList: [...options.customColoniesList],
       customColonies: [...options.customColoniesList],

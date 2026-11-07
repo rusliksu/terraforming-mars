@@ -556,6 +556,7 @@ export class Server {
         resolveGlobalParameters(options.globalParameters, true, options.venusPhase2Max) : options.globalParameters,
       customBoardRows: options.customBoard?.rows,
       bannedCards: options.bannedCards,
+      bannedColonies: options.bannedColonies ?? [],
       draftVariant: options.draftVariant,
       escapeVelocity: options.escapeVelocity ?? undefined,
       expansions: {

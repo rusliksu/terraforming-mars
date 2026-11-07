@@ -230,6 +230,11 @@
                     <span v-if="includedCards.length" class="create-game-count">{{ includedCards.length }}</span>
                   </ChoiceChip>
                 </div>
+                <div class="create-game-divider"></div>
+                <OptionRow v-if="expansions.prelude" label="Ban Point Luna and Vitor" :sub="true"><SwitchInput v-model="banPointLunaAndVitor" /></OptionRow>
+                <OptionRow v-if="expansions.venus" label="Ban Manutech" :sub="true"><SwitchInput v-model="banManutech" /></OptionRow>
+                <OptionRow v-if="twoCorpsVariant" label="Ban Double Down" :sub="true"><SwitchInput v-model="banDoubleDown" /></OptionRow>
+                <OptionRow v-if="expansions.colonies" label="Ban Pluto" :sub="true"><SwitchInput v-model="banPluto" /></OptionRow>
                 <OptionRow label="Set Predefined Game" :href="wikiUrls.setPredefinedGame"><SwitchInput v-model="seededGame" /></OptionRow>
                 <input v-if="seededGame" type="text" name="clonedGamedId" class="create-game-text-input" :placeholder="$t('game id:')" v-model="clonedGameId">
                 <AppButton title="Clear custom lists" @click="binding.clearCustomLists()" />
@@ -281,6 +286,8 @@ import CustomCardListCard from './CustomCardListCard.vue';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {RandomMAOptionType} from '@/common/ma/RandomMAOptionType';
+import {CardName} from '@/common/cards/CardName';
+import {ColonyName} from '@/common/colonies/ColonyName';
 import type {BoardNameType} from '@/common/game/NewGameConfig';
 import AppButton from '@/client/components/common/AppButton.vue';
 import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
@@ -381,6 +388,33 @@ const customPreludes = computed(() => props.binding.model.customPreludes);
 const customCeos = computed(() => props.binding.model.customCeos);
 const customColonies = computed(() => props.binding.model.customColonies);
 const bannedCards = computed(() => props.binding.model.bannedCards);
+function bannedCardToggle(names: ReadonlyArray<CardName>) {
+  return computed({
+    get: () => names.every((name) => props.binding.model.bannedCards.includes(name)),
+    set: (banned: boolean) => {
+      const bans = new Set(props.binding.model.bannedCards);
+      for (const name of names) {
+        if (banned) {
+          bans.add(name);
+        } else {
+          bans.delete(name);
+        }
+      }
+      props.binding.setField('bannedCards', [...bans]);
+    },
+  });
+}
+const banPointLunaAndVitor = bannedCardToggle([CardName.POINT_LUNA, CardName.VITOR]);
+const banManutech = bannedCardToggle([CardName.MANUTECH]);
+const banDoubleDown = bannedCardToggle([CardName.DOUBLE_DOWN]);
+const banPluto = computed({
+  get: () => props.binding.model.bannedColonies.includes(ColonyName.PLUTO),
+  set: (banned: boolean) => {
+    props.binding.setField('bannedColonies', banned ?
+      [...props.binding.model.bannedColonies, ColonyName.PLUTO] :
+      props.binding.model.bannedColonies.filter((colonyName) => colonyName !== ColonyName.PLUTO));
+  },
+});
 const includedCards = computed(() => props.binding.model.includedCards);
 
 const PLAYER_COUNT_OPTIONS = [1, 2, 3, 4, 5, 6].map((value) => ({value, label: value === 1 ? 'Solo' : String(value)}));

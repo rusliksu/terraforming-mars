@@ -114,6 +114,8 @@ export type NewGameConfig = {
   bannedCards: ReadonlyArray<CardName>;
   includedCards: ReadonlyArray<CardName>;
   customColoniesList: ReadonlyArray<ColonyName>;
+  /** Colonies removed from the draw pool; absent means none. */
+  bannedColonies?: ReadonlyArray<ColonyName>;
   customPreludes: ReadonlyArray<CardName>;
   requiresMoonTrackCompletion: boolean; // Moon must be completed to end the game
   requiresVenusTrackCompletion: boolean; // Venus must be completed to end the game

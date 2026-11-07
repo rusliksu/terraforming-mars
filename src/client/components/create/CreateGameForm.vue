@@ -32,10 +32,17 @@
               </label>
 
               <input type="checkbox" name="prelude" id="prelude-checkbox" v-model="expansions.prelude">
-              <label for="prelude-checkbox" class="expansion-button">
+              <label for="prelude-checkbox" id="prelude-label" class="expansion-button">
                 <div class="create-game-expansion-icon expansion-icon-prelude"></div>
                 <span v-i18n>Prelude</span>
               </label>
+
+              <div v-if="expansions.prelude" class="create-game-suboptions" role="group" aria-labelledby="prelude-label">
+                <input type="checkbox" v-model="banPointLunaAndVitor" id="banPreludeCorps-checkbox">
+                <label for="banPreludeCorps-checkbox">
+                  <span v-i18n>Ban Point Luna and Vitor</span>
+                </label>
+              </div>
 
               <input type="checkbox" name="prelude2" id="prelude2-checkbox" v-model="expansions.prelude2">
               <label for="prelude2-checkbox" class="expansion-button">
@@ -73,13 +80,25 @@
                 <template v-if="expansions.venusPhase2">
                   <PresentationHost :hosts="creationHosts.venus" />
                 </template>
+
+                <input type="checkbox" v-model="banManutech" id="banManutech-checkbox">
+                <label for="banManutech-checkbox">
+                  <span v-i18n>Ban Manutech</span>
+                </label>
               </div>
 
               <input type="checkbox" name="colonies" id="colonies-checkbox" v-model="expansions.colonies">
-              <label for="colonies-checkbox" class="expansion-button">
+              <label for="colonies-checkbox" id="colonies-label" class="expansion-button">
                 <div class="create-game-expansion-icon expansion-icon-colony"></div>
                 <span v-i18n>Colonies</span>
               </label>
+
+              <div v-if="expansions.colonies" class="create-game-suboptions" role="group" aria-labelledby="colonies-label">
+                <input type="checkbox" v-model="banPluto" id="banPluto-checkbox">
+                <label for="banPluto-checkbox">
+                  <span v-i18n>Ban Pluto</span>
+                </label>
+              </div>
 
               <input type="checkbox" name="turmoil" id="turmoil-checkbox" v-model="expansions.turmoil">
               <label for="turmoil-checkbox" id="turmoil-label" class="expansion-button">
@@ -370,10 +389,17 @@
 
               <template v-if="expansions.prelude">
                 <input type="checkbox" v-model="twoCorpsVariant" id="twoCorps-checkbox">
-                <label for="twoCorps-checkbox" title="Always gain the Merger Prelude card (will be given post-draft)">
+                <label for="twoCorps-checkbox" id="twoCorps-label" title="Always gain the Merger Prelude card (will be given post-draft)">
                   <div class="create-game-expansion-icon expansion-icon-prelude"></div>
                   <span v-i18n>Merger</span>&nbsp;<a :href="wikiUrls.merger" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                 </label>
+
+                <div v-if="twoCorpsVariant" class="create-game-suboptions" role="group" aria-labelledby="twoCorps-label">
+                  <input type="checkbox" v-model="banDoubleDown" id="banDoubleDown-checkbox">
+                  <label for="banDoubleDown-checkbox">
+                    <span v-i18n>Ban Double Down</span>
+                  </label>
+                </div>
               </template>
 
 
@@ -424,7 +450,7 @@
               <div class="create-game-subsection-label" v-i18n>Filter</div>
 
               <AppButton
-                v-if="customCorporations.length || customPreludes.length || customCeos.length || customColonies.length || bannedCards.length || includedCards.length"
+                v-if="customCorporations.length || customPreludes.length || customCeos.length || customColonies.length || bannedCards.length || bannedColonies.length || includedCards.length"
                 title="Clear custom lists" size="small" @click="clearCustomLists" />
 
               <input type="checkbox" v-model="showCorporationList" id="customCorps-checkbox">
@@ -941,16 +967,6 @@ const CUSTOM_CARD_COMPATIBILITY_EXCEPTIONS: Partial<Record<CardName, ReadonlyArr
   [CardName.CREW_TRAINING]: ['moon'],
 };
 
-const DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS = new Set<CardName>([
-  CardName.MANUTECH,
-  CardName.POINT_LUNA,
-  CardName.VITOR,
-]);
-
-const DEFAULT_CUSTOM_COLONY_EXCLUSIONS = new Set<ColonyName>([
-  ColonyName.PLUTO,
-]);
-
 function unique<T extends string>(items: ReadonlyArray<T>): Array<T> {
   return [...new Set(items)];
 }
@@ -977,12 +993,6 @@ function getCustomSelectionExclusions<T extends string>(
     ...selectable.filter((item) => !selectedSet.has(item)),
   ]);
 }
-
-type RememberCustomSelectionExclusionOptions = {
-  preserveDefaultCorporationExclusions?: boolean;
-  preserveDefaultPreludeExclusions?: boolean;
-  preserveDefaultColonyExclusions?: boolean;
-};
 
 type SyncCustomSelectionOptions = {
   preserveExplicitFanColonies?: boolean;
@@ -1044,9 +1054,9 @@ export default defineComponent({
       playerProfilePickerIndex: null,
       playerProfileSearch: '',
       manualPlayerColors: new WeakSet<NewPlayerModel>(),
-      customCorporationExclusions: [...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS],
+      customCorporationExclusions: [],
       customPreludesExclusions: [],
-      customColonyExclusions: [...DEFAULT_CUSTOM_COLONY_EXCLUSIONS],
+      customColonyExclusions: [],
       customBoardCode: undefined,
       customBoardName: '',
       customBoardCodeInput: '',
@@ -1229,10 +1239,7 @@ export default defineComponent({
         this.recomputeConglomeratesTeams();
       }
     },
-    twoCorpsVariant(value: boolean) {
-      if (value === true) {
-        this.removeActiveDefaultCustomPreludeExclusions();
-      }
+    twoCorpsVariant() {
       this.syncCustomSelectionsWithExpansions();
     },
     turnBasedGame(value: boolean) {
@@ -1306,16 +1313,50 @@ export default defineComponent({
         expansions: {...this.expansions}, includedCards: [...this.includedCards],
         customBoardCode: this.isCustomBoardSelection ? this.customBoardCode : undefined};
     },
+    /** Optional preset bans are shortcuts for the usual banned-card/colony lists, so a player can still edit
+     *  them in the regular exclusion pickers and saved settings keep carrying the real lists. */
+    banPointLunaAndVitor: {
+      get(): boolean {
+        return this.bannedCards.includes(CardName.POINT_LUNA) && this.bannedCards.includes(CardName.VITOR);
+      },
+      set(banned: boolean) {
+        this.setBannedCards([CardName.POINT_LUNA, CardName.VITOR], banned);
+      },
+    },
+    banManutech: {
+      get(): boolean {
+        return this.bannedCards.includes(CardName.MANUTECH);
+      },
+      set(banned: boolean) {
+        this.setBannedCards([CardName.MANUTECH], banned);
+      },
+    },
+    banDoubleDown: {
+      get(): boolean {
+        return this.bannedCards.includes(CardName.DOUBLE_DOWN);
+      },
+      set(banned: boolean) {
+        this.setBannedCards([CardName.DOUBLE_DOWN], banned);
+      },
+    },
+    banPluto: {
+      get(): boolean {
+        return this.bannedColonies.includes(ColonyName.PLUTO);
+      },
+      set(banned: boolean) {
+        this.bannedColonies = banned ?
+          unique([...this.bannedColonies, ColonyName.PLUTO]) :
+          this.bannedColonies.filter((colonyName) => colonyName !== ColonyName.PLUTO);
+      },
+    },
     customListBindings(): Array<CustomListBinding> {
       const corporationPool = this.getSelectableCustomCorporations();
-      const corporationExclusions = new Set(this.normalizeCustomCardSelection([...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS], corporationPool));
       const preludePool = this.getSelectableCustomPreludes();
-      const preludeExclusions = new Set(this.normalizeCustomCardSelection(this.getActiveDefaultCustomPreludeExclusions(), preludePool));
       return [
         {kind: 'corporations', title: 'Custom Corporation list', selected: this.customCorporations,
-          baseline: corporationPool.filter((name) => !corporationExclusions.has(name)), host: this.creationHosts.corporations},
+          baseline: corporationPool, host: this.creationHosts.corporations},
         {kind: 'preludes', title: 'Custom Preludes list', selected: this.customPreludes,
-          baseline: preludePool.filter((name) => !preludeExclusions.has(name)), host: this.creationHosts.preludes},
+          baseline: preludePool, host: this.creationHosts.preludes},
         {kind: 'ceos', title: 'Custom CEOs list', selected: this.customCeos,
           baseline: defaultCeoSelection(this.expansions), host: this.creationHosts.ceos},
       ];
@@ -1646,8 +1687,6 @@ export default defineComponent({
     applySettings(json: JSONObject, options: ApplySettingsOptions = {}): JSONProcessor {
       const component: CreateGameModel = this;
       const refs = this.typedRefs;
-      const hasCustomCorporationExclusions = Array.isArray(json['customCorporationExclusions']);
-      const hasCustomPreludesExclusions = Array.isArray(json['customPreludesExclusions']);
       const hasCustomColonyExclusions = Array.isArray(json['customColonyExclusions']);
       const processor = new JSONProcessor(component);
       this.uploading = true;
@@ -1690,11 +1729,7 @@ export default defineComponent({
           if (!component.seededGame) {
             component.seed = Math.random();
           }
-          this.rememberCustomSelectionExclusions({
-            preserveDefaultCorporationExclusions: !hasCustomCorporationExclusions,
-            preserveDefaultPreludeExclusions: !hasCustomPreludesExclusions,
-            preserveDefaultColonyExclusions: !hasCustomColonyExclusions,
-          });
+          this.rememberCustomSelectionExclusions();
           this.syncSolarPhaseOptionToPlayerCount();
           this.syncCustomSelectionsWithExpansions({
             preserveExplicitFanColonies: hasCustomColonyExclusions,
@@ -1738,9 +1773,9 @@ export default defineComponent({
         selectedTemplate: '',
         playerProfilePickerIndex: null,
         playerProfileSearch: '',
-        customCorporationExclusions: [...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS],
+        customCorporationExclusions: [],
         customPreludesExclusions: [],
-        customColonyExclusions: [...DEFAULT_CUSTOM_COLONY_EXCLUSIONS],
+        customColonyExclusions: [],
       });
       nextTick(() => {
         const refs = this.typedRefs;
@@ -1889,14 +1924,15 @@ export default defineComponent({
       this.showCeosList = false;
       this.showBannedCards = false;
       this.showIncludedCards = false;
-      this.customCorporationExclusions = [...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS];
+      this.customCorporationExclusions = [];
       this.customPreludesExclusions = [];
-      this.customColonyExclusions = [...DEFAULT_CUSTOM_COLONY_EXCLUSIONS];
+      this.customColonyExclusions = [];
       this.customCorporations = [];
       this.customPreludes = [];
       this.customCeos = [];
       this.customColonies = [];
       this.bannedCards = [];
+      this.bannedColonies = [];
       this.includedCards = [];
       const refs = this.typedRefs;
       if (refs.cardsFilter) {
@@ -2061,28 +2097,12 @@ export default defineComponent({
         this.normalizeCustomCardSelection(this.customCorporationExclusions, available),
       );
     },
-    getActiveDefaultCustomPreludeExclusions(): Array<CardName> {
-      return this.twoCorpsVariant ? [CardName.DOUBLE_DOWN] : [];
-    },
-    getActiveCustomPreludeExclusions(): Array<CardName> {
-      return unique([
-        ...this.customPreludesExclusions,
-        ...this.getActiveDefaultCustomPreludeExclusions(),
-      ]);
-    },
-    removeActiveDefaultCustomPreludeExclusions() {
-      const exclusions = new Set(this.getActiveDefaultCustomPreludeExclusions());
-      if (exclusions.size === 0) {
-        return;
-      }
-      this.customPreludes = this.customPreludes.filter((cardName) => !exclusions.has(cardName));
-    },
     getDefaultCustomPreludes(): Array<CardName> {
       const available = this.getSelectableCustomPreludes();
       return mergeCustomSelectionWithExclusions(
         this.normalizeCustomCardSelection(this.customPreludes, available),
         available,
-        this.normalizeCustomCardSelection(this.getActiveCustomPreludeExclusions(), available),
+        this.normalizeCustomCardSelection(this.customPreludesExclusions, available),
       );
     },
     getDefaultCustomColonies(options: SyncCustomSelectionOptions = {}): Array<ColonyName> {
@@ -2103,52 +2123,27 @@ export default defineComponent({
         }),
       ]);
     },
-    rememberCustomSelectionExclusions(options: RememberCustomSelectionExclusionOptions = {}) {
+    rememberCustomSelectionExclusions() {
       if (this.showCorporationList || this.customCorporations.length > 0) {
-        const exclusions = getCustomSelectionExclusions(
+        this.customCorporationExclusions = getCustomSelectionExclusions(
           this.getSelectableCustomCorporations(),
           this.customCorporations,
           this.customCorporationExclusions,
         );
-        this.customCorporationExclusions = options.preserveDefaultCorporationExclusions === true ?
-          unique([...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS, ...exclusions]) :
-          exclusions;
-        if (options.preserveDefaultCorporationExclusions === true) {
-          const defaultExclusions = new Set(this.normalizeCustomCardSelection(
-            [...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS], this.getSelectableCustomCorporations()));
-          this.customCorporations = this.customCorporations
-            .filter((cardName) => !defaultExclusions.has(cardName));
-        }
       }
       if (this.showPreludesList || this.customPreludes.length > 0) {
-        const exclusions = getCustomSelectionExclusions(
+        this.customPreludesExclusions = getCustomSelectionExclusions(
           this.getSelectableCustomPreludes(),
           this.customPreludes,
           this.customPreludesExclusions,
         );
-        const defaultPreludeExclusions = this.getActiveDefaultCustomPreludeExclusions();
-        this.customPreludesExclusions = options.preserveDefaultPreludeExclusions === true ?
-          unique([...defaultPreludeExclusions, ...exclusions]) :
-          exclusions;
-        if (options.preserveDefaultPreludeExclusions === true) {
-          const defaultPreludeExclusionsSet = new Set(defaultPreludeExclusions);
-          this.customPreludes = this.customPreludes
-            .filter((cardName) => !defaultPreludeExclusionsSet.has(cardName));
-        }
       }
       if (this.showColoniesList || this.customColonies.length > 0) {
-        const exclusions = getCustomSelectionExclusions(
+        this.customColonyExclusions = getCustomSelectionExclusions(
           this.getSelectableCustomColonies(),
           this.customColonies,
           this.customColonyExclusions,
         );
-        this.customColonyExclusions = options.preserveDefaultColonyExclusions === true ?
-          unique([...DEFAULT_CUSTOM_COLONY_EXCLUSIONS, ...exclusions]) :
-          exclusions;
-        if (options.preserveDefaultColonyExclusions === true) {
-          this.customColonies = this.customColonies
-            .filter((colonyName) => !DEFAULT_CUSTOM_COLONY_EXCLUSIONS.has(colonyName));
-        }
       }
     },
     syncCustomSelectionsWithExpansions(options: SyncCustomSelectionOptions = {}) {
@@ -2397,6 +2392,17 @@ export default defineComponent({
         this.customPreludesExclusions,
       );
       this.customPreludes = customPreludes;
+    },
+    setBannedCards(names: ReadonlyArray<CardName>, banned: boolean) {
+      const bans = new Set(this.bannedCards);
+      for (const name of names) {
+        if (banned) {
+          bans.add(name);
+        } else {
+          bans.delete(name);
+        }
+      }
+      this.bannedCards = [...bans];
     },
     updateBannedCards(bannedCards: Array<CardName>) {
       this.bannedCards = bannedCards;
@@ -2823,6 +2829,7 @@ export default defineComponent({
       const customCorporations = this.customCorporations;
       const customPreludes = this.customPreludes;
       const bannedCards = this.bannedCards;
+      const bannedColonies = this.bannedColonies;
       const includedCards = this.includedCards;
       const seed = this.seed;
       const politicalAgendasExtension = this.politicalAgendasExtension;
@@ -2884,6 +2891,7 @@ export default defineComponent({
         customCeos: customCeos,
         customPreludes,
         bannedCards,
+        bannedColonies,
         includedCards,
         boards: this.boards,
         customBoardCode: this.isCustomBoardSelection ? this.customBoardCode : undefined,

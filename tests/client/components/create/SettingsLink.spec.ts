@@ -3,6 +3,7 @@ import {defaultCreateGameModel} from '@/client/components/create/defaultCreateGa
 import {encodeSettingsHash, decodeSettingsHash} from '@/client/components/create/settingsLink';
 import {JSONProcessor} from '@/client/components/create/JSONProcessor';
 import {CardName} from '@/common/cards/CardName';
+import {ColonyName} from '@/common/colonies/ColonyName';
 import {BoardName} from '@/common/boards/BoardName';
 import {encodeCustomBoard} from '@/common/boards/customBoardCodec';
 import {blankCustomBoard} from '@/common/boards/CustomBoardDefinition';
@@ -23,6 +24,7 @@ describe('our public settings links', () => {
     model.expansions.rebalanced = true;
     model.undoStepOption = true;
     model.bannedCards = [CardName.ASTEROID];
+    model.bannedColonies = [ColonyName.PLUTO];
     const before = JSON.stringify(model);
     const hash = encodeSettingsHash(model);
     const settings = decodeSettingsHash(hash)!;
@@ -44,9 +46,19 @@ describe('our public settings links', () => {
     expect(restored.undoStepOption).is.true;
     expect(restored.customBoardCode).eq(model.customBoardCode);
     expect(restored.bannedCards).deep.eq([CardName.ASTEROID]);
+    expect(restored.bannedColonies).deep.eq([ColonyName.PLUTO]);
     expect(restored.playersCount).eq(2);
     expect(restored.players.every((player) => player.isBot === false)).is.true;
     expect(JSON.stringify(model)).eq(before);
+  });
+
+  it('keeps links created before optional colony bans decodable', () => {
+    const settings = decodeSettingsHash(encodeSettingsHash(defaultCreateGameModel()))!;
+    const legacy = {...settings};
+    delete legacy.bannedColonies;
+    const raw = '#tm-settings=1.' + btoa(JSON.stringify(legacy)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const decoded = decodeSettingsHash(raw)!;
+    expect(decoded.bannedColonies).deep.eq([]);
   });
 
   it('ignores unrelated anchors and rejects malformed or non-public settings before import', () => {

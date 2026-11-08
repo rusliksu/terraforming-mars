@@ -70,6 +70,7 @@ describe('ApiGame', () => {
           'altVenusBoard': false,
           'aresExtremeVariant': false,
           'bannedCards': [],
+          'bannedColonies': [],
           'boardName': 'tharsis',
           'draftVariant': false,
           'expansions': {

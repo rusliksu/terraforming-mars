@@ -19,6 +19,7 @@ export type GameOptionsModel = {
   /** Row count of a custom board, so the client can render its voided (carved-out) cells. */
   customBoardRows?: number,
   bannedCards: ReadonlyArray<CardName>;
+  bannedColonies: ReadonlyArray<ColonyName>;
   expansions: Record<Expansion, boolean>,
   draftVariant: boolean,
   escapeVelocity?: EscapeVelocityOptions,

@@ -4,6 +4,7 @@ export const CUSTOM_COLONIES = 'customColonies';
 export const OLD_CUSTOM_COLONIES = 'customColoniesList';
 export const CUSTOM_PRELUDES = 'customPreludes';
 export const BANNED_CARDS = 'bannedCards';
+export const BANNED_COLONIES = 'bannedColonies';
 export const OLD_BANNED_CARDS = 'cardsBlackList';
 export const INCLUDED_CARDS = 'includedCards';
 export const CORPORATEERA = 'corporateEra';

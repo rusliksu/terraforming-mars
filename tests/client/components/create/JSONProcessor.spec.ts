@@ -169,6 +169,7 @@ const TEMPLATE_EXPECTED: CreateGameModel = {
   customMA: undefined,
   customPreludes: [],
   bannedCards: [],
+  bannedColonies: [],
   includedCards: [],
   boards: ['tharsis' as BoardName],
   seed: 0.40189423667985547,

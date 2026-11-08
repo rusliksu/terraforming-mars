@@ -5,6 +5,7 @@ import {CreateGameModel} from './CreateGameModel';
 import {normalizePlayerNameForColor, PLAYER_COLORS} from '@/common/Color';
 import {NewPlayerModel, normalizePreludeHandicap} from '@/common/game/NewGameConfig';
 import {CardName} from '@/common/cards/CardName';
+import {ColonyName} from '@/common/colonies/ColonyName';
 import {cast} from '@/common/utils/utils';
 import {CARD_RENAMES} from '@/common/cards/CardRenames';
 import {sanitizeEscapeVelocityOptions} from '@/common/game/escapeVelocity';
@@ -226,6 +227,16 @@ export class JSONProcessor {
     this.validateCardNames('customCeos', this.model.customCeos);
     this.validateCardNames('bannedCards', this.bannedCards);
     this.validateCardNames('includedCards', this.includedCards);
+    this.validateColonyNames('bannedColonies', this.model.bannedColonies);
+  }
+
+  private validateColonyNames(fieldLabel: string, names: ReadonlyArray<ColonyName>): void {
+    const validNames = new Set<string>(Object.values(ColonyName));
+    for (const name of names) {
+      if (!validNames.has(name)) {
+        this.warnings.push(`Unknown colony name '${name}' in ${fieldLabel}`);
+      }
+    }
   }
 
   private validateCardNames(fieldLabel: string, names: ReadonlyArray<CardName>): void {

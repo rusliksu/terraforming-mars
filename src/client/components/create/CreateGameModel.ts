@@ -15,6 +15,7 @@ export type CreateGameModel = {
   altVenusBoard: boolean;
   aresExtremeVariant: boolean;
   bannedCards: Array<CardName>;
+  bannedColonies: Array<ColonyName>;
   boards: Array<BoardName>;
   /** Read-only compatibility alias for single-board Wrybit controls. */
   board?: BoardName | RandomBoardOption;

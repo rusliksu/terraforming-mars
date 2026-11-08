@@ -19,7 +19,7 @@ const VERSION = '1.';
 const MAX_BYTES = 100_000;
 const CARD_FIELDS = ['customCorporations', 'customPreludes', 'customCeos', 'bannedCards', 'includedCards',
   'customCorporationExclusions', 'customPreludesExclusions'] as const;
-const COLONY_FIELDS = ['customColonies', 'customColonyExclusions'] as const;
+const COLONY_FIELDS = ['customColonies', 'customColonyExclusions', 'bannedColonies'] as const;
 const FIELD_TYPES = {...TEMPLATE_SCALAR_FIELD_TYPES, firstIndex: 'number', seed: 'number'} as const;
 const CARD_NAMES: ReadonlySet<string> = new Set(Object.values(CardName));
 const COLONY_NAMES: ReadonlySet<string> = new Set(Object.values(ColonyName));
@@ -97,6 +97,10 @@ function validateSettings(value: unknown): JSONObject {
   result.expansions = enabled;
   for (const key of [...CARD_FIELDS, ...COLONY_FIELDS]) {
     const names = value[key];
+    // Older links predate the optional colony bans, so keep them decodable.
+    if (names === undefined && key === 'bannedColonies') {
+      continue;
+    }
     const colony = COLONY_FIELDS.some((field) => field === key);
     const allowed = colony ? COLONY_NAMES : CARD_NAMES;
     if (!Array.isArray(names) || names.some((name) => typeof name !== 'string' || (!allowed.has(name) && (colony || !CARD_RENAMES.has(name))))) {

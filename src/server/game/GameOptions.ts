@@ -102,6 +102,8 @@ export type GameOptions = {
   bannedCards: ReadonlyArray<CardName>;
   includedCards: ReadonlyArray<CardName>;
   customColoniesList: ReadonlyArray<ColonyName>;
+  /** Colonies removed from the draw pool. */
+  bannedColonies: ReadonlyArray<ColonyName>;
   customPreludes: ReadonlyArray<CardName>;
   customCeos: ReadonlyArray<CardName>;
   /** Preselected milestones and awards, used instead of the board's. Only valid when randomMA is MANUAL. */
@@ -132,6 +134,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   customVenusSurfaceBoard: undefined,
   globalParameters: undefined,
   bannedCards: [],
+  bannedColonies: [],
   includedCards: [],
   ceoExtension: false,
   clonedGamedId: undefined,

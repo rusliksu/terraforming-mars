@@ -47,6 +47,7 @@ export function defaultCreateGameModel(): CreateGameModel {
     customMA: undefined,
     customPreludes: [],
     bannedCards: [],
+    bannedColonies: [],
     includedCards: [],
     boards: [BoardName.THARSIS],
     seed: Math.random(),

@@ -120,7 +120,7 @@ function publicGame(game: GameModel): GameModel {
     gameOptions: {
       globalParameters: publicParameters(game.gameOptions.globalParameters),
       customBoardRows: game.gameOptions.customBoardRows,
-      ...pick(game.gameOptions, ['altVenusBoard', 'aresExtremeVariant', 'boardName', 'bannedCards', 'expansions',
+      ...pick(game.gameOptions, ['altVenusBoard', 'aresExtremeVariant', 'boardName', 'bannedCards', 'bannedColonies', 'expansions',
         'draftVariant', 'fastModeOption', 'includedCards', 'includeFanMA', 'initialDraftVariant', 'initialDraftOneWay',
         'noEloGame', 'turnBasedGame', 'preludeDraftVariant', 'ceosDraftVariant', 'politicalAgendasExtension',
         'removeNegativeGlobalEvents', 'showOtherPlayersVP', 'showTimers', 'shuffleMapOption', 'solarPhaseOption',

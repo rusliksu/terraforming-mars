@@ -3,24 +3,21 @@ import {expect} from 'chai';
 import {globalConfig} from '../getLocalVue';
 import Card from '@/client/components/card/Card.vue';
 import {CardName} from '@/common/cards/CardName';
-import {FakeLocalStorage} from '../FakeLocalStorage';
+import {useFakeLocalStorage} from '../FakeLocalStorage';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
 import {CardType} from '@/common/cards/CardType';
 import {CustomCardModel} from '@/common/models/CardModel';
 import {ICardRenderRoot} from '@/common/cards/render/Types';
 
 describe('Card', () => {
-  let localStorage: FakeLocalStorage;
+  useFakeLocalStorage();
 
   beforeEach(() => {
     PreferencesManager.resetForTest();
-    localStorage = new FakeLocalStorage();
-    FakeLocalStorage.register(localStorage);
   });
 
   afterEach(() => {
     PreferencesManager.resetForTest();
-    FakeLocalStorage.deregister(localStorage);
   });
 
   it('mounts without errors', () => {

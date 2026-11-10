@@ -32,7 +32,6 @@ export type ValidationErrors = {
   notEnoughCorporations: number;
   allAiPlayers: boolean;
   aiUnsupportedExpansions: Array<string>;
-  modularMAInDevelopment: boolean;
   /** Why customMA is invalid, or empty when it's valid. */
   invalidCustomMA: string;
 };
@@ -116,10 +115,6 @@ export const validationDetails: Record<keyof ValidationErrors, {blocking: boolea
       data: [{type: LogMessageDataType.RAW_STRING, value: errors.aiUnsupportedExpansions.join(', ')}],
     }),
   },
-  modularMAInDevelopment: {
-    blocking: false,
-    message: 'The Official Random Milestones and Awards are still in active development. Please don\'t report anything unless it breaks the game. These are always fully random.',
-  },
   invalidCustomMA: {
     blocking: true,
     message: (errors) => ({
@@ -154,7 +149,6 @@ export function validateNewGameConfig(config: NewGameConfig, helpers: Helpers): 
     notEnoughCorporations: 0,
     allAiPlayers: false,
     aiUnsupportedExpansions: [],
-    modularMAInDevelopment: false,
     invalidCustomMA: '',
   };
 
@@ -210,10 +204,6 @@ export function validateNewGameConfig(config: NewGameConfig, helpers: Helpers): 
 
   if (config.expansions.deltaProject && !config.expansions.prelude) {
     errors.deltaProjectWithoutPrelude = true;
-  }
-
-  if (config.modularMA) {
-    errors.modularMAInDevelopment = true;
   }
 
   function isMissingExpansion(name: CardName): boolean {

@@ -3,21 +3,12 @@ import {expect} from 'chai';
 import {globalConfig} from './getLocalVue';
 import Sidebar from '@/client/components/Sidebar.vue';
 import {fakeGameOptionsModel} from './testHelpers';
-import {FakeLocalStorage} from './FakeLocalStorage';
+import {useFakeLocalStorage} from './FakeLocalStorage';
 import GlobalParameterValue from '@/client/components/GlobalParameterValue.vue';
 import {DEFAULT_GLOBAL_PARAMETERS} from '@/common/GlobalParameterConfig';
 
 describe('Sidebar', () => {
-  let localStorage: FakeLocalStorage;
-
-  beforeEach(() => {
-    localStorage = new FakeLocalStorage();
-    FakeLocalStorage.register(localStorage);
-  });
-
-  afterEach(() => {
-    FakeLocalStorage.deregister(localStorage);
-  });
+  useFakeLocalStorage();
 
   it('uses the game track limits for completion indicators', async () => {
     const gameOptions = fakeGameOptionsModel();

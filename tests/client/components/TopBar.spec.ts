@@ -4,7 +4,9 @@ import {globalConfig} from './getLocalVue';
 import TopBar from '@/client/components/TopBar.vue';
 import {fakePlayerViewModel} from './testHelpers';
 
+
 describe('TopBar', () => {
+
   it('mounts without errors', () => {
     const wrapper = shallowMount(TopBar, {
       ...globalConfig,
@@ -13,7 +15,7 @@ describe('TopBar', () => {
           getVisibilityState: () => true,
           setVisibilityState: () => {},
         },
-      } as any,
+      },
       props: {
         playerView: fakePlayerViewModel(),
       },

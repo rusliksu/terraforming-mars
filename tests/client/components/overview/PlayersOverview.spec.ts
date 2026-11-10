@@ -43,7 +43,7 @@ describe('PlayersOverview', () => {
           getVisibilityState: () => true,
           setVisibilityState: () => {},
         },
-      } as any,
+      },
       props: {
         playerView: fakeViewModel(),
       },
@@ -63,7 +63,7 @@ describe('PlayersOverview', () => {
           getVisibilityState: () => true,
           setVisibilityState: () => {},
         },
-      } as any,
+      },
       props: {
         playerView: fakeViewModel({
           game: fakeGameModel({phase: Phase.SOLAR}),
@@ -72,7 +72,7 @@ describe('PlayersOverview', () => {
         }),
       },
     });
-    const vm = wrapper.vm as any;
+    const vm = wrapper.vm;
     expect(vm.getActionLabel(blue)).eq('none');
     expect(vm.getActionLabel(red)).eq('active');
   });
@@ -89,7 +89,7 @@ describe('PlayersOverview', () => {
           getVisibilityState: () => true,
           setVisibilityState: () => {},
         },
-      } as any,
+      },
       props: {
         playerView: fakeViewModel({
           game: fakeGameModel({phase: Phase.SOLAR, passedPlayers: ['red']}),
@@ -98,7 +98,7 @@ describe('PlayersOverview', () => {
         }),
       },
     });
-    const vm = wrapper.vm as any;
+    const vm = wrapper.vm;
     expect(vm.getActionLabel(blue)).eq('active');
     expect(vm.getActionLabel(red)).eq('passed');
   });

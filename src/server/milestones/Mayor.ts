@@ -3,6 +3,7 @@ import {IPlayer} from '../IPlayer';
 import {VenusPhase2Expansion} from '../venusPhase2/VenusPhase2Expansion';
 
 export class Mayor extends BaseMilestone {
+  public readonly automaDescription = '3+ city tiles on board';
   constructor() {
     super(
       'Mayor',

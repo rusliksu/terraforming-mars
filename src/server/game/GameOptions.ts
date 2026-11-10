@@ -98,6 +98,8 @@ export type GameOptions = {
   modularMA: boolean;
   /** Solo victory by getting TR 63 by game end */
   soloTR: boolean;
+  /** A 1 player game played against MarsBot */
+  automa: boolean;
   customCorporationsList: ReadonlyArray<CardName>;
   bannedCards: ReadonlyArray<CardName>;
   includedCards: ReadonlyArray<CardName>;
@@ -228,6 +230,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   highOrbitExpansion: false,
   solarisExpansion: false,
   conglomeratesTeamAssignments: undefined,
+  automa: false,
   undoOption: false,
   undoStepOption: false,
   aiAnalysis: false,

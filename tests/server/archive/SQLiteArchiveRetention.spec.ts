@@ -1,10 +1,10 @@
 import {expect} from 'chai';
 import fs from 'node:fs/promises';
-import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import Database from 'better-sqlite3';
 import {mock} from 'node:test';
 import {SQLiteArchiveRetention} from '@/server/archive/SQLiteArchiveRetention';
+import {archiveLab} from '@tests/testing/archiveLab';
 
 const supported = process.platform === 'win32' || (process.platform === 'linux' && process.env.CI === 'true');
 
@@ -19,7 +19,7 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
     phase: lastSaveId === 9 ? 'end' : 'action', privateHand: ['private-' + lastSaveId]}));
 
   beforeEach(async () => {
-    const lab = process.platform === 'win32' ? 'D:/tm-db/smartbot-lab/sqlite-retention-tests' : tmpdir();
+    const lab = archiveLab('sqlite-retention-tests');
     await fs.mkdir(lab, {recursive: true});
     workspace = await fs.mkdtemp(join(lab, 'tm-retention-'));
     filename = join(workspace, 'copy.sqlite');

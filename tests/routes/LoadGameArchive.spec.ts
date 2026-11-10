@@ -1,6 +1,5 @@
 import {expect} from 'chai';
 import fs from 'node:fs/promises';
-import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {mock} from 'node:test';
 import {SQLite} from '@/server/database/SQLite';
@@ -10,6 +9,7 @@ import {Phase} from '@/common/Phase';
 import {GameId} from '@/common/Types';
 import {testGame} from '@tests/TestGame';
 import {FakeClock} from '@tests/common/FakeClock';
+import {archiveLab} from '@tests/testing/archiveLab';
 import {restoreTestDatabase, restoreTestGameLoader, setTestDatabase, setTestGameLoader} from '@tests/testing/setup';
 import {MockRequest, MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
@@ -40,7 +40,7 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
   let scaffolding: RouteTestScaffolding;
 
   beforeEach(async () => {
-    const lab = process.platform === 'win32' ? 'D:/tm-db/smartbot-lab/archive-route-tests' : tmpdir();
+    const lab = archiveLab('archive-route-tests');
     await fs.mkdir(lab, {recursive: true});
     const workspace = await fs.mkdtemp(join(lab, 'tm-route-'));
     const root = join(workspace, 'archives');

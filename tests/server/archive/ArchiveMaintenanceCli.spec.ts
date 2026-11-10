@@ -2,10 +2,10 @@ import {expect} from 'chai';
 import Database from 'better-sqlite3';
 import {execFile} from 'node:child_process';
 import fs from 'node:fs/promises';
-import {tmpdir} from 'node:os';
 import {dirname, join, resolve} from 'node:path';
 import {promisify} from 'node:util';
 import {ArchiveCatalog} from '@/server/archive/ArchiveCatalog';
+import {archiveLab} from '@tests/testing/archiveLab';
 
 const execute = promisify(execFile);
 const supported = process.platform === 'win32' || (process.platform === 'linux' && process.env.CI === 'true');
@@ -51,7 +51,7 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
     }
   }
   beforeEach(async () => {
-    const lab = process.platform === 'win32' ? 'D:/tm-db/smartbot-lab/maintenance-cli-tests' : tmpdir();
+    const lab = archiveLab('maintenance-cli-tests');
     await fs.mkdir(lab, {recursive: true});
     workspace = await fs.mkdtemp(join(lab, 'tm-maintenance-'));
     filename = join(workspace, 'copy.sqlite'); output = join(workspace, 'archives');

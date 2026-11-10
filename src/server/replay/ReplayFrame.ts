@@ -75,7 +75,7 @@ function publicPlayer(player: PublicPlayerModel, timer: PublicPlayerModel['timer
     selfReplicatingRobotsCards: player.selfReplicatingRobotsCards.map(publicCard),
     protectedResources: pick(player.protectedResources, Units.keys),
     protectedProduction: pick(player.protectedProduction, Units.keys),
-    timer: {...pick(timer, ['sumElapsed', 'startedAt', 'afterFirstAction', 'lastStoppedAt']), running: false},
+    timer: {...pick(timer, ['sumElapsed', 'startedAt']), running: false},
     underworldData: {
       corruption: player.underworldData.corruption,
       activeBonus: player.underworldData.activeBonus,

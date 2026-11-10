@@ -478,11 +478,13 @@
               <input type="checkbox" v-model="showBannedCards" id="bannedCards-checkbox">
               <label for="bannedCards-checkbox">
                 <span v-i18n>Exclude some cards</span>
+                <span v-if="bannedCards.length">&nbsp;({{ bannedCards.length }})</span>
               </label>
 
               <input type="checkbox" v-model="showIncludedCards" id="includedCards-checkbox">
               <label for="includedCards-checkbox">
                 <span v-i18n>Include some cards</span>
+                <span v-if="includedCards.length">&nbsp;({{ includedCards.length }})</span>
               </label>
 
               <template v-if="expansions.colonies">
@@ -869,6 +871,8 @@
         @cards-list-changed="updateBannedCards"
         :title="'Cards to exclude from the game'"
         :hint="'Start typing the card name to exclude'"
+        :selected="bannedCards"
+        @close="showBannedCards = false"
       />
     </div></InputPortal>
     <InputPortal :target="creationHosts.included.target.value"><div class="create-game--block" v-if="showIncludedCards">
@@ -877,6 +881,8 @@
         @cards-list-changed="updateIncludedCards"
         :title="'Cards to include in the game'"
         :hint="'Start typing the card name to include'"
+        :selected="includedCards"
+        @close="showIncludedCards = false"
       />
     </div></InputPortal>
     <input style="display: none" type="file" accept=".json" id="settings-file" ref="file" @change="uploadSettings()">
@@ -1721,10 +1727,10 @@ export default defineComponent({
       nextTick(() => {
         try {
           if (component.showBannedCards && refs.cardsFilter) {
-            refs.cardsFilter.selected = processor.bannedCards;
+            refs.cardsFilter.selectedCards = processor.bannedCards;
           }
           if (component.showIncludedCards && refs.cardsFilter2) {
-            refs.cardsFilter2.selected = processor.includedCards;
+            refs.cardsFilter2.selectedCards = processor.includedCards;
           }
           if (!component.seededGame) {
             component.seed = Math.random();
@@ -1780,10 +1786,10 @@ export default defineComponent({
       nextTick(() => {
         const refs = this.typedRefs;
         if (refs.cardsFilter) {
-          refs.cardsFilter.selected = [];
+          refs.cardsFilter.selectedCards = [];
         }
         if (refs.cardsFilter2) {
-          refs.cardsFilter2.selected = [];
+          refs.cardsFilter2.selectedCards = [];
         }
       });
     },
@@ -1936,10 +1942,10 @@ export default defineComponent({
       this.includedCards = [];
       const refs = this.typedRefs;
       if (refs.cardsFilter) {
-        refs.cardsFilter.selected = [];
+        refs.cardsFilter.selectedCards = [];
       }
       if (refs.cardsFilter2) {
-        refs.cardsFilter2.selected = [];
+        refs.cardsFilter2.selectedCards = [];
       }
     },
     async downloadSettings() {
@@ -2812,8 +2818,8 @@ export default defineComponent({
         }
       });
 
-      players.map((player: any) => {
-        player.first = (this.firstIndex === player.index);
+      players.map((player, index) => {
+        player.first = (this.firstIndex === index + 1);
         return player;
       });
 

@@ -170,10 +170,10 @@ describe('Replay frame projection', () => {
   it('freezes recorded timers instead of advancing them while the replay is viewed', () => {
     const [game] = testGame(2);
     const saved = game.serialize();
-    saved.players[0].timer = {sumElapsed: 1200, startedAt: 10, running: true, afterFirstAction: true, lastStoppedAt: 10};
+    saved.players[0].timer = {sumElapsed: 1200, startedAt: 10, running: true, enabled: true, lastStoppedAt: 10};
     const frame = toReplayFrame(saved);
     expect(frame.view.players[0].timer).deep.eq({
-      sumElapsed: 1200, startedAt: 10, running: false, afterFirstAction: true, lastStoppedAt: 10,
+      sumElapsed: 1200, startedAt: 10, running: false,
     });
     expect(saved.players[0].timer.running).eq(true);
   });

@@ -1,8 +1,9 @@
 import {MilestoneName} from '../../common/ma/MilestoneName';
+import {BoardName} from '../../common/boards/BoardName';
 import {IPlayer} from '../IPlayer';
 import {IGame} from '../IGame';
 import {ConglomeratesExpansion} from '../conglomerates/ConglomeratesExpansion';
-import {IMarsBot} from '@/server/automa/MarsBotCorpTypes';
+import {IMarsBot} from '@/server/automa/IMarsBot';
 
 export interface IMilestone {
   name: MilestoneName;
@@ -11,6 +12,10 @@ export interface IMilestone {
   getScore(player: IPlayer): number;
   /** Threshold that applies in this game, when it is dynamic. */
   thresholdFor?(game: IGame): number | undefined;
+  /** How MarsBot meets the criteria. */
+  automaDescription?: string;
+  /** The automa description for this milestone, when played on certain maps. */
+  automaMapDescriptions?: Partial<Record<BoardName, string>>;
   /**
    * Whether MarsBot meets the criteria.
    *

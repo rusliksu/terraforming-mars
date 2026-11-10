@@ -120,6 +120,20 @@ describe('CreateGameForm', () => {
     expect(wrapper.text()).not.to.contain('/start');
   });
 
+  it('sends the selected player as first player', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const model = wrapper.vm as any;
+    model.playersCount = 3;
+    model.randomFirstPlayer = false;
+    model.firstIndex = 2;
+
+    const config = JSON.parse(await model.serializeSettings());
+
+    expect(config.players.map((player: {first: boolean}) => player.first)).deep.eq([false, true, false]);
+  });
+
   it('links each fan expansion checkbox to its own rules page on this fork\'s own wiki', async () => {
     // None of these are part of the upstream project, so unlike the official expansions'
     // (whose info icons link to the shared upstream wiki), their links must point at this

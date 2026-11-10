@@ -283,8 +283,27 @@ $releasePinnedDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
 ) -InputText $null
 Assert-True ($releasePinnedDryRun.ExitCode -eq 0) "Pinned release dry-run failed. stderr=$($releasePinnedDryRun.StdErr)"
 Assert-True ($releasePinnedDryRun.StdOut.Contains("Expect : artifact=$artifactSha git=$shaA")) "Release dry-run does not preserve both exact pins through the nested promotion wrapper."
-Assert-True ($releasePinnedDryRun.StdOut.Contains("Ignored realtime games: ledger=0 cli=0 total=0")) "Release dry-run loads ignored games without an explicit per-run input."
-Assert-True ($releasePinnedDryRun.StdOut.Contains("Ignored realtime ledger: not supplied")) "Release dry-run does not report that the operator ledger is disabled by default."
+Assert-True ($releasePinnedDryRun.StdOut -match "Ignored realtime games: ledger=\d+ cli=0 total=\d+") "Release dry-run does not report the operator ledger as the default ignored-games input."
+Assert-True ($releasePinnedDryRun.StdOut.Contains("Ignored realtime ledger: ") -and $releasePinnedDryRun.StdOut.Contains("prod-ignored-games.txt")) "Release dry-run does not default to the operator ignored-games ledger."
+
+# The operator ledger is the default input; an explicit file still wins and its
+# ids must reach the locked remote gate.
+$explicitLedgerRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("tm-release-explicit-ledger-" + [guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Path $explicitLedgerRoot -Force | Out-Null
+try {
+    $explicitLedgerPath = Join-Path $explicitLedgerRoot "prod-ignored-games.txt"
+    Set-Content -LiteralPath $explicitLedgerPath -Encoding utf8 -Value @("g_abandoned  # confirmed by operator")
+    $explicitLedgerReleaseDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
+        "-NoProfile", "-File", $releasePath, "-DryRun",
+        "-ExpectedGitSha", $shaA, "-ExpectedArtifactSha", $artifactSha,
+        "-IgnoredRealtimeGameIdFile", $explicitLedgerPath
+    ) -InputText $null
+    Assert-True ($explicitLedgerReleaseDryRun.ExitCode -eq 0) "Explicit-ledger release dry-run failed. stderr=$($explicitLedgerReleaseDryRun.StdErr)"
+    Assert-True ($explicitLedgerReleaseDryRun.StdOut.Contains("Ignored realtime games: ledger=1 cli=0 total=1")) "Release dry-run did not load the explicit operator ledger."
+    Assert-True ($explicitLedgerReleaseDryRun.StdOut.Contains('ignored_realtime_game_ids_csv="g_abandoned"')) "Release dry-run did not forward the operator ledger ids into the locked remote gate."
+} finally {
+    Remove-Item -LiteralPath $explicitLedgerRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
 
 $defaultPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
     "-NoProfile", "-File", $promotePath, "-DryRun"
@@ -998,17 +1017,21 @@ Assert-True ($deployRemote.Contains('Code-only deploy requires an existing share
 Assert-True ($rehearsalRemote.Contains('validate_saved_games.js "$game_db"')) "Read-only rehearsal does not validate existing saves."
 Assert-True ($promoteRemote.Contains('trap handle_promote_exit EXIT') -and $promoteRemote.Contains('Unexpected failure during the single-writer window')) "Unexpected errors can strand production inside the single-writer window."
 
-# Abandoned realtime games may be declared in an operator-owned ledger. Release and
-# rollout use it only when its path is supplied explicitly; nothing infers an abandoned
-# game, and every merged id is echoed before the locked remote gate runs.
+# Abandoned realtime games may be declared in an operator-owned ledger. Release loads
+# the default ledger automatically and rollout forwards the same file; nothing infers an
+# abandoned game, and every merged id is echoed before the locked remote gate runs.
 $ledgerTempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("tm-ignored-ledger-" + [guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Path $ledgerTempRoot -Force | Out-Null
 try {
     $ledgerPath = Join-Path $ledgerTempRoot "prod-ignored-games.txt"
 
     Assert-True ((@(Read-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath)).Count -eq 0) "A missing ignored-games ledger is not empty."
-    Assert-True ($null -eq (Get-TmIgnoredRealtimeGameIdLedgerPath -Path $null -ExplicitOnly)) "An omitted release ledger path still resolves to the default ledger."
+    Assert-True ($null -eq (Get-TmIgnoredRealtimeGameIdLedgerPath -Path $null -ExplicitOnly)) "An explicit-only ledger lookup still resolves to the operator ledger."
     Assert-True ((Get-TmIgnoredRealtimeGameIdLedgerPath -Path $ledgerPath -ExplicitOnly) -eq [System.IO.Path]::GetFullPath($ledgerPath)) "An explicit release ledger path was not preserved."
+    $defaultLedgerPath = Get-TmIgnoredRealtimeGameIdLedgerPath -Path $null
+    Assert-True (-not [string]::IsNullOrWhiteSpace($defaultLedgerPath)) "An omitted release ledger path no longer resolves to the default ledger."
+    Assert-True ($defaultLedgerPath.EndsWith("prod-ignored-games.txt")) "The default ignored-games ledger path has an unexpected file name."
+    Assert-True ($defaultLedgerPath.Contains(".tmp")) "The default ignored-games ledger path is not under the operator temp root."
 
     Set-Content -LiteralPath $ledgerPath -Encoding utf8 -Value @(
         "# comment only",
@@ -1069,9 +1092,9 @@ try {
     Remove-Item -LiteralPath $ledgerTempRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-Assert-True ($releaseSource.Contains('Get-TmIgnoredRealtimeGameIdLedgerPath -Path $IgnoredRealtimeGameIdFile -ExplicitOnly')) "Prod release does not require an explicit ignored-games ledger path."
-Assert-True ($releaseSource.Contains('$ledgerIgnoredRealtimeGameIds = @()')) "Prod release does not keep ledger ids empty when no path is supplied."
-Assert-True ($releaseSource.Contains('@(Read-TmIgnoredRealtimeGameIdLedger -Path $ignoredRealtimeGameIdLedgerPath)')) "Prod release does not read an explicitly supplied ignored-games ledger."
+Assert-True ($releaseSource.Contains('Get-TmIgnoredRealtimeGameIdLedgerPath -Path $IgnoredRealtimeGameIdFile') -and -not $releaseSource.Contains('Get-TmIgnoredRealtimeGameIdLedgerPath -Path $IgnoredRealtimeGameIdFile -ExplicitOnly')) "Prod release does not load the operator ignored-games ledger by default."
+Assert-True ($releaseSource.Contains('$ignoredRealtimeGameIdLedgerLabel = $ignoredRealtimeGameIdLedgerPath')) "Prod release does not report the resolved ignored-games ledger path."
+Assert-True ($releaseSource.Contains('@(Read-TmIgnoredRealtimeGameIdLedger -Path $ignoredRealtimeGameIdLedgerPath)')) "Prod release does not read the ignored-games ledger."
 Assert-True ($releaseSource.Contains('$ignoredRealtimeGameIds = @(Merge-TmIgnoredRealtimeGameIds -Primary $ledgerIgnoredRealtimeGameIds -Additional $cliIgnoredRealtimeGameIds)')) "Prod release does not merge the ignored-games ledger with the per-run ids."
 Assert-True ($releaseSource.Contains('Write-Host ("Ignored realtime games: ledger={0} cli={1} total={2}"')) "Prod release does not echo the merged ignored-game counts."
 Assert-True ($releaseSource.Contains('Write-Host ("Ignored realtime ids   : {0}" -f ($ignoredRealtimeGameIds -join ","))')) "Prod release does not echo the merged ignored-game ids."

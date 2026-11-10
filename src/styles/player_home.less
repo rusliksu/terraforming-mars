@@ -813,6 +813,15 @@
       border: 0px solid;
     }
 
+    // No spots left: the tile and its values stay visible, just recede.
+    &--closed {
+      opacity: 0.5;
+
+      .claimable {
+        border: 0 solid;
+      }
+    }
+
     @ma-name:
       terraformer, mayor, gardener, builder, planner,
       landlord, banker, scientist, thermalist, miner,

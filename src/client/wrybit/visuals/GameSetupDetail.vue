@@ -169,6 +169,7 @@ const entries = computed((): Array<SetupEntry> => {
     configValues.value.length > 0 && {label: label('Game configs:'), values: configValues.value},
     options.escapeVelocity !== undefined && {label: label('Escape Velocity'), values: [{text: escapeVelocityText.value, iconClass: 'expansion-icon-escape-velocity'}], wide: true},
     options.bannedCards.length > 0 && {label: label('Banned cards:'), values: options.bannedCards.map((card) => ({text: translateText(card)})), wide: true},
+    (options.bannedColonies?.length ?? 0) > 0 && {label: label('Banned colonies:'), values: (options.bannedColonies ?? []).map((colony) => ({text: translateText(colony)})), wide: true},
   ];
   return all.filter((entry): entry is SetupEntry => entry !== false);
 });

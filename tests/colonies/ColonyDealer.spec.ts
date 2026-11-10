@@ -59,6 +59,34 @@ describe('ColonyDealer', () => {
     ]);
   });
 
+  it('banned colonies never enter the pool', () => {
+    const rng = new SeededRandom(1);
+    const dealer = new ColonyDealer(rng, {
+      ...options,
+      bannedColonies: [ColonyName.PLUTO, ColonyName.MIRANDA],
+    });
+    dealer.drawColonies(2);
+
+    expect(dealer.colonies.map(toName)).not.to.include('Pluto');
+    expect(dealer.colonies.map(toName)).not.to.include('Miranda');
+    expect(dealer.discardedColonies.map(toName)).not.to.include('Pluto');
+    expect(dealer.discardedColonies.map(toName)).not.to.include('Miranda');
+    expect(dealer.colonies).has.length(5);
+  });
+
+  it('banned colonies are removed from a custom colonies list', () => {
+    const rng = new SeededRandom(1);
+    const dealer = new ColonyDealer(rng, {
+      ...options,
+      customColoniesList: [ColonyName.CALLISTO, ColonyName.CERES, ColonyName.ENCELADUS, ColonyName.LUNA, ColonyName.TITAN],
+      bannedColonies: [ColonyName.LUNA],
+    });
+    dealer.drawColonies(1);
+
+    expect(dealer.colonies.map(toName)).to.have.members(['Callisto', 'Ceres', 'Enceladus', 'Titan']);
+    expect(dealer.discardedColonies.map(toName)).not.to.include('Luna');
+  });
+
   it('includes explicitly requested pathfinders colonies without the pathfinders expansion', () => {
     const rng = new SeededRandom(1);
     const dealer = new ColonyDealer(rng, {

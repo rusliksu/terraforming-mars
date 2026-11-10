@@ -1,6 +1,5 @@
 import {expect} from 'chai';
 import fs from 'node:fs/promises';
-import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {SQLite} from '@/server/database/SQLite';
 import {ApiReplay} from '@/server/routes/ApiReplay';
@@ -10,6 +9,7 @@ import {CrediCor} from '@/server/cards/corporation/CrediCor';
 import {Helion} from '@/server/cards/corporation/Helion';
 import {Birds} from '@/server/cards/base/Birds';
 import {testGame} from '@tests/TestGame';
+import {archiveLab} from '@tests/testing/archiveLab';
 import {restoreTestDatabase, setTestDatabase} from '@tests/testing/setup';
 import {MockResponse} from '@tests/routes/HttpMocks';
 import {RouteTestScaffolding} from '@tests/routes/RouteTestScaffolding';
@@ -36,7 +36,7 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
   let spectatorId: SpectatorId;
 
   beforeEach(async () => {
-    const lab = process.platform === 'win32' ? 'D:/tm-db/smartbot-lab/replay-archive-tests' : tmpdir();
+    const lab = archiveLab('replay-archive-tests');
     await fs.mkdir(lab, {recursive: true});
     const workspace = await fs.mkdtemp(join(lab, 'tm-replay-'));
     root = join(workspace, 'archives');

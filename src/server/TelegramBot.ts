@@ -58,7 +58,25 @@ function telegramDisabled(): boolean {
   return process.env.TM_DISABLE_TELEGRAM === '1';
 }
 
+function getBotTokenFromFile(): string | undefined {
+  const tokenFile = process.env.TM_BOT_TOKEN_FILE?.trim();
+  if (!tokenFile) {
+    return undefined;
+  }
+  try {
+    const token = fs.readFileSync(tokenFile, 'utf8').trim();
+    return token || undefined;
+  } catch (err) {
+    return undefined;
+  }
+}
+
 function getBotToken(): string | undefined {
+  // Read the file on every call so token rotation does not require a restart.
+  const fileToken = getBotTokenFromFile();
+  if (fileToken !== undefined) {
+    return fileToken;
+  }
   const token = process.env.TM_BOT_TOKEN?.trim();
   return token ? token : undefined;
 }

@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {testGame} from '../TestGame';
 import {PathfindersExpansion} from '../../src/server/pathfinders/PathfindersExpansion';
 import {Tag} from '../../src/common/cards/Tag';
-import {fakeCard, runAllActions} from '../TestingUtils';
+import {fakeCard, formatMessage, runAllActions} from '../TestingUtils';
 import {CardResource} from '../../src/common/CardResource';
 import {CardName} from '../../src/common/cards/CardName';
 import {SelectParty} from '../../src/server/inputs/SelectParty';
@@ -49,6 +49,7 @@ describe('PathfindersExpansion', () => {
     runAllActions(game);
 
     expect(pathfindersData.venus).eq(3);
+    expect(game.gameLog.map(formatMessage)).to.include('blue raised the :tag:venus: planetary track 3 step(s)');
     expect(player1.heat).eq(2);
     expect(player2.heat).eq(1);
     expect(floaterCard.resourceCount).eq(1);
@@ -72,6 +73,9 @@ describe('PathfindersExpansion', () => {
     expect(player2.terraformRating).eq(20);
 
     PathfindersExpansion.raiseTrack(Tag.VENUS, player2, 1);
+
+    expect(game.gameLog.map(formatMessage)).to.include('red raised the :tag:venus: planetary track 1 step(s)');
+    expect(game.gameLog.map(formatMessage)).to.include('blue has the most :tag:venus: tags and earns 2:i:vp:');
 
     // Player 2 gets the terraforming bump
     expect(player1.terraformRating).eq(20);
@@ -108,6 +112,7 @@ describe('PathfindersExpansion', () => {
     runAllActions(game);
 
     expect(player.getVictoryPoints().planetaryTracks).eq(1);
+    expect(game.gameLog.map(formatMessage)).to.include('blue has the most :tag:earth: tags and earns 1:i:vp:');
   });
 
   it('grant - 2vp', () => {
@@ -117,6 +122,7 @@ describe('PathfindersExpansion', () => {
     runAllActions(game);
 
     expect(player.getVictoryPoints().planetaryTracks).eq(2);
+    expect(game.gameLog.map(formatMessage)).to.include('blue has the most :tag:earth: tags and earns 2:i:vp:');
   });
 
   it('grant - 3mc', () => {

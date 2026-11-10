@@ -296,6 +296,7 @@ export class ApiCreateGame extends Handler {
         aresHazards: true, // Not a runtime option.
         aresExtremeVariant: gameReq.aresExtremeVariant,
         bannedCards: gameReq.bannedCards,
+        bannedColonies: gameReq.bannedColonies ?? [],
         boardName: boardName,
         boardSelection: gameReq.boards,
         ceoExtension: gameReq.expansions.ceo,

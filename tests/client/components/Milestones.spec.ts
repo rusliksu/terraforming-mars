@@ -112,6 +112,33 @@ describe('Milestones', () => {
     expect(milestone.text()).to.include(getMilestone(mockMilestone.name).description);
   });
 
+  it('dims milestones that can no longer be claimed but keeps their values', async () => {
+    const wrapper = mount(Milestones, {
+      ...globalConfig,
+      props: {
+        milestones: [
+          mockMilestone,
+          {...mockMilestone, name: 'Gardener'},
+          {...mockMilestone, name: 'Builder'},
+          {
+            ...mockMilestone,
+            name: 'Mayor',
+            playerName: undefined,
+            color: undefined,
+            scores: [{color: 'blue', score: 3, claimable: false}],
+          },
+        ],
+      },
+    });
+
+    await wrapper.find('a[class="ma-clickable"]').trigger('click');
+
+    const closed = wrapper.findAll('.ma-block--closed');
+    expect(closed).to.have.lengthOf(1);
+    expect(closed[0].findAll('.ma-score')).to.have.lengthOf(1);
+    expect(closed[0].text()).to.include('3');
+  });
+
   it('milestones hide details when all milestones are claimed', async () => {
     const milestone = mount(Milestones, {
       ...globalConfig,

@@ -38,6 +38,10 @@ export class ColonyDealer {
     if (!gameOptions.aresExtension) {
       colonyTiles = colonyTiles.filter((c) => c.colonyName !== ColonyName.DEIMOS);
     }
+    const bannedColonies = gameOptions.bannedColonies ?? [];
+    if (bannedColonies.length > 0) {
+      colonyTiles = colonyTiles.filter((c) => !bannedColonies.includes(c.colonyName));
+    }
     this.gameColonies = colonyTiles.map((cf) => new cf.Factory());
   }
 

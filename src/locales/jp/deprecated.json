@@ -54,5 +54,7 @@
   "${0} turned ${1} face down to gain 3 TR": "${0}が${1}を裏返し、TR+3段階",
   "${0} has no :cr:science: cards and gained 1 TR.": "${0}は:cr:science:を配置できるカードがないため、TR+1段階.",
   "${0} gained ${1} TR": "${0}のTR+${1}段階",
+  "${0} has the most ${1} tags and earns 1VP": "${0}は${1}タグを最も多く所持しているため1VP獲得",
+  "${0} has the most ${1} tags and earns 2VP": "${0}は${1}タグを最も多く所持しているため2VP獲得",
   "${0} lost ${1} TR": "${0}のTR-${1}段階"
 }

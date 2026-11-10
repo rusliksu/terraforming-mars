@@ -13,15 +13,26 @@ All notable changes to the custom Terraforming Mars server are recorded here.
 
 - Player view now keeps the board, players and action panel in one viewport at desktop widths; no page scrolling, panels scroll inside.
 - Player table rows and resource/tag icons are larger and easier to scan.
+- Every player row now carries the tag icons itself: tags the player has not played stay in place dimmed, the event-tag group is set off by a divider, and the tag counters are larger.
+- The player-table header row is gone: every row now carries its own resource, tag and score icons, and the game menu plus the section toggles sit in a compact strip above the table.
+- The player-table sections follow the classic bar: resources, then hand cards, actions, VP, TR and the played-cards count, then the tags on the right. The section toggles are gone (the table always shows everything) and rows, icons and counters are larger, closer to the classic player bar.
+- Table rows now match the classic bar height (112 px), the VP/TR icons are 40 px, and the name column is wide enough to show the full player name.
+- The Wrybit player page drops the space reserved for the classic sidebar, so the player table spans the full window width and the tag icons keep the classic 8 px gap.
 - Narrow player table keeps VP/TR/cards/actions plus compact goods and played-tag strips instead of showing only resource numbers; the timer stays visible next to a passed status.
 - Reserved player fleets use a coloured hull instead of the neutral grey shuttle; the bottom Fleets area lists only ships that have not launched.
+- Player-table rows for light reserved identities (pearl, gold, saturn ...) switch the text inside the row to the persona's classic dark tone, so the white counters and the muted corporation name no longer disappear on the light surface.
 - Removed the alarming "Not enough space" tooltip from the player table toggles.
 - Basic ocean, city and greenery tiles use the classic Terraforming Mars tile art instead of tiny sprite glyphs.
 - Finished-game victory-point/global-parameter charts use reserved player colours instead of the grey fallback.
 - The winner total in the results table uses a dark fallback on the gold surface, and the Rigatone persona pattern no longer crosses the score cells.
 - Non-winner total cells have a stronger dark backdrop, keeping the gold score readable on bright reserved-colour rows.
 - Spectator log updates no longer remount the game view on every poll; new lines fade in in place, preserving scroll and selection.
+- Spectator polling now applies a new model only when the game actually changed; unchanged responses no longer repaint the board, table and log every second. The live benchmark stayed at 60 FPS (p99 frame 16.9 ms) with only three initial long tasks instead of periodic 100–130 ms spikes.
+- Spectator pages no longer create vertical page scroll; the fixed one-screen shell now covers both player and spectator views.
+- Colonies are rendered as the familiar classic colony cards in a two-column card grid, with the compact fleet hangar below.
+- Keyboard-shortcut caps are larger in game buttons/tabs and in the interface help.
 - Mobile player header no longer shows the legal footer over the menu, and the desktop layout switch is hidden on phones.
+- When it is not your turn, the empty action panel no longer keeps half of the left column: it shrinks to the status line and the cards panel fills the column.
 
 ## [2026-10-29] - Production UI release
 

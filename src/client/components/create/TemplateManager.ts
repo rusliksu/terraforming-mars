@@ -215,6 +215,7 @@ export class TemplateManager {
     state.customPreludesExclusions = [...(customSelectionModel.customPreludesExclusions ?? [])];
     state.customColonyExclusions = [...(customSelectionModel.customColonyExclusions ?? [])];
     state.bannedCards = [...model.bannedCards];
+    state.bannedColonies = [...model.bannedColonies];
     state.includedCards = [...model.includedCards];
     state.customCeos = [...model.customCeos];
 

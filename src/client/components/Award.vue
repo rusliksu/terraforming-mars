@@ -1,5 +1,5 @@
 <template>
-  <div class="ma-block">
+  <div class="ma-block" :class="{'ma-block--closed': closed}">
     <div class="ma-player" v-if="award.playerName">
       <i :title="award.playerName" :class="playerCubeCss(award.color)"></i>
     </div>
@@ -71,6 +71,11 @@ export default defineComponent({
     // ConglomeratesExpansion.calculateVictoryPoints) -- appended to the description so it's
     // clear the ranking is combined, not per-player.
     conglomeratesExpansion: {
+      type: Boolean,
+      default: false,
+    },
+    // No spots left for this award: it can no longer be funded, so it renders dimmed.
+    closed: {
       type: Boolean,
       default: false,
     },

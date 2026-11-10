@@ -172,6 +172,8 @@ export function validateNewGameConfig(config: NewGameConfig, helpers: Helpers): 
   }
 
   // Check custom colony count
+  const bannedColonies = new Set(config.bannedColonies ?? []);
+  const availableCustomColonies = config.customColoniesList.filter((colonyName) => !bannedColonies.has(colonyName));
   if (config.customColoniesList.length > 0) {
     let required = playerCount + 2;
     if (playerCount === 1) {
@@ -180,10 +182,10 @@ export function validateNewGameConfig(config: NewGameConfig, helpers: Helpers): 
       required = 5;
     }
 
-    if (config.customColoniesList.length < required) {
+    if (availableCustomColonies.length < required) {
       errors.notEnoughColonies = required;
     }
-    errors.coloniesMissingExpansions = config.customColoniesList.filter((colonyName) => {
+    errors.coloniesMissingExpansions = availableCustomColonies.filter((colonyName) => {
       const expansion = helpers.getColonyExpansion(colonyName);
       return expansion !== undefined && !config.expansions[expansion];
     });

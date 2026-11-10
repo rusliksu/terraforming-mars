@@ -17,7 +17,7 @@
           <div :class="'party-name party-name--'+partyNameToCss(turmoil.ruling)" v-i18n>{{ turmoil.ruling }}</div>
         </div>
         <div class="dominant-party-bonus">
-          <TurmoilAgenda v-if="turmoil.ruling" :id="getPolicy(turmoil.ruling)" :morePartiesExpansion="morePartiesExpansion" />
+          <TurmoilAgenda v-if="turmoil.ruling" :id="getPolicy(turmoil.ruling)" :morePartiesExpansion="morePartiesExpansion" :betterMarsExpansion="betterMarsExpansion" />
         </div>
         <div class="policy-user-cubes">
           <template v-for="n in turmoil.policyActionUsers" :key="n.color">
@@ -44,7 +44,7 @@
               <div :class="'party-name party-name--'+partyNameToCss(party.name)" v-i18n>{{ party.name }}</div>
 
               <div class="party-bonus">
-                <TurmoilAgenda :id="getPolicy(party.name)" :morePartiesExpansion="morePartiesExpansion" />
+                <TurmoilAgenda :id="getPolicy(party.name)" :morePartiesExpansion="morePartiesExpansion" :betterMarsExpansion="betterMarsExpansion" />
               </div>
             </div>
           </div>
@@ -70,7 +70,7 @@
           </div>
           <div :class="'party-name party-name--'+partyNameToCss(party.name)" v-i18n>{{ party.name }}</div>
           <div class="party-bonus">
-            <TurmoilAgenda type="party-bonus" :id="getBonus(party.name)" :morePartiesExpansion="morePartiesExpansion" />
+            <TurmoilAgenda type="party-bonus" :id="getBonus(party.name)" :morePartiesExpansion="morePartiesExpansion" :betterMarsExpansion="betterMarsExpansion" />
           </div>
         </div>
       </div>
@@ -89,7 +89,7 @@
       <template #header>
         <h2 ref="referenceTitle" id="agenda-reference-title" tabindex="-1" v-i18n>{{ agendaStyle === 'Chairman' ? 'Party reference' : 'Policies' }}</h2>
       </template>
-      <TurmoilAgendaReference :parties="referenceParties" :rulingParty="turmoil.ruling" :agendaStyle="agendaStyle" :morePartiesExpansion="morePartiesExpansion" />
+      <TurmoilAgendaReference :parties="referenceParties" :rulingParty="turmoil.ruling" :agendaStyle="agendaStyle" :morePartiesExpansion="morePartiesExpansion" :betterMarsExpansion="betterMarsExpansion" />
     </PopupPanel>
   </Teleport>
 </template>
@@ -116,6 +116,10 @@ export default defineComponent({
       required: true,
     },
     morePartiesExpansion: {
+      type: Boolean,
+      default: false,
+    },
+    betterMarsExpansion: {
       type: Boolean,
       default: false,
     },

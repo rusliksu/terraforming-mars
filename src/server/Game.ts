@@ -1255,7 +1255,7 @@ export class Game implements IGame, Logger {
           .annotate(GlobalParameter.TEMPERATURE)
           .andThen(() => {
             this.increaseTemperature(player, 1);
-            this.log('${0} acted as World Government and increased temperature', (b) => b.player(player));
+            this.log('${0} acted as World Government and increased :i:temperature:', (b) => b.player(player));
             return undefined;
           }),
       );
@@ -1266,7 +1266,7 @@ export class Game implements IGame, Logger {
           .annotate(GlobalParameter.OXYGEN)
           .andThen(() => {
             this.increaseOxygenLevel(player, 1);
-            this.log('${0} acted as World Government and increased oxygen level', (b) => b.player(player));
+            this.log('${0} acted as World Government and increased :i:oxygen: level', (b) => b.player(player));
             return undefined;
           }),
       );
@@ -1277,7 +1277,7 @@ export class Game implements IGame, Logger {
           .annotate(GlobalParameter.OCEANS)
           .andThen((space) => {
             this.addOcean(player, space);
-            this.log('${0} acted as World Government and placed an ocean', (b) => b.player(player));
+            this.log('${0} acted as World Government and placed an :i:ocean:', (b) => b.player(player));
             return undefined;
           }),
       );
@@ -1286,7 +1286,7 @@ export class Game implements IGame, Logger {
       orOptions.options.push(
         new SelectOption('Increase Venus scale', 'Increase').andThen(() => {
           this.increaseVenusScaleLevel(player, 1);
-          this.log('${0} acted as World Government and increased Venus scale', (b) => b.player(player));
+          this.log('${0} acted as World Government and increased :i:venus: scale', (b) => b.player(player));
           return undefined;
         }),
       );
@@ -1963,7 +1963,7 @@ export class Game implements IGame, Logger {
     const oceanAdjacencyBonus = adjacentOceanCount * player.oceanBonus;
     if (oceanAdjacencyBonus > 0) {
       player.stock.add(Resource.MEGACREDITS, oceanAdjacencyBonus);
-      this.log('${0} gained ${1}:r:mc: from ${2} ocean(s)', (b) => b.player(player).number(oceanAdjacencyBonus).number(adjacentOceanCount));
+      this.log('${0} gained ${1}:r:mc: from ${2} :i:ocean:', (b) => b.player(player).number(oceanAdjacencyBonus).number(adjacentOceanCount));
     }
   }
 

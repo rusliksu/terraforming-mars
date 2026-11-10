@@ -74,4 +74,23 @@ describe('BoardSelector', () => {
     expect(wrapper.findComponent(BoardPopup).exists()).is.false;
     expect(wrapper.emitted('update:boards')).is.undefined;
   });
+
+  it('shows the loaded custom map on the button', () => {
+    const wrapper = mount(BoardSelector, {
+      ...globalConfig,
+      props: {boards: [BoardName.CUSTOM], shuffleMap: false, customBoardName: 'Pasted Map'},
+    });
+    const text = wrapper.find('label[for="boardSelector-checkbox"]').text();
+    expect(text).to.include('Custom');
+    expect(text).to.include('Pasted Map');
+  });
+
+  it('offers the loaded custom map in the popup', async () => {
+    const wrapper = mount(BoardSelector, {
+      ...globalConfig,
+      props: {boards: [BoardName.THARSIS], shuffleMap: false, customBoardName: 'Pasted Map'},
+    });
+    await openPopup(wrapper);
+    expect(wrapper.findComponent(BoardPopup).props('customBoardName')).eq('Pasted Map');
+  });
 });

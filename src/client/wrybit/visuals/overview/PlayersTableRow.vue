@@ -15,8 +15,9 @@
       <template v-if="section === 'tags' && visibility.tags">
         <div class="players-table-divider"></div>
         <template v-for="(group, groupIndex) in tagColumns" :key="groupIndex">
-          <div v-if="groupIndex > 0"></div>
-          <div class="players-table-cell" v-for="tag in group" :key="tag" :data-test="'tag-' + tag">
+          <div v-if="groupIndex > 0" class="players-table-tag-separator"></div>
+          <div v-for="tag in group" :key="tag" :class="['players-table-cell', 'players-table-cell--tag', {'players-table-cell--tag-empty': !tagDetail(tag).count && tagDetail(tag).discount === 0 && tagDetail(tag).substitution === undefined}]" :data-test="'tag-' + tag">
+            <Tag :tag="(tag as CardTag)" size="big" type="secondary" />
             <span :class="tagCounterClasses(tag)"><span v-if="protectedTags.includes(tag)" class="players-table-protection shield_icon" :data-test="'protection-' + tag"></span>{{ tagDetail(tag).count || '·' }}<PlayerTagSubstitution v-if="tagDetail(tag).substitution !== undefined" :tag="tagDetail(tag).substitution!" :data-test="'substitution-' + tag" /></span>
             <span v-if="tagDetail(tag).discount > 0" class="players-table-discount" :data-test="'discount-' + tag" :title="$t('Discount')">-{{ tagDetail(tag).discount }}</span>
             <PointsPerTag :points="tagDetail(tag)" />
@@ -26,23 +27,33 @@
 
       <template v-if="section === 'score' && visibility.score">
         <div class="players-table-divider"></div>
-        <div class="players-table-cell"><span class="players-table-counter" data-test="vp">{{ victoryPoints }}</span></div>
-        <div class="players-table-cell"><span class="players-table-counter" data-test="tr">{{ player.terraformRating }}</span></div>
-        <div class="players-table-cell">
+        <div class="players-table-cell players-table-cell--score">
+          <div class="tag-count tag-cards tag-type-main tooltip tooltip-bottom" :data-tooltip="$t('Cards in hand')"></div>
           <span class="players-table-counter" data-test="hand">{{ player.cardsInHandNbr ?? 0 }}</span>
           <span v-if="handDiscount !== ''" :class="['players-table-discount', {'players-table-discount--wide': handDiscount.length > 1}]" data-test="discount-all" :title="handDiscountTitle">{{ handDiscount.replace('*', '') }}<b v-if="handDiscount.endsWith('*')" class="players-table-discount-mark">*</b></span>
         </div>
-        <div class="players-table-cell">
+        <div class="players-table-cell players-table-cell--score">
+          <div class="tag-count tag-action-card tooltip tooltip-bottom" :data-tooltip="$t('The number of available actions on active cards')">
+            <div class="blue-stripe"></div>
+            <div class="red-arrow"></div>
+          </div>
           <span :class="['players-table-counter', {'players-table-counter--zero': player.availableBlueCardActionCount === 0}]" data-test="actions">{{ player.availableBlueCardActionCount }}</span>
+        </div>
+        <div class="players-table-cell players-table-cell--score">
+          <div class="tag-count tag-vp tag-type-main tooltip tooltip-bottom" :data-tooltip="$t('Victory Points')"></div>
+          <span class="players-table-counter" data-test="vp">{{ victoryPoints }}</span>
+        </div>
+        <div class="players-table-cell players-table-cell--score">
+          <div class="tag-count tag-tr tag-type-main tooltip tooltip-bottom" :data-tooltip="$t('Terraform Rating')"></div>
+          <span class="players-table-counter" data-test="tr">{{ player.terraformRating }}</span>
+        </div>
+        <div class="players-table-cell players-table-cell--score">
+          <div class="tag-count tag-cards tag-type-main tooltip tooltip-bottom" :data-tooltip="$t('Played cards')"></div>
+          <!-- No own click handler: the click bubbles up to the row; the button stays for keyboard use -->
+          <button type="button" class="players-table-played" :aria-label="$t('Played cards')" data-test="played-cards">{{ player.tableau.length }}</button>
         </div>
       </template>
     </template>
-
-    <div class="players-table-divider"></div>
-    <div class="players-table-cell">
-      <!-- No own click handler: the click bubbles up to the row; the button stays for keyboard use -->
-      <button type="button" class="players-table-played" :aria-label="$t('Played cards')" data-test="played-cards">{{ player.tableau.length }}</button>
-    </div>
 
     <!-- When the wide table has to hide the tag columns, keep the played tags visible below the row.
          The old panel was dropped here because the remaining four numbers said nothing about tags. -->
@@ -151,6 +162,8 @@ export default defineComponent({
       return this.player.color === this.playerView.thisPlayer?.color;
     },
     rowClasses(): Array<string> {
+      // The classic translucent class gives the row the persona surface and the matching text
+      // tone; light reserved identities (pearl, gold, ...) override that tone inside the table.
       const classes = ['players-table-row', 'players-table-row--player', 'players-table-row--' + this.player.color, 'player_translucent_bg_color_' + this.player.color];
       if (this.isThisPlayer) {
         classes.push('players-table-row--me');

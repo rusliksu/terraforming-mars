@@ -9,7 +9,7 @@ import {IGlobalEvent} from '../turmoil/globalEvents/IGlobalEvent';
 import {ClientGlobalEvent} from '../../common/turmoil/ClientGlobalEvent';
 import {ClientAgenda} from '../../common/turmoil/ClientAgenda';
 import {BonusId, PolicyId} from '../../common/turmoil/Types';
-import {ALL_PARTIES, MORE_PARTIES_ALL, PartyFactory} from '../turmoil/Turmoil';
+import {ALL_PARTIES, BETTER_MARS_PARTIES, MORE_PARTIES_ALL, PartyFactory} from '../turmoil/Turmoil';
 import {PartyName} from '../../common/turmoil/PartyName';
 import {policyDescription} from '../turmoil/Policy';
 import {ClientCard} from '../../common/cards/ClientCard';
@@ -166,10 +166,14 @@ class AgendaProcessor {
   // only ever in play here. Kept as a separate full set (not just the ids that differ) so
   // client lookups don't need to know or care which ids changed.
   public static moreJson: Partial<Record<BonusId | PolicyId, ClientAgenda>> = {};
+  // Descriptions as they read in a Better Mars game -- the official parties, except Mars First's
+  // building-tag bonus also counts Mars tags. A separate full set, like `moreJson` above.
+  public static betterMarsJson: Partial<Record<BonusId | PolicyId, ClientAgenda>> = {};
 
   public static makeJson() {
     AgendaProcessor.json = AgendaProcessor.process(ALL_PARTIES);
     AgendaProcessor.moreJson = AgendaProcessor.process(MORE_PARTIES_ALL);
+    AgendaProcessor.betterMarsJson = AgendaProcessor.process(BETTER_MARS_PARTIES);
   }
 
   private static process(parties: Record<PartyName, PartyFactory>): Partial<Record<BonusId | PolicyId, ClientAgenda>> {
@@ -265,6 +269,7 @@ fs.writeFileSync('src/genfiles/card-replacement-rules.json', JSON.stringify(repl
 fs.writeFileSync('src/genfiles/events.json', JSON.stringify(GlobalEventProcessor.json, null, 2));
 fs.writeFileSync('src/genfiles/agendas.json', JSON.stringify(AgendaProcessor.json, null, 2));
 fs.writeFileSync('src/genfiles/agendas-more-parties.json', JSON.stringify(AgendaProcessor.moreJson, null, 2));
+fs.writeFileSync('src/genfiles/agendas-better-mars.json', JSON.stringify(AgendaProcessor.betterMarsJson, null, 2));
 fs.writeFileSync('src/genfiles/colonies.json', JSON.stringify(ColoniesProcessor.json, null, 2));
 fs.writeFileSync('src/genfiles/milestones.json', JSON.stringify(MilestoneProcessor.json, null, 2));
 fs.writeFileSync('src/genfiles/awards.json', JSON.stringify(AwardProcessor.json, null, 2));

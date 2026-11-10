@@ -24,11 +24,13 @@ describe('TelegramBot', () => {
 
   function withTelegramEnabled<T>(fn: (storePath: string) => Promise<T>): Promise<T> {
     const originalToken = process.env.TM_BOT_TOKEN;
+    const originalTokenFile = process.env.TM_BOT_TOKEN_FILE;
     const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
     const originalStore = process.env.TM_TURN_NOTICE_STORE;
     const storePath = path.join(os.tmpdir(), `tm-turn-notices-${Date.now()}-${Math.random()}.json`);
     process.env.TM_BOT_TOKEN = 'token';
     process.env.TM_TURN_NOTICE_STORE = storePath;
+    delete process.env.TM_BOT_TOKEN_FILE;
     delete process.env.TM_DISABLE_TELEGRAM;
     return fn(storePath).finally(() => {
       fs.rmSync(storePath, {force: true});
@@ -46,6 +48,11 @@ describe('TelegramBot', () => {
         delete process.env.TM_TURN_NOTICE_STORE;
       } else {
         process.env.TM_TURN_NOTICE_STORE = originalStore;
+      }
+      if (originalTokenFile === undefined) {
+        delete process.env.TM_BOT_TOKEN_FILE;
+      } else {
+        process.env.TM_BOT_TOKEN_FILE = originalTokenFile;
       }
     });
   }
@@ -337,6 +344,90 @@ describe('TelegramBot', () => {
       expect(logs.messages[0]).does.not.contain('123456');
     } finally {
       logs.restore();
+      telegram.restore();
+    }
+  });
+
+  it('prefers TM_BOT_TOKEN_FILE over TM_BOT_TOKEN', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-bot-token-'));
+    const tokenFile = path.join(dir, 'token');
+    fs.writeFileSync(tokenFile, 'file-token\n', {mode: 0o600});
+    const telegram = stubTelegramApi({ok: true, result: {message_id: 458}});
+    try {
+      await withTelegramEnabled(async () => {
+        process.env.TM_BOT_TOKEN_FILE = tokenFile;
+        const sent = await sendGameStartNotice({
+          name: 'FileToken',
+          id: 'p-file-token',
+          telegramID: '123456',
+          lastNoticeMessageId: -1,
+        });
+        expect(sent).eq(true);
+      });
+
+      const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
+      expect(sendCalls).has.length(1);
+      expect(sendCalls[0].path).contains('file-token');
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
+      telegram.restore();
+    }
+  });
+
+  it('falls back to TM_BOT_TOKEN when TM_BOT_TOKEN_FILE is missing', async () => {
+    const telegram = stubTelegramApi({ok: true, result: {message_id: 459}});
+    try {
+      await withTelegramEnabled(async () => {
+        process.env.TM_BOT_TOKEN_FILE = path.join(os.tmpdir(), 'tm-missing-token-file-' + Date.now());
+        const sent = await sendGameStartNotice({
+          name: 'EnvToken',
+          id: 'p-env-token',
+          telegramID: '123456',
+          lastNoticeMessageId: -1,
+        });
+        expect(sent).eq(true);
+      });
+
+      const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
+      expect(sendCalls).has.length(1);
+      expect(sendCalls[0].path).contains('/bottoken/');
+    } finally {
+      telegram.restore();
+    }
+  });
+
+  it('re-reads TM_BOT_TOKEN_FILE on every call (rotation without restart)', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-bot-token-rotate-'));
+    const tokenFile = path.join(dir, 'token');
+    fs.writeFileSync(tokenFile, 'first-token\n', {mode: 0o600});
+    const telegram = stubTelegramApi({ok: true, result: {message_id: 460}});
+    try {
+      await withTelegramEnabled(async () => {
+        process.env.TM_BOT_TOKEN_FILE = tokenFile;
+        const first = await sendGameStartNotice({
+          name: 'Rotate',
+          id: 'p-rotate-one',
+          telegramID: '123456',
+          lastNoticeMessageId: -1,
+        });
+        expect(first).eq(true);
+
+        fs.writeFileSync(tokenFile, 'second-token\n', {mode: 0o600});
+        const second = await sendGameStartNotice({
+          name: 'Rotate',
+          id: 'p-rotate-two',
+          telegramID: '123456',
+          lastNoticeMessageId: -1,
+        });
+        expect(second).eq(true);
+      });
+
+      const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
+      expect(sendCalls).has.length(2);
+      expect(sendCalls[0].path).contains('first-token');
+      expect(sendCalls[1].path).contains('second-token');
+    } finally {
+      fs.rmSync(dir, {recursive: true, force: true});
       telegram.restore();
     }
   });

@@ -94,29 +94,29 @@
 
 .help-interface-keys {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 6px 14px;
-  margin-top: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 9px 16px;
+  margin-top: 14px;
 }
 
 .help-interface-key {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 30px;
+  min-height: 38px;
   color: #d9d9d9;
 
   kbd {
     flex: none;
-    min-width: 34px;
-    padding: 2px 7px;
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    border-bottom-width: 2px;
-    border-radius: 5px;
-    background: rgba(255, 255, 255, 0.1);
+    min-width: 44px;
+    padding: 5px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    border-bottom-width: 3px;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.13);
     color: #fff;
     font-family: Prototype, sans-serif;
-    font-size: 13px;
+    font-size: 16px;
     text-align: center;
   }
 }

@@ -3,7 +3,7 @@
 // keyboard available, no mobile view, the player has not switched them off.
 @import (reference) "./variables.less";
 
-@hotkey-cap-size: 20px;
+@hotkey-cap-size: 24px;
 @hotkey-cap-font: "Ubuntu Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
 .hotkey-key {
@@ -12,17 +12,17 @@
   justify-content: center;
   min-width: @hotkey-cap-size;
   height: @hotkey-cap-size;
-  padding: 0 5px;
+  padding: 0 6px;
   box-sizing: border-box;
   // Light cap at half opacity with dark text: reads as a key on every surface (dark tabs, purple, green and red
   // buttons) and still takes on a little of the surface's color
   border: 0;
   border-bottom: 2px solid rgba(154, 160, 180, 0.5);
-  border-radius: 4px;
+  border-radius: 5px;
   background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(223, 226, 234, 0.5));
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
   color: #1b1d24;
-  font: 700 11px/1 @hotkey-cap-font;
+  font: 700 12px/1 @hotkey-cap-font;
   white-space: nowrap;
 }
 
@@ -33,14 +33,14 @@
 }
 
 .hotkey-key--icon {
-  min-width: 22px;
+  min-width: 26px;
   padding: 0 4px;
 }
 
 .hotkey-key__icon {
   display: block;
-  width: 13px;
-  height: 13px;
+  width: 15px;
+  height: 15px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
@@ -50,12 +50,12 @@
 
 // Tabs: smaller caps, the tab name stays the main thing
 .or-tab .hotkey-key {
-  min-width: 15px;
-  height: 15px;
-  padding: 0 3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
   border-bottom-width: 1.5px;
-  border-radius: 3px;
-  font-size: 9px;
+  border-radius: 4px;
+  font-size: 10px;
 }
 
 .hotkey-key--empty {
@@ -65,7 +65,7 @@
 .hotkey-keys {
   display: none;
   flex: none;
-  gap: 3px;
+  gap: 4px;
   align-items: center;
 }
 
@@ -83,9 +83,9 @@ html.tm-hotkeys .btn:has(> .hotkey-keys) {
 }
 
 html.tm-hotkeys .btn-sm:has(> .hotkey-keys) .hotkey-key {
-  min-width: 18px;
-  height: 18px;
-  font-size: 10px;
+  min-width: 21px;
+  height: 21px;
+  font-size: 11px;
 }
 
 // Two-line place button (SelectSpace.vue): the caps sit at the right, centered on both lines
@@ -94,7 +94,7 @@ html.tm-hotkeys .btn-sm:has(> .hotkey-keys) .hotkey-key {
 }
 
 html.tm-hotkeys .select-space-zoom-button:has(> .hotkey-keys) {
-  padding-right: 56px;
+  padding-right: 64px;
 }
 
 .select-space-zoom-button > .hotkey-keys {
@@ -109,10 +109,10 @@ html.tm-hotkeys .select-space-zoom-button:has(> .hotkey-keys) {
   margin-left: 6px;
 
   .hotkey-key {
-    min-width: 17px;
-    height: 17px;
-    padding: 0 4px;
-    font-size: 10px;
+    min-width: 21px;
+    height: 21px;
+    padding: 0 5px;
+    font-size: 11px;
   }
 }
 

@@ -92,7 +92,7 @@ class RedsPolicy02 implements IPolicy {
     if (amountToPay > 0) {
       player.game.defer(new SelectPaymentDeferred(player, amountToPay, {title: 'Select how to pay for tile placement'}))
         .andThen((payment) => {
-          player.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+          player.game.log('${0} paid ${1}:r:mc: for Turmoil ${2} policy', (b) =>
             b.player(player).number(paymentTotal(payment)).partyName(PartyName.REDS));
           return undefined;
         });
@@ -172,7 +172,7 @@ class RedsPolicy03 implements IPolicy {
 
     game.defer(new SelectPaymentDeferred(player, 4, {title: TITLES.payForPartyAction(PartyName.REDS)}))
       .andThen((payment) => {
-        game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+        game.log('${0} paid ${1}:r:mc: for Turmoil ${2} policy', (b) =>
           b.player(player).number(paymentTotal(payment)).partyName(PartyName.REDS));
         const orOptions = new OrOptions();
 
@@ -180,7 +180,7 @@ class RedsPolicy03 implements IPolicy {
         if (this.canDecrease(game, GlobalParameter.TEMPERATURE)) {
           orOptions.options.push(new SelectOption('Decrease temperature').andThen(() => {
             game.increaseTemperature(player, -1);
-            game.log('${0} decreased temperature 1 step', (b) => b.player(player));
+            game.log('${0} decreased :i:temperature: 1 step', (b) => b.player(player));
             return undefined;
           }));
         }
@@ -197,7 +197,7 @@ class RedsPolicy03 implements IPolicy {
         if (this.canDecrease(game, GlobalParameter.OXYGEN)) {
           orOptions.options.push(new SelectOption('Decrease oxygen level').andThen(() => {
             game.increaseOxygenLevel(player, -1);
-            game.log('${0} decreased oxygen level 1 step', (b) => b.player(player));
+            game.log('${0} decreased :i:oxygen: level 1 step', (b) => b.player(player));
             return undefined;
           }));
         }
@@ -206,7 +206,7 @@ class RedsPolicy03 implements IPolicy {
         if (this.canDecrease(game, GlobalParameter.VENUS)) {
           orOptions.options.push(new SelectOption('Decrease Venus scale').andThen(() => {
             game.increaseVenusScaleLevel(player, -1);
-            game.log('${0} decreased Venus scale level 1 step', (b) => b.player(player));
+            game.log('${0} decreased :i:venus: scale level 1 step', (b) => b.player(player));
             return undefined;
           }));
         }

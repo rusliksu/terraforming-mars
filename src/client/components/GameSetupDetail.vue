@@ -96,6 +96,7 @@
       </li>
       <li v-if="gameOptions.twoCorpsVariant"><div class="setup-item" v-i18n>Merger</div></li>
       <li v-if="gameOptions.bannedCards.length > 0"><div class="setup-item" v-i18n>Banned cards:</div>{{ gameOptions.bannedCards.join(', ') }}</li>
+      <li v-if="(gameOptions.bannedColonies?.length ?? 0) > 0"><div class="setup-item" v-i18n>Banned colonies:</div>{{ gameOptions.bannedColonies?.join(', ') }}</li>
     </ul>
   </div>
 </template>

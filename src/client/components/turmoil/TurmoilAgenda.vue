@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="agenda-icon" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-      <template v-if="morePartiesExpansion && id === 'mb01'">
+      <template v-if="(morePartiesExpansion || betterMarsExpansion) && id === 'mb01'">
         <div class="resource megacredits party-resource">1</div> /
         <div class="resource-tag tag-building party-resource-tag"></div>
         <div class="resource-tag tag-mars party-resource-tag"></div>
@@ -490,6 +490,12 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    // Better Mars gives Mars First's building-tag bonus Mars tags as well, so its mb01 icon
+    // and hover text differ from the standard game.
+    betterMarsExpansion: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -511,7 +517,7 @@ export default defineComponent({
       return 'party-badge party-badge--' + partyBadgeSlugs[this.id[0]];
     },
     resolvedDescription(): string {
-      return getAgendaOrThrow(this.id, this.morePartiesExpansion).description;
+      return getAgendaOrThrow(this.id, this.morePartiesExpansion, this.betterMarsExpansion).description;
     },
   },
   methods: {

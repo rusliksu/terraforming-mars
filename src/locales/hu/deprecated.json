@@ -60,5 +60,7 @@
   "${0} has no :cr:science: cards and gained 1 TR.": "${0} nem rendelkezik :cr:science: kártyával és kapott 1 TR-t.",
   "${0} for ${1} is blocking 1 TR": "${0} kapott ${1}-t, mert blokkolt 1 TR-t.",
   "${0} gained ${1} TR": "${0} szerzett ${1} TR-t.",
+  "${0} has the most ${1} tags and earns 1VP": "${0} rendelkezik a legtöbb ${1} ikonnal és kapott 1 GyP-t.",
+  "${0} has the most ${1} tags and earns 2VP": "${0} rendelkezik a legtöbb ${1} ikonnal és kapott 2 GyP-t.",
   "${0} lost ${1} TR": "${0} elveszített ${1} TR-t."
 }

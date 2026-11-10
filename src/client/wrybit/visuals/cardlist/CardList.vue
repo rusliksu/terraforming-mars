@@ -134,7 +134,7 @@
           <CardListSection v-show="visibleAgendaIds.length > 0" title="Agendas" :count="visibleAgendaIds.length" :parts="partsFor('agendas', visibleAgendaIds.length)">
             <div class="player_home_colony_cont">
               <div class="player_home_colony" v-for="id in visibleAgendaIds" :key="id" v-memo="[id]">
-                <TurmoilAgendaContainer :agendaId="id" :morePartiesExpansion="expansions.moreParties" />
+                <TurmoilAgendaContainer :agendaId="id" :morePartiesExpansion="expansions.moreParties" :betterMarsExpansion="expansions.betterMars" />
               </div>
             </div>
           </CardListSection>

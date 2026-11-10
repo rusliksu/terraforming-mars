@@ -1,14 +1,13 @@
 // Player list as a table (PlayersTable.vue) – only visible in the two-column layout (player_home_columns.less).
-// Header row with icons once at the top, below it one row per player in a muted player colour:
+// One row per player in a muted player colour, each row carrying its own icons:
 //   Name | Resources (stock large, production small) | Tags | Score | played cards
 // PlayersTable sets the column grid as --wrybit-players-table-columns (playersTableLayout.ts).
 
-@players-table-row-height: 58px;
-@players-table-own-row-height: 66px;
+@players-table-row-height: 112px;
+@players-table-own-row-height: 112px;
 // Escape Velocity: third line (clock) under name and corporation
-@players-table-escape-velocity-row-height: 66px;
-@players-table-escape-velocity-own-row-height: 74px;
-@players-table-head-height: 42px;
+@players-table-escape-velocity-row-height: 122px;
+@players-table-escape-velocity-own-row-height: 122px;
 @players-table-row-gap: 4px;
 // Own row set slightly apart from the others
 @players-table-own-row-offset: 5px;
@@ -32,7 +31,7 @@
   // Size to the content and cap it on ultrawide screens: resources and tags keep compact,
   // comparable columns instead of stretching across the whole left half of the screen.
   width: max-content;
-  max-width: min(1500px, 100%);
+  max-width: min(1600px, 100%);
 }
 
 .player-home-table-slot {
@@ -65,26 +64,6 @@
   border-radius: @players-table-radius;
   // Blur the galaxy background behind the rows so it doesn't shine through harshly
   backdrop-filter: blur(@players-table-blur);
-}
-
-.players-table-head {
-  // Above the player rows, otherwise they cover the tooltips of the header icons (each row is its own layer due to blur)
-  z-index: 2;
-  height: @players-table-head-height;
-  background: rgba(0, 0, 0, 0.5);
-
-  // Icons scaled down (zoom, because the icons use different background sizes)
-  .resource_icon {
-    zoom: 0.9;
-  }
-
-  .tag-count {
-    zoom: 0.75;
-  }
-
-  .tag-type-main {
-    zoom: 0.7;
-  }
 }
 
 // Rows: the icons are the information players scan first, so keep them close to their natural size.
@@ -136,6 +115,65 @@ each(@players, {
     }
   }
 });
+
+// Reserved identities with a light persona surface: the classic bar prints their text in a dark
+// tone, while the table palette above is tuned for the muted default tints and forces white.
+// Keep the persona surface untouched and switch only the text inside the row.
+// The corporation line is drawn lighter than the name on purpose, but the reserved surfaces differ
+// in brightness enough that one opacity is not enough: each persona picks the value that keeps the
+// line readable (at least 4.5:1 against its own tint).
+.players-table-light-identity(@text; @corp-opacity: 0.78) {
+  .players-table-name,
+  .players-table-counter,
+  .players-table-tag-strip-item,
+  .players-table-tag-strip-count {
+    color: @text;
+  }
+
+  .players-table-corporation {
+    color: @text;
+    opacity: @corp-opacity;
+  }
+
+  .players-table-counter--zero,
+  .players-table-tag-strip-count--zero {
+    color: @text;
+    opacity: 0.45;
+  }
+
+  // No-production badge has no dark surface of its own: it needs the dark text and border
+  .players-table-goods-production--none {
+    color: @text;
+    opacity: 0.5;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+  }
+
+  // The status plaque keeps its dark translucent surface, so its label stays light; the active
+  // variant still uses its own black-on-light pair.
+  .player-action-status-container:not(.player-action-status-container--active) {
+    color: #e6e1e1;
+  }
+
+  .escape-velocity-clock,
+  .escape-velocity-clock__text small {
+    color: @text;
+  }
+
+  .escape-velocity-clock__bar {
+    background: rgba(0, 0, 0, 0.18);
+  }
+
+  // The own row ring is white; on a light surface it needs a dark outline to stay visible
+  &.players-table-row--me {
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.35);
+  }
+}
+
+.players-table-row--gold { .players-table-light-identity(#000000; 0.88); }
+.players-table-row--pearl { .players-table-light-identity(#102027); }
+.players-table-row--vanger { .players-table-light-identity(#001f00; 0.88); }
+.players-table-row--saturn { .players-table-light-identity(#2b1d08; 1); }
+.players-table-row--saturnrings { .players-table-light-identity(#241a0b; 1); }
 
 // When the tag columns are auto-hidden, the same row grows a compact strip of tag icons.
 // The strip is a grid item spanning all columns, so the fixed-height row becomes auto-sized.
@@ -254,6 +292,61 @@ each(@players, {
   min-width: 0;
 }
 
+// Tag cells: the icon sits above the count so a player's row reads without looking up at the
+// header. A tag the player has not played stays in place but recedes.
+.players-table-cell--tag {
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1;
+
+  .tag-count {
+    zoom: 1;
+    flex: none;
+  }
+}
+
+.players-table-cell--tag-empty .tag-count {
+  opacity: 0.45;
+  filter: grayscale(0.5);
+}
+
+// Score cells: the label icon sits above the number, same idea as the tag cells
+.players-table-cell--score {
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1;
+
+  .tag-count {
+    zoom: 1;
+    margin: 0;
+    flex: none;
+  }
+}
+
+// Divider before the event-tag group: quieter than the section dividers, continuous across rows
+.players-table-tag-separator {
+  position: relative;
+  align-self: stretch;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 1px;
+    top: -(@players-table-row-gap / 2);
+    bottom: -(@players-table-row-gap / 2);
+    background: rgba(255, 255, 255, 0.18);
+  }
+}
+
+.players-table-rows .players-table-row:first-child .players-table-tag-separator::after {
+  top: 4px;
+}
+
+.players-table-rows .players-table-row:last-child .players-table-tag-separator::after {
+  bottom: 4px;
+}
+
 // Separator between the sections: continuous across all rows (bridges the row gaps)
 .players-table-divider {
   position: relative;
@@ -270,7 +363,7 @@ each(@players, {
   }
 }
 
-.players-table-head .players-table-divider::after {
+.players-table-rows .players-table-row:first-child .players-table-divider::after {
   top: 0;
 }
 
@@ -278,83 +371,13 @@ each(@players, {
   bottom: 0;
 }
 
-.players-table-head-label {
-  font-size: 11px;
-  color: #aab;
-}
-
-// Toggle at the front of the header
-.players-table-toggles {
-  display: flex;
-  gap: 4px;
-  padding-left: 10px;
-}
-
-.players-table-toggle {
+// Controls above the rows: the game menu. The sections are always shown; only lack of space hides them.
+.players-table-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  width: 30px;
-  height: 26px;
-  padding: 0;
-  // Border instead of shadow/outline: follows the rounding exactly, also when dashed
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 5px;
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.14);
-
-  // Switched on, but hidden for lack of space
-  &.players-table-toggle--squeezed {
-    border-style: dashed;
-    border-color: rgba(255, 255, 255, 0.6);
-  }
-
-  &[aria-pressed="false"] {
-    background: transparent;
-    border-color: rgba(255, 255, 255, 0.15);
-
-    > span {
-      opacity: 0.3;
-      filter: grayscale(1);
-    }
-  }
-}
-
-// Own icons at a fixed pixel size: the sprite classes of the player bar have offset margins
-// and would only fit via zoom with odd factors (blurry, shifted)
-@players-table-toggle-icon-size: 18px;
-
-.players-table-toggle-icon {
-  display: block;
-  width: @players-table-toggle-icon-size;
-  height: @players-table-toggle-icon-size;
-  background: center / contain no-repeat;
-}
-
-.players-table-toggle-icon--megacredit {
-  background-image: url(./assets/resources/megacredit.png);
-}
-
-.players-table-toggle-icon--building {
-  border-radius: 50%;
-  background-image: url(./assets/tags/building.png);
-  background-size: 112%; // Image has a light rim that would otherwise remain as a ring
-}
-
-// Victory points as in the game: golden shield with "VP"
-.players-table-toggle-icon--vp {
-  width: @players-table-toggle-icon-size + 4px;
-  border-radius: 3px;
-  background: linear-gradient(#cc8b00, #805700, #805700);
-  font: 11px/@players-table-toggle-icon-size Prototype, sans-serif;
-  color: #000;
-  text-align: center;
-  text-shadow: 0 0 3px darkorange;
-
-  &::before {
-    content: "VP";
-  }
+  gap: 4px;
+  padding-left: 10px;
+  margin-bottom: 8px;
 }
 
 // Starting player: white shield with a bold "1" in the colour bar
@@ -500,8 +523,8 @@ each(@players, {
   // fit (PlayersTable: goodsBoxWidths, max-width set per column so all boxes of a column match)
   width: calc(100% - 8px);
   min-width: max-content;
-  max-width: 78px;
-  height: 44px;
+  max-width: 84px;
+  height: 88px;
   padding: 0 6px 0 9px;
   border-radius: 5px;
   background: rgba(0, 0, 0, 0.3);
@@ -509,19 +532,19 @@ each(@players, {
 }
 
 .players-table-row--me .players-table-goods {
-  height: 50px;
+  height: 88px;
 }
 
 .players-table-goods-stock {
   display: inline-flex; // Room for the shield before the number (protected stock)
   align-items: center;
   gap: 3px;
-  font-size: 24px;
+  font-size: 30px;
   color: #fff;
 }
 
 .players-table-row--me .players-table-goods-stock {
-  font-size: 27px;
+  font-size: 33px;
 }
 
 .players-table-goods--empty .players-table-goods-stock {
@@ -529,7 +552,7 @@ each(@players, {
 }
 
 .players-table-goods-production {
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1;
   padding: 3px 4px 2px;
   border-radius: 3px;
@@ -633,12 +656,12 @@ each(@players, {
 // Counters (tags, score): deliberately small and quieter than the resources
 .players-table-counter {
   font-family: Prototype, sans-serif;
-  font-size: 15px;
+  font-size: 23px;
   color: @players-table-counter-color;
 }
 
 .players-table-row--me .players-table-counter {
-  font-size: 16px;
+  font-size: 24px;
 }
 
 .players-table-counter--zero {
@@ -686,12 +709,12 @@ each(@players, {
 
 .players-table-played {
   font-family: Prototype, sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   color: #fff;
   background: @bg_action;
   border: 0;
-  border-radius: 10px;
-  padding: 3px 9px;
+  border-radius: 11px;
+  padding: 4px 11px;
   cursor: pointer;
 
   &:hover {

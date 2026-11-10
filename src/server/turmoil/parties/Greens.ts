@@ -62,7 +62,7 @@ class GreensPolicy01 implements IPolicy {
   onTilePlaced(player: IPlayer, space: Space) {
     if (Board.isGreenerySpace(space) && player.game.phase === Phase.ACTION) {
       player.stock.add(Resource.MEGACREDITS, 4);
-      player.game.log('${0} gained ${1} M€ from Turmoil ${2} policy', (b) =>
+      player.game.log('${0} gained ${1}:r:mc: from Turmoil ${2} policy', (b) =>
         b.player(player).number(4).partyName(PartyName.GREENS));
     }
   }
@@ -91,7 +91,7 @@ class GreensPolicy03 implements IPolicy {
     player.defer(() => {
       if (amount > 0) {
         player.stock.add(Resource.MEGACREDITS, amount);
-        player.game.log('${0} gained ${1} M€ from Turmoil ${2} policy', (b) =>
+        player.game.log('${0} gained ${1}:r:mc: from Turmoil ${2} policy', (b) =>
           b.player(player).number(amount).partyName(PartyName.GREENS));
       }
     });

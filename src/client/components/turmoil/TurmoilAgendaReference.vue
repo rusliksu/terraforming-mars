@@ -27,8 +27,8 @@
                 <span v-if="id === section.current" class="agenda-reference-badge"
                   v-i18n>{{ section.policies && activeParty.name === rulingParty ? 'Active policy' : 'Current selection' }}</span>
               </div>
-              <div class="agenda-reference-icon"><TurmoilAgenda :id="id" :morePartiesExpansion="morePartiesExpansion" /></div>
-              <p v-i18n>{{ getAgendaOrThrow(id, morePartiesExpansion).description }}</p>
+              <div class="agenda-reference-icon"><TurmoilAgenda :id="id" :morePartiesExpansion="morePartiesExpansion" :betterMarsExpansion="betterMarsExpansion" /></div>
+              <p v-i18n>{{ getAgendaOrThrow(id, morePartiesExpansion, betterMarsExpansion).description }}</p>
             </article>
           </div>
         </section>
@@ -38,8 +38,8 @@
       <article v-for="party in parties" :key="party.name" :data-agenda-id="party.agenda.policyId" class="agenda-reference-option">
         <div :class="'party-name party-name--' + party.name.toLowerCase().replaceAll(' ', '_')" v-i18n>{{ party.name }}</div>
         <div v-if="party.name === rulingParty" class="agenda-reference-badge" v-i18n>Active policy</div>
-        <div class="agenda-reference-icon"><TurmoilAgenda :id="party.agenda.policyId" :morePartiesExpansion="morePartiesExpansion" /></div>
-        <p v-i18n>{{ getAgendaOrThrow(party.agenda.policyId, morePartiesExpansion).description }}</p>
+        <div class="agenda-reference-icon"><TurmoilAgenda :id="party.agenda.policyId" :morePartiesExpansion="morePartiesExpansion" :betterMarsExpansion="betterMarsExpansion" /></div>
+        <p v-i18n>{{ getAgendaOrThrow(party.agenda.policyId, morePartiesExpansion, betterMarsExpansion).description }}</p>
       </article>
     </div>
   </div>
@@ -57,6 +57,7 @@ const props = defineProps<{
   rulingParty?: PartyName;
   agendaStyle: AgendaStyle;
   morePartiesExpansion: boolean;
+  betterMarsExpansion: boolean;
 }>();
 
 const selectedParty = ref<PartyName>();
@@ -70,7 +71,7 @@ const sections = computed(() => {
   if (party === undefined) {
     return [];
   }
-  const ids = getPartyAgendaIds(party.name, props.morePartiesExpansion);
+  const ids = getPartyAgendaIds(party.name, props.morePartiesExpansion, props.betterMarsExpansion);
   return [
     {title: 'Available bonuses', ids: ids.bonuses, current: party.agenda?.bonusId, policies: false},
     {title: 'Available policies', ids: ids.policies, current: party.agenda?.policyId, policies: true},

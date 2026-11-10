@@ -254,10 +254,19 @@ export default defineComponent({
       if (milestone.scores.find((entry) => entry.color === player.color)?.claimable) {
         classes.push('ma-table-cell--claimable');
       }
+      // Every spot is taken: the values stay but recede like the closed header.
+      if (this.milestoneClosed(milestone)) {
+        classes.push('ma-table-cell--closed');
+      }
       return classes;
     },
     awardCellClasses(award: FundedAwardModel, player: PublicPlayerModel): Array<string> {
-      return ['ma-table-cell', ...this.rankClasses(this.rankingScores(award.scores, award.teamScores), player)];
+      const classes = ['ma-table-cell', ...this.rankClasses(this.rankingScores(award.scores, award.teamScores), player)];
+      // Every spot is taken: the values stay but recede like the closed header.
+      if (this.awardClosed(award)) {
+        classes.push('ma-table-cell--closed');
+      }
+      return classes;
     },
     rowClasses(player: PublicPlayerModel): Array<string> {
       const classes = ['ma-table-row', 'ma-table-player', 'ma-table-player--' + player.color];

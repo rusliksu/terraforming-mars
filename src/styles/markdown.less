@@ -43,3 +43,46 @@
   width: 32px;
   background-image: url(./assets/resources/tr.png);
 }
+
+// Global-parameter icons keep the artwork's aspect ratio, so the narrow
+// thermometer reads as a thermometer instead of a stretched blob.
+.markdown-icon-temperature {
+  width: 7px;
+  background-image: url(./assets/global-parameters/temperature.png);
+}
+
+.markdown-icon-oxygen {
+  width: 24px;
+  background-image: url(./assets/global-parameters/oxygen.png);
+}
+
+.markdown-icon-ocean {
+  width: 21px;
+  background-image: url(./assets/tiles/ocean.png);
+}
+
+.markdown-icon-venus {
+  width: 36px;
+  background-image: url(./assets/global-parameters/venus.png);
+}
+
+// A small version of the gold victory-point badge, so the log reads "earns 2 [VP]".
+.markdown-icon-vp {
+  width: 24px;
+  position: relative;
+  border-radius: 4px;
+  background: linear-gradient(#cc8b00, #805700, #805700);
+  box-shadow: 0 1px 1px 0 black;
+
+  &::before {
+    content: "VP";
+    position: absolute;
+    inset: 0;
+    font-family: Prototype, sans-serif;
+    font-size: 14px;
+    line-height: 24px;
+    text-align: center;
+    color: black;
+    text-shadow: 0 0 5px darkorange;
+  }
+}

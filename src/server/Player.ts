@@ -467,7 +467,7 @@ export class Player implements IPlayer {
         return new SelectPaymentDeferred(this, redsCost, {title: 'Select how to pay for TR increase'})
           .andThen((payment) => {
             // Report what the player actually paid, which can be resources instead of megacredits.
-            this.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+            this.game.log('${0} paid ${1}:r:mc: for Turmoil ${2} policy', (b) =>
               b.player(this).number(paymentTotal(payment)).partyName(PartyName.REDS));
             raiseRating();
             return undefined;

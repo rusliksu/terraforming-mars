@@ -4,7 +4,11 @@
     <input type="checkbox" v-model="showPopup" id="boardSelector-checkbox">
     <label for="boardSelector-checkbox">
       <span v-i18n>Board</span>
-      <template v-if="boards.length === 1">
+      <template v-if="customBoardSelected">
+        &nbsp;&nbsp;<span class="create-game-board-hexagon create-game-random">&#x2B22;</span>
+        <span v-i18n>Custom</span>:&nbsp;<span>{{ customBoardName }}</span>
+      </template>
+      <template v-else-if="boards.length === 1">
         &nbsp;&nbsp;<span class="create-game-board-hexagon" :class="boardColorClass(boards[0])">&#x2B22;</span>
         <span class="capitalized" v-i18n>{{ boards[0] }}</span>
       </template>
@@ -17,6 +21,7 @@
       v-if="showPopup"
       :boards="boards"
       :shuffleMap="shuffleMap"
+      :customBoardName="customBoardName"
       @update:boards="$emit('update:boards', $event)"
       @update:shuffleMap="$emit('update:shuffleMap', $event)"
       @close="showPopup = false"
@@ -25,15 +30,17 @@
 </template>
 
 <script setup lang="ts">
-import {ref} from 'vue';
+import {computed, ref} from 'vue';
 import BoardPopup from '@/client/components/create/BoardPopup.vue';
 import {boardColorClass} from '@/client/components/create/boardOptions';
 import {BoardName} from '@/common/boards/BoardName';
 
-defineProps<{
+const props = defineProps<{
   boards: Array<BoardName>;
   /** True when the board's tiles are randomized. */
   shuffleMap: boolean;
+  /** Name of the loaded map-code board, which only ever plays on its own. */
+  customBoardName?: string;
 }>();
 
 defineEmits<{
@@ -42,4 +49,7 @@ defineEmits<{
 }>();
 
 const showPopup = ref(false);
+
+const customBoardSelected = computed(() => props.customBoardName !== undefined &&
+  props.boards.length === 1 && props.boards[0] === BoardName.CUSTOM);
 </script>

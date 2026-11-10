@@ -76,6 +76,16 @@ describe('TurmoilAgenda', () => {
     expect(resolvedDescriptionOf(wrapper)).to.not.eq(getAgendaOrThrow('rp02').description);
   });
 
+  it('shows the Better Mars description and icon for Mars First bonus 1', () => {
+    const vanilla = shallowMount(TurmoilAgenda, {...globalConfig, props: {id: 'mb01'}});
+    const betterMars = shallowMount(TurmoilAgenda, {...globalConfig, props: {id: 'mb01', betterMarsExpansion: true}});
+    const moreParties = shallowMount(TurmoilAgenda, {...globalConfig, props: {id: 'mb01', morePartiesExpansion: true}});
+
+    expect(resolvedDescriptionOf(betterMars)).to.eq('Gain 1 M€ for every building and Mars tag you have');
+    expect(resolvedDescriptionOf(betterMars)).to.not.eq(resolvedDescriptionOf(vanilla));
+    expect(betterMars.html()).to.eq(moreParties.html());
+  });
+
   it('falls back to the vanilla description under More Parties for ids whose content is unchanged', () => {
     const wrapper = shallowMount(TurmoilAgenda, {
       ...globalConfig,

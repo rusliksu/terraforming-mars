@@ -84,9 +84,10 @@ export default defineComponent({
     presentationBinding(): PartyChoiceBinding {
       const turmoil = this.turmoil;
       const moreParties = this.playerView.game.gameOptions.expansions.moreParties;
+      const betterMars = this.playerView.game.gameOptions.expansions.betterMars;
       return {playerView: this.playerView, playerinput: this.playerinput, showtitle: this.showtitle, showsave: this.showsave,
         turmoil, selected: this.selectedParty,
-        cards: turmoil === undefined ? [] : turmoil.parties.map((party) => ({...partyCardDetails(turmoil, party, moreParties),
+        cards: turmoil === undefined ? [] : turmoil.parties.map((party) => ({...partyCardDetails(turmoil, party, moreParties, betterMars),
           selected: this.selectedParty === party.name, disabled: !this.partyAvailableToSelect(party.name)})),
         select: (party) => {
           if (this.partyAvailableToSelect(party)) {

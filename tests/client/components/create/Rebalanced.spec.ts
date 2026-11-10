@@ -40,11 +40,14 @@ describe('Rebalanced setup', () => {
     expect(label.get('a').attributes('href')).eq(rulesUrl);
   });
 
-  it('places Rebalanced near the top and nests Better Mars under Pathfinders', async () => {
+  it('lists Rebalanced inside the Fan-made section and nests Better Mars under Pathfinders', async () => {
     const wrapper = shallowMount(CreateGameForm, globalConfig);
     const rebalanced = wrapper.get('#rebalanced-checkbox').element;
-    const prelude = wrapper.get('#prelude-checkbox').element;
-    expect(rebalanced.compareDocumentPosition(prelude) & Node.DOCUMENT_POSITION_FOLLOWING).not.eq(0);
+    const promos = wrapper.get('#promo-checkbox').element;
+    const ares = wrapper.get('#ares-checkbox').element;
+    // Rebalanced is a fan-made variant set: it renders after the official expansions and before the fan ones.
+    expect(promos.compareDocumentPosition(rebalanced) & Node.DOCUMENT_POSITION_FOLLOWING).not.eq(0);
+    expect(rebalanced.compareDocumentPosition(ares) & Node.DOCUMENT_POSITION_FOLLOWING).not.eq(0);
     expect(wrapper.find('#betterMars-checkbox').exists()).is.false;
     await wrapper.get('#pathfinders-checkbox').setValue(true);
     await wrapper.get('#betterMars-checkbox').setValue(true);

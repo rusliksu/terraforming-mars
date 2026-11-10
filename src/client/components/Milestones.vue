@@ -27,6 +27,7 @@
             :milestone="milestone"
             :showScores="showScores"
             :showDescription="showDescription"
+            :closed="milestoneClosed(milestone)"
           />
         </div>
       </span>
@@ -77,12 +78,18 @@ export default defineComponent({
     Milestone,
   },
   computed: {
+    claimedCount(): number {
+      return this.milestones.filter((milestone) => milestone.playerName).length;
+    },
     availableMilestoneSpots(): Array<number> {
-      const count = this.milestones.filter((milestone) => milestone.playerName).length;
-      return availableMilestonePrices(count, this.conglomeratesExpansion);
+      return availableMilestonePrices(this.claimedCount, this.conglomeratesExpansion);
     },
   },
   methods: {
+    // No spots left: the milestone can no longer be claimed.
+    milestoneClosed(milestone: ClaimedMilestoneModel): boolean {
+      return milestone.playerName === undefined && this.claimedCount >= MAX_MILESTONES;
+    },
     toggleDescription() {
       this.showDescription = !this.showDescription;
     },

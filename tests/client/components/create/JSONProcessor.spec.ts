@@ -3,6 +3,8 @@ import {JSONProcessor} from '@/client/components/create/JSONProcessor';
 import {defaultCreateGameModel} from '@/client/components/create/defaultCreateGameModel';
 import {RandomMAOptionType} from '@/common/ma/RandomMAOptionType';
 import {BoardName} from '@/common/boards/BoardName';
+import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
+import {boardOptions} from '@/common/boards/randomBoardOptions';
 import {JSONObject} from '@/common/Types';
 import {CreateGameModel} from '@/client/components/create/CreateGameModel';
 import {CardName} from '@/common/cards/CardName';
@@ -167,6 +169,7 @@ const TEMPLATE_EXPECTED: CreateGameModel = {
   customMA: undefined,
   customPreludes: [],
   bannedCards: [],
+  bannedColonies: [],
   includedCards: [],
   boards: ['tharsis' as BoardName],
   seed: 0.40189423667985547,
@@ -308,6 +311,28 @@ const cases: Array<Case> = [
     expected: {
       ...TEMPLATE_EXPECTED,
       boards: [BoardName.THARSIS],
+    },
+  },
+  {
+    description: 'a legacy random option inside boards expands to the boards it stands for',
+    input: {
+      ...TEMPLATE_INPUT,
+      boards: [RandomBoardOption.ALL],
+    },
+    expected: {
+      ...TEMPLATE_EXPECTED,
+      boards: boardOptions(RandomBoardOption.ALL),
+    },
+  },
+  {
+    description: 'legacy random and concrete boards merge without duplicates',
+    input: {
+      ...TEMPLATE_INPUT,
+      boards: [RandomBoardOption.OFFICIAL, BoardName.THARSIS, BoardName.HOLLANDIA],
+    },
+    expected: {
+      ...TEMPLATE_EXPECTED,
+      boards: [...boardOptions(RandomBoardOption.OFFICIAL), BoardName.HOLLANDIA],
     },
   },
 ];

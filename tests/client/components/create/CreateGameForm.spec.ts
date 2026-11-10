@@ -129,9 +129,9 @@ describe('CreateGameForm', () => {
     model.randomFirstPlayer = false;
     model.firstIndex = 2;
 
-    const config = await model.serializeSettings();
+    const config = JSON.parse(await model.serializeSettings());
 
-    expect(config?.players.map((player: {first: boolean}) => player.first)).deep.eq([false, true, false]);
+    expect(config.players.map((player: {first: boolean}) => player.first)).deep.eq([false, true, false]);
   });
 
   it('links each fan expansion checkbox to its own rules page on this fork\'s own wiki', async () => {

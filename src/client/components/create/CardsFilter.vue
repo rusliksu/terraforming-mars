@@ -35,10 +35,10 @@
         </label>
       </div>
     </div>
-    <InputPortal :target="inputHost.target.value">
-      <input ref="filter" class="form-input" :placeholder="$t(hint)" v-model="searchTerm" @keydown="onFilterKeydown">
-    </InputPortal>
   </PopupPanel>
+  <InputPortal :target="inputHost.target.value">
+    <input ref="filter" class="form-input" :placeholder="$t(hint)" v-model="searchTerm" @keydown="onFilterKeydown">
+  </InputPortal>
 </template>
 
 <script lang="ts">
@@ -65,7 +65,7 @@ const ALL_CARDS: Array<CardName> = [
   .sort((a, b) => a.localeCompare(b));
 
 /** The most suggestions shown at once. */
-const MAX_SEARCH_MATCHES = 10;
+const MAX_SEARCH_MATCHES = 5;
 
 type CardsFilterModel = {
   selectedCards: Array<CardName>;
@@ -157,7 +157,8 @@ export default defineComponent({
         event.preventDefault();
         if (count > 0) {
           const step = event.key === 'ArrowDown' ? 1 : -1;
-          this.activeIndex = (this.activeIndex + step + count) % count;
+          // Clamp at both ends: up at the top stays on the first entry.
+          this.activeIndex = Math.max(0, Math.min(this.activeIndex + step, count - 1));
         }
       } else if (event.key === 'Enter') {
         event.preventDefault();
@@ -213,7 +214,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.typedRefs.filter.focus();
+    this.typedRefs.filter?.focus();
   },
 });
 </script>

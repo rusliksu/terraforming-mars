@@ -6,7 +6,6 @@ import {fakePlayerViewModel} from './testHelpers';
 
 
 describe('TopBar', () => {
-
   it('mounts without errors', () => {
     const wrapper = shallowMount(TopBar, {
       ...globalConfig,

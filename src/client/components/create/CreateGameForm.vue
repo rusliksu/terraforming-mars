@@ -1727,10 +1727,10 @@ export default defineComponent({
       nextTick(() => {
         try {
           if (component.showBannedCards && refs.cardsFilter) {
-            refs.cardsFilter.selected = processor.bannedCards;
+            refs.cardsFilter.selectedCards = processor.bannedCards;
           }
           if (component.showIncludedCards && refs.cardsFilter2) {
-            refs.cardsFilter2.selected = processor.includedCards;
+            refs.cardsFilter2.selectedCards = processor.includedCards;
           }
           if (!component.seededGame) {
             component.seed = Math.random();
@@ -1786,10 +1786,10 @@ export default defineComponent({
       nextTick(() => {
         const refs = this.typedRefs;
         if (refs.cardsFilter) {
-          refs.cardsFilter.selected = [];
+          refs.cardsFilter.selectedCards = [];
         }
         if (refs.cardsFilter2) {
-          refs.cardsFilter2.selected = [];
+          refs.cardsFilter2.selectedCards = [];
         }
       });
     },
@@ -1942,10 +1942,10 @@ export default defineComponent({
       this.includedCards = [];
       const refs = this.typedRefs;
       if (refs.cardsFilter) {
-        refs.cardsFilter.selected = [];
+        refs.cardsFilter.selectedCards = [];
       }
       if (refs.cardsFilter2) {
-        refs.cardsFilter2.selected = [];
+        refs.cardsFilter2.selectedCards = [];
       }
     },
     async downloadSettings() {

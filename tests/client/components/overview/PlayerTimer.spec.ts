@@ -65,7 +65,7 @@ describe('PlayerTimer', () => {
       },
     });
 
-    await wrapper.setProps({timer: {...fakeTimerModel(), sumElapsed: 65_000, afterFirstAction: true}});
+    await wrapper.setProps({timer: {...fakeTimerModel(), sumElapsed: 65_000}});
 
     expect(wrapper.find('.player-timer-minutes').text()).eq('01');
     expect(wrapper.find('.player-timer-seconds').text()).eq('05');

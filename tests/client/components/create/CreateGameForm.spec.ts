@@ -124,14 +124,14 @@ describe('CreateGameForm', () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
-    const model = wrapper.vm as unknown as CreateGameModel;
+    const model = wrapper.vm as any;
     model.playersCount = 3;
     model.randomFirstPlayer = false;
     model.firstIndex = 2;
 
     const config = await model.serializeSettings();
 
-    expect(config?.players.map((player) => player.first)).deep.eq([false, true, false]);
+    expect(config?.players.map((player: {first: boolean}) => player.first)).deep.eq([false, true, false]);
   });
 
   it('links each fan expansion checkbox to its own rules page on this fork\'s own wiki', async () => {

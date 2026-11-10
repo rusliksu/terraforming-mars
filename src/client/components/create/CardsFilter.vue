@@ -23,8 +23,8 @@
         </div>
       </div>
     </div>
-    <div class="cards-filter-results-cont" v-if="selected.length">
-      <div class="cards-filter-result" v-for="cardName in selected" :key="cardName">
+    <div class="cards-filter-results-cont" v-if="selectedCards.length">
+      <div class="cards-filter-result" v-for="cardName in selectedCards" :key="cardName">
         <AppButton size="small" type="close" @click="removeCard(cardName)" />
         <label>{{ cardName }}
           <i class="create-game-expansion-icon expansion-icon-prelude" title="This card is a prelude" v-if="isPrelude(cardName)"></i>
@@ -68,7 +68,7 @@ const ALL_CARDS: Array<CardName> = [
 const MAX_SEARCH_MATCHES = 10;
 
 type CardsFilterModel = {
-  selected: Array<CardName>;
+  selectedCards: Array<CardName>;
   searchTerm: string;
   activeIndex: number;
 }
@@ -101,7 +101,7 @@ export default defineComponent({
   },
   data(): CardsFilterModel {
     return {
-      selected: [...this.selected],
+      selectedCards: [...this.selected],
       searchTerm: '',
       activeIndex: 0,
     };
@@ -110,10 +110,6 @@ export default defineComponent({
     AppButton, InputPortal, PresentationHost, PopupPanel,
   },
   computed: {
-    /** The cards currently selected, in display order. */
-    selectedCards(): ReadonlyArray<CardName> {
-      return this.selected;
-    },
     /** Up to MAX_SEARCH_MATCHES unselected cards whose names contain the search term. */
     searchMatches(): Array<CardName> {
       if (this.searchTerm === '') {
@@ -122,7 +118,7 @@ export default defineComponent({
       const searchTermLowercase = this.searchTerm.toLowerCase();
       const matches: Array<CardName> = [];
       for (const candidate of ALL_CARDS) {
-        if (this.selected.includes(candidate)) {
+        if (this.selectedCards.includes(candidate)) {
           continue;
         }
         if (candidate.toLowerCase().indexOf(searchTermLowercase) >= 0) {
@@ -135,7 +131,7 @@ export default defineComponent({
       return matches;
     },
     presentationBinding(): CardsFilterBinding {
-      return {title: this.title, inputHost: this.inputHost, selected: this.selected, searchMatches: this.searchMatches,
+      return {title: this.title, inputHost: this.inputHost, selected: this.selectedCards, searchMatches: this.searchMatches,
         activeCard: this.searchMatches[this.activeIndex],
         highlight: (name) => {
           const index = this.searchMatches.indexOf(name);
@@ -181,20 +177,20 @@ export default defineComponent({
       return getCard(cardName)?.compatibility ?? [];
     },
     removeCard(cardName: CardName) {
-      inplaceRemove(this.selected, cardName);
+      inplaceRemove(this.selectedCards, cardName);
     },
     addCard(cardName: CardName) {
-      if (this.selected.includes(cardName)) {
+      if (this.selectedCards.includes(cardName)) {
         return;
       }
-      this.selected.push(cardName);
-      this.selected.sort();
+      this.selectedCards.push(cardName);
+      this.selectedCards.sort();
       this.searchTerm = '';
       this.typedRefs.filter.focus();
     },
   },
   watch: {
-    selected: {
+    selectedCards: {
       handler(value) {
         this.$emit('cards-list-changed', value);
       },

@@ -159,6 +159,7 @@ export class Server {
     const thisPlayer: PublicPlayerModel = players[thisPlayerIndex];
 
     const rv: PlayerViewModel = {
+      gameId: game.id,
       canStepBack: game.gameOptions.undoStepOption === true &&
         game.actionReplayState !== undefined &&
         game.actionReplayState !== null &&
@@ -192,6 +193,7 @@ export class Server {
     return {
       color: 'neutral',
       id: game.spectatorId,
+      gameId: game.id,
       game: this.getGameModel(game),
       players: game.playersInGenerationOrder.map((p) => this.getPlayer(p, false)),
       thisPlayer: undefined,

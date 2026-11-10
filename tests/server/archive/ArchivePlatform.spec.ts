@@ -1,7 +1,6 @@
 import {expect} from 'chai';
 import {execFile} from 'node:child_process';
 import fs from 'node:fs/promises';
-import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
 import {promisify} from 'node:util';
 import {mock} from 'node:test';
@@ -10,6 +9,7 @@ import {readSave} from '@/server/archive/ArchiveReader';
 import {HistorySource} from '@/server/archive/HistorySource';
 import {preflight} from '@/server/archive/ArchivePreflight';
 import {exportHistory} from '@/server/archive/ArchiveWriter';
+import {archiveLab} from '@tests/testing/archiveLab';
 
 const execute = promisify(execFile);
 const supported = process.platform === 'win32' || (process.platform === 'linux' && process.env.CI === 'true');
@@ -36,7 +36,7 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
     }
   }
   beforeEach(async () => {
-    const lab = process.platform === 'win32' ? 'D:/tm-db/smartbot-lab/archive-platform-tests' : tmpdir();
+    const lab = archiveLab('archive-platform-tests');
     await fs.mkdir(lab, {recursive: true});
     workspace = await fs.mkdtemp(join(lab, 'tm-archive-'));
     input = join(workspace, 'input'); output = join(workspace, 'output');

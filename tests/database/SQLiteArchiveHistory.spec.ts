@@ -1,6 +1,5 @@
 import {expect} from 'chai';
 import fs from 'node:fs/promises';
-import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {SQLite} from '@/server/database/SQLite';
 import {GameLoader} from '@/server/database/GameLoader';
@@ -9,6 +8,7 @@ import {Phase} from '@/common/Phase';
 import {testGame} from '@tests/TestGame';
 import {TestPlayer} from '@tests/TestPlayer';
 import {FakeClock} from '@tests/common/FakeClock';
+import {archiveLab} from '@tests/testing/archiveLab';
 import {restoreTestDatabase, restoreTestGameLoader, setTestDatabase, setTestGameLoader} from '@tests/testing/setup';
 import {readSave} from '@/server/archive/ArchiveReader';
 
@@ -32,7 +32,7 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
   const gameId = 'g000000000006';
 
   beforeEach(async () => {
-    const lab = process.platform === 'win32' ? 'D:/tm-db/smartbot-lab/sqlite-archive-tests' : tmpdir();
+    const lab = archiveLab('sqlite-archive-tests');
     await fs.mkdir(lab, {recursive: true});
     workspace = await fs.mkdtemp(join(lab, 'tm-retention-'));
     const output = join(workspace, 'archives');

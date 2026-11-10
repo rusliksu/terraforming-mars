@@ -5,6 +5,7 @@ import {join, resolve} from 'node:path';
 import {promisify} from 'node:util';
 import Database from 'better-sqlite3';
 import {readSave} from '@/server/archive/ArchiveReader';
+import {archiveLab} from '@tests/testing/archiveLab';
 
 const execute = promisify(execFile);
 const cli = resolve('src/server/tools/archive-game-history.ts');
@@ -26,7 +27,7 @@ async function run(args: Array<string>) {
   const state = {id: gameId, lastSaveId: 4, phase: 'end', privateHand: ['private-card']};
   const args = () => ['--offline', '--source', 'files', '--input', input, '--game', gameId, '--output', output];
   beforeEach(async () => {
-    const lab = 'D:/tm-db/smartbot-lab/archive-cli-tests';
+    const lab = archiveLab('archive-cli-tests');
     await fs.mkdir(lab, {recursive: true});
     root = await fs.mkdtemp(join(lab, 'case-'));
     input = join(root, 'input'); output = join(root, 'output');

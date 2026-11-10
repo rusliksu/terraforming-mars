@@ -5,6 +5,7 @@ import {mock} from 'node:test';
 import {HistorySource} from '@/server/archive/HistorySource';
 import {exportHistory} from '@/server/archive/ArchiveWriter';
 import {readManifest, readSave, verifyArchive} from '@/server/archive/ArchiveReader';
+import {archiveLab} from '@tests/testing/archiveLab';
 
 const archiveWriterSuite = (process.platform === 'win32' ? describe : describe.skip)('ArchiveWriter', () => {
   let root: string;
@@ -13,7 +14,7 @@ const archiveWriterSuite = (process.platform === 'win32' ? describe : describe.s
   const gameId = 'g000000000002';
   const state = (saveId: number) => ({id: gameId, lastSaveId: saveId, phase: saveId === 22 ? 'end' : 'action', stable: 'x'.repeat(2000), log: Array.from({length: saveId}, (_, i) => i)});
   beforeEach(async () => {
-    const lab = 'D:/tm-db/smartbot-lab/archive-writer-tests';
+    const lab = archiveLab('archive-writer-tests');
     await fs.mkdir(lab, {recursive: true});
     root = await fs.mkdtemp(join(lab, 'case-'));
     output = join(root, 'archives');

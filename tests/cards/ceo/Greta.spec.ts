@@ -85,7 +85,9 @@ describe('Greta', () => {
       production: false,
       amount: 4,
       player: 'blue',
+      counter: {current: 1, max: 10},
     });
+    expect(gains[1].effect?.counter).deep.eq({current: 2, max: 10});
   });
 
   it('Gains 4 M€ once for Giant Ice Asteroid', () => {

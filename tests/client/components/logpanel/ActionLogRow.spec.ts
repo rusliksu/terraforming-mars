@@ -84,6 +84,21 @@ describe('ActionLogRow', () => {
     expect(wrapper.findAllComponents(LogMessageComponent)).to.have.length(2);
   });
 
+  it('shows a limited-use counter in the collapsed action summary', () => {
+    const action = new LogMessage(LogMessageType.DEFAULT, 'Blue used Greta', []);
+    const gained = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 4 M€ because of Greta (3/10)', []);
+    gained.effect = {kind: 'resource', resource: 'megacredits', production: false, amount: 4, player: 'blue', counter: {current: 3, max: 10}};
+    const entry = {kind: 'action' as const, id: 'greta-use', messages: [action, gained], complete: true};
+    const wrapper = shallowMount(ActionLogRow, {
+      ...globalConfig,
+
+      props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
+    });
+
+    expect(wrapper.get('.action-log-effect-counter').text()).eq('(3/10)');
+    expect(wrapper.get('.action-log-effect').attributes('aria-label')).eq('+4 megacredits (use 3/10) · Blue');
+  });
+
   it('shows a logged ocean bonus as coins and frames production', () => {
     const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played Great Dam', []);
     const production = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 2 energy production', []);

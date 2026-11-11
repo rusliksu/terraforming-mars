@@ -56,7 +56,16 @@ export class Greta extends CeoCard implements ICeoCard {
             .card(this)
             .number(this.data.effectTriggerCount)
             .number(MAX_TRIGGER_COUNT),
-          {effect: {kind: 'resource', resource: Resource.MEGACREDITS, production: false, amount: MEGA_CREDITS_GAINED, player: player.color}});
+          {
+            effect: {
+              kind: 'resource',
+              resource: Resource.MEGACREDITS,
+              production: false,
+              amount: MEGA_CREDITS_GAINED,
+              player: player.color,
+              counter: {current: this.data.effectTriggerCount, max: MAX_TRIGGER_COUNT},
+            },
+          });
         }
       }
       return undefined;

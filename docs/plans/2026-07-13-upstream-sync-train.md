@@ -172,15 +172,24 @@ are distinct statuses and never proceed to push or deployment.
 ## Automation contract
 
 - Cadence: Monday 10:00 Europe/Moscow, plus a manual urgent run.
-- Codex automation id: `tm-weekly-upstream-sync-candidate`.
-- The automation is paused. Activation requires a merged canonical main, a
-  clean release checkout, passing fixture tests, and one successful manual
-  candidate cycle.
-- It may prepare and validate one custom-repo candidate PR. It cannot merge,
-  deploy, mutate official upstream, or touch the primary working tree.
-- After a human merges the PR, a separate/manual release task may deploy that
-  exact `origin/main` commit to staging. Production always requires a new,
-  explicit command.
+- DSH scheduled task: `TM: недельный sync апстрима`
+  (`schedule-c0c723ce-6856-4dea-8f72-afd1b3a7db66`), one fresh session per run.
+- In one run it may: prepare and validate one custom-repo candidate PR, push
+  it, wait for the CI gate, merge it with a merge commit (never squash, so the
+  upstream ancestry survives for the next sync), then refresh the release
+  checkout and deploy and verify that exact `origin/main` on staging.
+- It cannot: deploy or promote production, mutate official upstream, touch the
+  primary working tree, force-push, create a second candidate PR, or squash the
+  candidate.
+- The merge goes through the guarded `gh pr merge` shim:
+  `--method merge --require build-linux --require build-windows --require build-docker`.
+- Production always requires a new, explicit operator command with the pinned
+  staging Git/artifact pair:
+  `release_tm_prod.ps1 -ExpectedGitSha <sha> -ExpectedArtifactSha <sha>`.
+  The prod live-game gate still blocks unconfirmed realtime games.
+- History: until 2026-11-11 the automation stopped at the candidate PR. The
+  operator asked it to also merge the green candidate and deploy staging,
+  keeping production manual.
 
 ## Validation
 
@@ -210,9 +219,10 @@ Windows CI.
 - [x] Run fixture, syntax, targeted, and full candidate validation.
 - [x] Prepare the final diff and custom PR draft; wait for explicit push/PR
   approval.
-- [ ] After manual merge, run a separately approved staging release and validate
+- [x] After manual merge, run a separately approved staging release and validate
   its manifest.
-- [ ] Activate the paused weekly automation only after the bootstrap cycle.
+- [x] Activate the weekly automation (2026-11-11): it merges its green candidate
+  PR and deploys staging; production stays a manual command.
 
 ## Rollback and stop conditions
 

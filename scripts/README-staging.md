@@ -164,10 +164,13 @@ After resolving and staging an understood conflict, resume the immutable saved
 validation plan with `-Mode Continue`. `-PushCandidate` is a separate opt-in and
 pushes only the exact SHA that passed validation, using a normal non-force push.
 
-The weekly Codex task runs Mondays at 10:00 Moscow time and starts paused. It
-may prepare and validate a candidate, but it never merges or deploys. Activate
-it only after the bootstrap candidate has been merged and one manual sync cycle
-has completed successfully.
+The weekly DSH task (`TM: недельный sync апстрима`) runs Mondays at 10:00
+Moscow time. It prepares and validates a candidate, merges it with a merge
+commit once its CI gate is green, then refreshes the release checkout, deploys
+and verifies that exact `origin/main` on staging. It never squashes the
+candidate and never touches production. Production stays a manual command with
+the pinned staging pair:
+`release_tm_prod.ps1 -ExpectedGitSha <sha> -ExpectedArtifactSha <sha>`.
 
 ## Commands
 

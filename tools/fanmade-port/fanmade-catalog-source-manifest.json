@@ -1217,7 +1217,7 @@
     "src/server/cards/ceos/Floyd.ts": "733eccfd559474a97cb47020d0623f9b312cdd37f918f5c6ddebc73e4fca2b86",
     "src/server/cards/ceos/Gaia.ts": "123c8de18a32c2cbdb92fafba0d2cdc7a98f75a93404e8b45146ecf3736f069b",
     "src/server/cards/ceos/Gordon.ts": "bc8fa88ab79c47cda9dbbe78265f9886cb75bc5a9b3ec1d97931ad61a24fcbda",
-    "src/server/cards/ceos/Greta.ts": "8824feff10752d54f3fe9db84ca8cb5997f8f4eaf8b463c2f1e603765ccb38b7",
+    "src/server/cards/ceos/Greta.ts": "a4dce73f32033a8ce354a41886a58e7b44b522dc447d851993d14f74e15d6886",
     "src/server/cards/ceos/HAL9000.ts": "0da1da3986b69bf7bc545fa3d3cc900d0098b2bfa79a71d90d92dacceb37e5f3",
     "src/server/cards/ceos/Huan.ts": "3b22e253e6fb56304fdb52ecc1a6a204f991793f4b1ae20856696b64854eef7f",
     "src/server/cards/ceos/ICeoCard.ts": "18fe58ca8671161e0bbbd6ee1f64185237f8eb71b1262381fc872f3e3b016b30",

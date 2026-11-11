@@ -2537,7 +2537,7 @@
     "src/server/cards/venusNext/LocalShading.ts": "eaa22422d9eaeaf46ecc525cf386cb225de6b24273b2918e6153bd7c08dccf54",
     "src/server/cards/venusNext/LunaMetropolis.ts": "8d2a07b147a336369ad8b988a0e4060f1794465f8586ea4d6550bd834a11e571",
     "src/server/cards/venusNext/LuxuryFoods.ts": "7e9d6173aeab2dce0325211c34f3e90120d672811a0dc73fabed2ca03d1c6cb3",
-    "src/server/cards/venusNext/Manutech.ts": "aa66c84a80d1da2dcb8df07c2fe9a02de5065be7e39c8a7e4c7a5db08f72812c",
+    "src/server/cards/venusNext/Manutech.ts": "8a5bf57df0d65dd2456a187c065f3fe4f779acd711b0178eb1ad2a177572f7b8",
     "src/server/cards/venusNext/MaxwellBase.ts": "f610c0190fff1477319f37917dd9b3f72df36e2fb13418ee4364c5382fa5910c",
     "src/server/cards/venusNext/MiningQuota.ts": "62bc0a184317264b4cbc5fdd949e7486c570d08dde8c6208c632b7f752da455b",
     "src/server/cards/venusNext/MorningStarInc.ts": "1eac3952c7355f7d053d77ac91a0539bc3bd39cb6d8db73d20baac4c057238fa",

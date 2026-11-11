@@ -2877,7 +2877,7 @@
     "src/server/routes/ApiAiFeedback.ts": "ba27e40eab819d0659e97c7069763f7f46c307dbd4f63a5ddb35a08529d9a1f0",
     "src/server/routes/ApiBoardPreview.ts": "6a602bd5bf663cb3d4dfafca8aa0e0bb8128f806c91829308b6a8dfbfd796827",
     "src/server/routes/ApiCloneableGame.ts": "638af4406786191969096e793b5d89a5181833bce724f084490cf6dc20c09c41",
-    "src/server/routes/ApiCreateGame.ts": "d970b0de951b91bb4f40978bf721bd77738558dc80d555ae3ef4d045945c980a",
+    "src/server/routes/ApiCreateGame.ts": "b31b89753a2324ab2b16a81199bf98c34fd38ffc808f5c571292a70378adcb47",
     "src/server/routes/ApiCustomCardLibrary.ts": "5345320f6ca04f913026e9ab92229a03aa27a120cfa594a2bf12dad3f6b23604",
     "src/server/routes/ApiCustomCardLibraryReview.ts": "91824bba407f7ce963cde426d3fd3397b9ae6e05a8b3f7188a9a325c62efab92",
     "src/server/routes/ApiDeleteGame.ts": "5613a3e3e9551be8af777f54b924a43a7df6b5e9b2885f16335b8c14349507c3",

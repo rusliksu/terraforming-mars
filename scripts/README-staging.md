@@ -115,6 +115,41 @@ sqlite3 -readonly "file:/home/openclaw/tm-runtime/prod/shared/db/game.db?mode=ro
    WHERE trim(latest.status) = 'running' ORDER BY idle_seconds ASC;"
 ```
 
+## Staging Game Cleanup
+
+Staging accumulates abandoned test games. `scripts/cleanup_tm_games.ps1` lists them and
+deletes explicit ids (or a deliberately bounded bulk selection) with a full row backup,
+using the same latest-save idle rule as the prod promote gate.
+
+```powershell
+# What is running, with players, latest save and idle hours (read-only)
+pwsh -File scripts\cleanup_tm_games.ps1 -Environment staging -List
+
+# Dry run for explicit ids: shows row counts, deletes nothing
+pwsh -File scripts\cleanup_tm_games.ps1 -Environment staging -GameId ga55c39032531
+
+# Delete explicit ids (writes a backup first, then verifies nothing is left)
+pwsh -File scripts\cleanup_tm_games.ps1 -Environment staging -GameId ga55c39032531 -Apply
+
+# Bulk: running games idle for 180+ days, at most 200 of them
+pwsh -File scripts\cleanup_tm_games.ps1 -Environment staging -MinIdleDays 180 -AllowBulk -MaxGames 200 -Apply
+```
+
+Guards:
+
+- `prod` requires `-AllowProd`; bulk selection requires `-AllowBulk` on top of `-Apply`;
+- a game whose latest save is newer than `-MinIdleMinutes` (default 60) is treated as active and refused;
+- games with a `history_archives` row are refused via explicit ids and skipped in bulk mode;
+- bulk selection above `-MaxGames` (default 50) is refused, so the cap is raised on purpose;
+- unknown ids fail before anything is written.
+
+Deletion runs in one transaction over `history_archives`, `game_results`, `completed_game`,
+`participants` and `games`. Before it starts, every affected row is dumped as INSERT
+statements to a backup file (default under `$env:TEMP/tm-game-cleanup/<env>`, override with
+`-BackupDir`). The script re-reads the database afterwards and fails if any row is left.
+
+First cleanup run on `2026-11-11` against staging: test game `ga55c39032531` plus 96 games
+idle for 180+ days, running games 523 -> 427, `PRAGMA quick_check` = ok.
 ## Branch Naming
 
 - `main`: your fork's integration branch on `origin`. Only release commits that are intended to live there.

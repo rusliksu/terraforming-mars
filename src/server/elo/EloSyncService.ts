@@ -5,6 +5,7 @@ import {toName} from '../../common/utils/utils';
 import {IGame} from '../IGame';
 import {isICorporationCard} from '../cards/corporation/ICorporationCard';
 import {hasMalformedEscapeVelocityOptions} from '../../common/game/EscapeVelocityOptions';
+import {isNonHumanPlayerName, isSyntheticPlayerLineup} from '../../common/elo/playerKind';
 import {getEloMirrorPath, getEloPrimaryPath} from './EloPaths';
 import {
   compareCompletionRank,
@@ -767,8 +768,16 @@ function hasBotPlayers(summary: CompletedGameSummary): boolean {
   return (normalizeStringList(summary.botPlayerIds)?.length ?? 0) > 0;
 }
 
+// Bots that join as ordinary accounts (e.g. "Bot Vega") and benchmark line-ups ("a"/"b"/"c")
+// carry no botPlayerIds, so the account name is the only reliable signal at completion time.
+function hasNonHumanPlayers(summary: CompletedGameSummary): boolean {
+  const players = summary.players ?? [];
+  const names = players.map((player) => player.name);
+  return names.some((name) => isNonHumanPlayerName(name)) || isSyntheticPlayerLineup(names);
+}
+
 function shouldSkipSummary(summary: CompletedGameSummary): boolean {
-  return (summary.players || []).length < 2 || hasBotPlayers(summary);
+  return (summary.players || []).length < 2 || hasBotPlayers(summary) || hasNonHumanPlayers(summary);
 }
 
 async function loadJsonFile(file: string): Promise<EloData | null> {

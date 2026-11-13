@@ -2,12 +2,13 @@ import {paths} from '@/common/app/paths';
 import {isStatsKind, StatsKind} from './statsKinds';
 
 // Every statistics view has its own address: links can be shared, browser back works.
-export type StatsTab = 'overview' | 'games' | 'players' | 'corporation' | 'prelude' | 'card' | 'combinations' | 'milestone' | 'award' | 'board' | 'records';
+export type StatsTab = 'overview' | 'games' | 'players' | 'elo' | 'corporation' | 'prelude' | 'card' | 'combinations' | 'milestone' | 'award' | 'board' | 'records';
 
 export const STATS_TABS: ReadonlyArray<{tab: StatsTab, label: string}> = [
   {tab: 'overview', label: 'Overview'},
   {tab: 'games', label: 'Games'},
   {tab: 'players', label: 'Players'},
+  {tab: 'elo', label: 'Elo rating'},
   {tab: 'corporation', label: 'Corporations'},
   {tab: 'prelude', label: 'Prelude cards'},
   {tab: 'card', label: 'Project cards'},

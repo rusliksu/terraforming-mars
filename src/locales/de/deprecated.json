@@ -30,6 +30,7 @@
   "Neutral player received ${0} M€ from ${1} owner (${2})": "Der neutrale Spieler erhielt ${0} M€ vom Besitzer des ${1} (${2})",
   "${0} gained 0 M€ from ${1} action.": "${0} erhielt 0 M€ aus der Aktion ${1}.",
   "${0} gained ${1} M€ from ${2} ocean(s)": "${0} erhielt ${1} M€ von ${2} Ozean(e)",
+  "${0} gained ${1}:r:mc: from ${2} ocean(s)": "${0} erhielt ${1}:r:mc: von ${2} Ozean(e)",
   "${0} gained 4 M€ for playing ${1}, which has no tags.": "${0} erhielt 4 M€ für das Ausspielen von ${1}, das kein Symbol hat.",
   "${0} gained 1 M€ for playing ${1}, which has exactly 1 tag.": "${0} erhielt 1 M€ für das Ausspielen von ${1}, das genau 1 Symbol hat.",
   "${0} blackmailed ${1} and was paid 10 M€.": "${0} erpresste ${1} und erhielt 10 M€.",
@@ -74,5 +75,7 @@
   "${0} for ${1} is blocking 1 TR": "Das ${0} ist die Blockierung von 1 TW für ${1}",
   "${0} gained ${1} TR from ${2}": "${0} erhielt ${1} TW von ${2}",
   "${0} gained ${1} TR": "${0} erhielt ${1} TW",
+  "${0} has the most ${1} tags and earns 1VP": "${0} besitzt die meisten ${1}-Symbole und erhält 1 SP",
+  "${0} has the most ${1} tags and earns 2VP": "${0} besitzt die meisten ${1}-Symbole und erhält 2 SP",
   "${0} lost ${1} TR": "${0} verlor ${1} TW"
 }

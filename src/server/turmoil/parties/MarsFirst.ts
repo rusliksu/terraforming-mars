@@ -65,7 +65,7 @@ class MarsFirstPolicy02 implements IPolicy {
   onCardPlayed(player: IPlayer, card: ICard) {
     if (card.tags.includes(Tag.BUILDING)) {
       player.stock.add(Resource.MEGACREDITS, 2);
-      player.game.log('${0} gained ${1} M€ from Turmoil ${2} policy', (b) =>
+      player.game.log('${0} gained ${1}:r:mc: from Turmoil ${2} policy', (b) =>
         b.player(player).number(2).partyName(PartyName.MARS));
     }
   }

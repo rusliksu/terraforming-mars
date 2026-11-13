@@ -75,7 +75,7 @@ function publicPlayer(player: PublicPlayerModel, timer: PublicPlayerModel['timer
     selfReplicatingRobotsCards: player.selfReplicatingRobotsCards.map(publicCard),
     protectedResources: pick(player.protectedResources, Units.keys),
     protectedProduction: pick(player.protectedProduction, Units.keys),
-    timer: {...pick(timer, ['sumElapsed', 'startedAt', 'afterFirstAction', 'lastStoppedAt']), running: false},
+    timer: {...pick(timer, ['sumElapsed', 'startedAt']), running: false},
     underworldData: {
       corruption: player.underworldData.corruption,
       activeBonus: player.underworldData.activeBonus,
@@ -120,7 +120,7 @@ function publicGame(game: GameModel): GameModel {
     gameOptions: {
       globalParameters: publicParameters(game.gameOptions.globalParameters),
       customBoardRows: game.gameOptions.customBoardRows,
-      ...pick(game.gameOptions, ['altVenusBoard', 'aresExtremeVariant', 'boardName', 'bannedCards', 'expansions',
+      ...pick(game.gameOptions, ['altVenusBoard', 'aresExtremeVariant', 'boardName', 'bannedCards', 'bannedColonies', 'expansions',
         'draftVariant', 'fastModeOption', 'includedCards', 'includeFanMA', 'initialDraftVariant', 'initialDraftOneWay',
         'noEloGame', 'turnBasedGame', 'preludeDraftVariant', 'ceosDraftVariant', 'politicalAgendasExtension',
         'removeNegativeGlobalEvents', 'showOtherPlayersVP', 'showTimers', 'shuffleMapOption', 'solarPhaseOption',

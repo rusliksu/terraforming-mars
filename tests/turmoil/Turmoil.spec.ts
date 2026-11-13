@@ -140,6 +140,51 @@ describe('Turmoil', () => {
     expect(party.partyLeader).to.eq(player);
   });
 
+  it('Logs the new party leader', () => {
+    game.gameLog.length = 0;
+
+    // The first delegate makes its sender the party leader.
+    turmoil.sendDelegateToParty(player, PartyName.GREENS, game);
+    expect(leaderLogs().map((log) => log.data[0].value)).to.deep.eq([player.color]);
+
+    // More delegates for the same leader change nothing, so nothing else is logged.
+    turmoil.sendDelegateToParty(player, PartyName.GREENS, game);
+    turmoil.sendDelegateToParty(player2, PartyName.GREENS, game);
+    expect(leaderLogs()).to.have.length(1);
+
+    // Overtaking the leader logs the new one.
+    turmoil.sendDelegateToParty(player2, PartyName.GREENS, game);
+    turmoil.sendDelegateToParty(player2, PartyName.GREENS, game);
+    expect(leaderLogs().map((log) => log.data[0].value)).to.deep.eq([player.color, player2.color]);
+    expect(leaderLogs().map((log) => log.data[1].value)).to.deep.eq([PartyName.GREENS, PartyName.GREENS]);
+
+    // Falling back behind the other player logs the leadership change as well.
+    turmoil.removeDelegateFromParty(player2, PartyName.GREENS, game);
+    turmoil.removeDelegateFromParty(player2, PartyName.GREENS, game);
+    expect(leaderLogs().map((log) => log.data[0].value)).to.deep.eq([player.color, player2.color, player.color]);
+
+    // Removing the last delegates leaves the party without a leader.
+    turmoil.removeDelegateFromParty(player2, PartyName.GREENS, game);
+    turmoil.removeDelegateFromParty(player, PartyName.GREENS, game);
+    turmoil.removeDelegateFromParty(player, PartyName.GREENS, game);
+    expect(noLeaderLogs().map((log) => log.data[0].value)).to.deep.eq([PartyName.GREENS]);
+  });
+
+  it('Logs a neutral delegate as the new party leader', () => {
+    const reds = turmoil.getPartyByName(PartyName.REDS);
+    // The setup may already have installed a neutral leader in this party.
+    reds.delegates.clear();
+    reds.partyLeader = undefined;
+    game.gameLog.length = 0;
+
+    turmoil.sendDelegateToParty('NEUTRAL', PartyName.REDS, game);
+    expect(leaderLogs()).to.have.length(0);
+    expect(neutralLeaderLogs().map((log) => log.data[0].value)).to.deep.eq([PartyName.REDS]);
+
+    turmoil.removeDelegateFromParty('NEUTRAL', PartyName.REDS, game);
+    expect(noLeaderLogs().map((log) => log.data[0].value)).to.deep.eq([PartyName.REDS]);
+  });
+
   it('Correctly run end of generation', () => {
     player.setTerraformRating(20);
     player2.setTerraformRating(21);
@@ -174,6 +219,7 @@ describe('Turmoil', () => {
     expect(turmoil.usedFreeDelegateAction).is.empty;
     expect(turmoil.rulingParty).to.eq(turmoil.getPartyByName(PartyName.REDS));
     expect(turmoil.dominantParty).to.eq(turmoil.getPartyByName(PartyName.GREENS));
+    expect(rulingPartyLogs().map((log) => log.data[0].value)).to.deep.eq([PartyName.REDS]);
   });
 
   it('Player that is chairman has one fewer delegate avaialble ', () => {
@@ -321,15 +367,15 @@ describe('Turmoil', () => {
     setRulingPartyByName(game, PartyName.GREENS, 'gp03');
     TurmoilHandler.applyOnCardPlayedEffect(player, new ProtectedValley());
     runAllActions(game);
-    expectLog('${0} gained ${1} M€ from Turmoil ${2} policy');
+    expectLog('${0} gained ${1}:r:mc: from Turmoil ${2} policy');
 
     setRulingPartyByName(game, PartyName.MARS, 'mp02');
     TurmoilHandler.applyOnCardPlayedEffect(player, new StripMine());
-    expectLog('${0} gained ${1} M€ from Turmoil ${2} policy', PartyName.MARS);
+    expectLog('${0} gained ${1}:r:mc: from Turmoil ${2} policy', PartyName.MARS);
 
     setRulingPartyByName(game, PartyName.KELVINISTS, 'kp02');
     game.increaseTemperature(player, 1);
-    expectLog('${0} gained ${1} M€ from Turmoil ${2} policy', PartyName.KELVINISTS);
+    expectLog('${0} gained ${1}:r:mc: from Turmoil ${2} policy', PartyName.KELVINISTS);
 
     setRulingPartyByName(game, PartyName.KELVINISTS, 'kp04');
     game.addTile(player, game.board.getAvailableSpacesOnLand(player)[0], {tileType: TileType.CITY});
@@ -912,6 +958,22 @@ describe('Turmoil', () => {
 
   function expectDelegateMatch(actual: MultiSet<Delegate>, ...delegates: Array<Delegate>) {
     expect(actual).to.deep.eq(MultiSet.from(delegates));
+  }
+
+  function leaderLogs() {
+    return game.gameLog.filter((log) => log.message === '${0} is the new leader of the ${1} party');
+  }
+
+  function neutralLeaderLogs() {
+    return game.gameLog.filter((log) => log.message === 'A neutral delegate is the new leader of the ${0} party');
+  }
+
+  function noLeaderLogs() {
+    return game.gameLog.filter((log) => log.message === 'The ${0} party has no leader');
+  }
+
+  function rulingPartyLogs() {
+    return game.gameLog.filter((log) => log.message === 'The ruling party is: ${0}');
   }
 
   function expectLog(message: string, partyName?: PartyName) {

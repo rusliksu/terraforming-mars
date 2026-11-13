@@ -144,6 +144,7 @@ export class ApiQuickGame extends Handler {
     }
 
     const bannedCards = settings.bannedCards ?? settings.cardsBlackList ?? [];
+    const bannedColonies = settings.bannedColonies ?? [];
     const includedCards = settings.includedCards ?? [];
     const customCorporationsList = settings.customCorporationsList ?? settings.customCorporations ?? [];
     const customColoniesList = settings.customColoniesList ?? settings.customColonies ?? [];
@@ -186,6 +187,7 @@ export class ApiQuickGame extends Handler {
       soloTR: settings.soloTR ?? false,
       customCorporationsList,
       bannedCards,
+      bannedColonies,
       includedCards,
       customColoniesList,
       customPreludes,
@@ -268,6 +270,7 @@ export class ApiQuickGame extends Handler {
       const gameOptions: GameOptions = {
         customBoard, customMoonBoard, customVenusSurfaceBoard,
         aiAnalysis: false,
+        automa: false,
         globalParameters: customBoard?.globalParameters,
         sillyficationExpansion: gameReq.expansions.sillyfication,
         betterMarsExpansion: gameReq.expansions.betterMars,
@@ -288,6 +291,7 @@ export class ApiQuickGame extends Handler {
         aresHazards: true,
         aresExtremeVariant: gameReq.aresExtremeVariant,
         bannedCards: gameReq.bannedCards,
+        bannedColonies: gameReq.bannedColonies ?? [],
         boardName: resolvedBoard,
         boardSelection: gameReq.boards,
         ceoExtension: gameReq.expansions.ceo,

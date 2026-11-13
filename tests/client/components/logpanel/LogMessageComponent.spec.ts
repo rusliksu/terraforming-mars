@@ -10,6 +10,7 @@ import {CardName} from '@/common/cards/CardName';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
 import {Resource} from '@/common/Resource';
 import {CardResource} from '@/common/CardResource';
+import {PartyName} from '@/common/turmoil/PartyName';
 
 describe('LogMessageComponent', () => {
   it('mounts without errors', () => {
@@ -269,5 +270,33 @@ describe('LogMessageComponent', () => {
 
     const html = wrapper.html();
     expect(html).includes('-3<span class="markdown-resource resource_icon--megacredits"></span> *x*');
+  });
+
+  it('renders PARTY data with the party emblem and identity color', () => {
+    const message = new LogMessage(LogMessageType.DEFAULT, 'Turmoil ${0} policy', [
+      {type: LogMessageDataType.PARTY, value: PartyName.REDS},
+    ]);
+    const wrapper = shallowMount(LogMessageComponent, {
+      ...globalConfig,
+      props: {message, viewModel: fakeViewModel()},
+    });
+
+    expect(wrapper.find('.log-party').exists()).is.true;
+    expect(wrapper.find('.log-party-logo--reds').exists()).is.true;
+    expect(wrapper.find('.log-party-name--reds').exists()).is.true;
+    expect(wrapper.text()).contains('Reds');
+  });
+
+  it('uses a hyphen for the party logo class and an underscore for its palette class', () => {
+    const message = new LogMessage(LogMessageType.DEFAULT, 'Turmoil ${0} policy', [
+      {type: LogMessageDataType.PARTY, value: PartyName.MARS},
+    ]);
+    const wrapper = shallowMount(LogMessageComponent, {
+      ...globalConfig,
+      props: {message, viewModel: fakeViewModel()},
+    });
+
+    expect(wrapper.find('.log-party-logo--mars-first').exists()).is.true;
+    expect(wrapper.find('.log-party-name--mars_first').exists()).is.true;
   });
 });

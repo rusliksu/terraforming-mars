@@ -28,6 +28,7 @@ import {IColony} from '../src/server/colonies/IColony';
 import {IAward} from '../src/server/awards/IAward';
 import {SerializedGame} from '../src/server/SerializedGame';
 import {SelectInitialCards} from '../src/server/inputs/SelectInitialCards';
+import {SelectCard} from '../src/server/inputs/SelectCard';
 import {SelectSpace} from '../src/server/inputs/SelectSpace';
 import {GlobalParameter} from '../src/common/GlobalParameter';
 import {assertPlaceOcean} from './assertions';
@@ -323,6 +324,18 @@ describe('Game', () => {
     addOcean(player, '34');
 
     expect(game.gameLog.map(formatMessage)).to.include('blue placed :i:ocean: tile at 34');
+  });
+
+  it('Logs the ocean adjacency bonus with the ocean icon', () => {
+    const [game, player] = testGame(2);
+    const ocean = addOcean(player, '34');
+    player.oceanBonus = 2;
+    const landSpace = game.board.getAdjacentSpaces(ocean)
+      .find((space) => space.spaceType === SpaceType.LAND && space.tile === undefined);
+
+    addCity(player, landSpace!.id);
+
+    expect(game.gameLog.map(formatMessage)).to.include('blue gained 2:r:mc: from 1 :i:ocean:');
   });
 
   it('Venus moves 1% per step above 30% on Amazonis Planitia', () => {
@@ -1282,6 +1295,8 @@ describe('Game', () => {
       'inDoubleDown',
       'inputsThisRound',
       'inTurmoil',
+      'marsBotPlayer',
+      'playersPlusMarsBot',
       'playersInGenerationOrder',
       'monsInsuranceOwner',
       'parameters',
@@ -1977,6 +1992,21 @@ describe('Game', () => {
       }
     });
   }
+
+  it('timer is disabled until the player picks their corporation', () => {
+    const [/* game */, player, player2] = testGame(2, {skipInitialCardSelection: false});
+    const selectInitialCards = cast(player.getWaitingFor(), SelectInitialCards);
+    expect(player.timer.serialize().enabled).is.false;
+    expect(player.timer.serialize().running).is.false;
+
+    player.process({type: 'initialCards', responses: [
+      {type: 'card', cards: [cast(selectInitialCards.options[0], SelectCard).cards[0].name]},
+      {type: 'card', cards: []},
+    ]});
+    expect(player.timer.serialize().enabled).is.true;
+    expect(player.timer.getElapsed()).eq(0);
+    expect(player2.timer.serialize().enabled).is.false;
+  });
 });
 
 function assertIsJSON(serialized: any) {

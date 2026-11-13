@@ -91,4 +91,9 @@ describe('markdown', () => {
       '<p><span class="markdown-resource resource_icon--megacredits"></span> ' +
       '<span class="markdown-production"><span class="markdown-resource resource_icon--megacredits"></span></span></p>\n');
   });
+
+  it('renders the VP badge and a planet tag icon', () => {
+    expect(renderIcons('2:i:vp: :tag:venus:')).eq(
+      '2<span class="markdown-icon markdown-icon-vp"></span> <span class="markdown-tag tag-venus"></span>');
+  });
 });

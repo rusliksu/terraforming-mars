@@ -151,7 +151,7 @@ describe('PlayerInputFactory', () => {
         showtitle: true,
       },
     });
-    (wrapper.vm as any).saveData();
+    wrapper.vm.saveData();
     expect(saved).to.be.true;
   });
 
@@ -185,7 +185,7 @@ describe('PlayerInputFactory', () => {
         showtitle: true,
       },
     });
-    expect((wrapper.vm as any).canSave()).to.be.true;
+    expect(wrapper.vm.canSave()).to.be.true;
   });
 
   it('ShiftAresGlobalParameters', async () => {

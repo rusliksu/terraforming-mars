@@ -36,5 +36,7 @@
   "${0} cannot turn ${1} face down to gain 3 TR because of unaffordable Reds policy cost": "${0} nie może odwrócić karty ${1} ze względu na niemożliwość pokrycia dodatkowego kosztu polityki czerwonych.",
   "${0} turned ${1} face down to gain 3 TR": "${0} zakrywa ${1} i podnosi swój WT o 3 poziomy.",
   "${0} gained ${1} TR": "${0} podnosi swój WT o ${1}",
+  "${0} has the most ${1} tags and earns 1VP": "${0} posiada najwięcej symboli ${1} i otrzymuje 1 PZ",
+  "${0} has the most ${1} tags and earns 2VP": "${0} posiada najwięcej symboli ${1} i otrzymuje 2 PZ",
   "${0} lost ${1} TR": "${0} traci ${1} WT"
 }

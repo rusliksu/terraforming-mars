@@ -6,6 +6,7 @@ import nodeModule from 'node:module';
 import {mock} from 'node:test';
 import {HistorySource} from '@/server/archive/HistorySource';
 import {LIMITS} from '@/server/archive/ArchiveFormat';
+import {archiveLab} from '@tests/testing/archiveLab';
 
 (process.platform === 'win32' ? describe : describe.skip)('HistorySource', () => {
   let root: string;
@@ -13,7 +14,7 @@ import {LIMITS} from '@/server/archive/ArchiveFormat';
   const first = {id: gameId, lastSaveId: 2, phase: 'action', extension: null};
   const last = {id: gameId, lastSaveId: 7, phase: 'end', extension: {unknown: true}};
   beforeEach(async () => {
-    const lab = 'D:/tm-db/smartbot-lab/archive-source-tests';
+    const lab = archiveLab('archive-source-tests');
     await fs.mkdir(lab, {recursive: true});
     root = await fs.mkdtemp(join(lab, 'case-'));
     await fs.mkdir(join(root, 'history'));

@@ -811,7 +811,9 @@ if [ -n "$elo_service" ]; then
 fi
 
 healthy=0
-for attempt in $(seq 1 20); do
+# Startup can legitimately take ~45s on a warm database (hundreds of preloaded game IDs,
+# SQLite connect, Sentry init), so allow 45 attempts x 2s = 90s before rollback.
+for attempt in $(seq 1 45); do
   if curl -fsS -I "$health_url" >/dev/null 2>&1; then
     healthy=1
     break

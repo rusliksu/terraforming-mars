@@ -1,12 +1,12 @@
 import {expect} from 'chai';
 import fs from 'node:fs/promises';
-import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import Database from 'better-sqlite3';
 import {ArchiveCatalog} from '@/server/archive/ArchiveCatalog';
 import {HistorySource} from '@/server/archive/HistorySource';
 import {exportHistory} from '@/server/archive/ArchiveWriter';
 import {readSave} from '@/server/archive/ArchiveReader';
+import {archiveLab} from '@tests/testing/archiveLab';
 
 const supported = process.platform === 'win32' || (process.platform === 'linux' && process.env.CI === 'true');
 
@@ -22,7 +22,7 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
     phase: lastSaveId === 9 ? 'end' : 'action', privateHand: ['private-' + lastSaveId]}));
 
   beforeEach(async () => {
-    const lab = process.platform === 'win32' ? 'D:/tm-db/smartbot-lab/archive-catalog-tests' : tmpdir();
+    const lab = archiveLab('archive-catalog-tests');
     await fs.mkdir(lab, {recursive: true});
     workspace = await fs.mkdtemp(join(lab, 'tm-catalog-'));
     output = join(workspace, 'archives');

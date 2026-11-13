@@ -79,7 +79,7 @@ class BureaucratsPolicy01 implements IPolicy {
     game.log('${0} used Turmoil ${1} action', (b) => b.player(player).partyName(PartyName.BUREAUCRATS));
     game.defer(new SelectPaymentDeferred(player, 5, {title: TITLES.payForPartyAction(PartyName.BUREAUCRATS)}))
       .andThen((payment) => {
-        game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+        game.log('${0} paid ${1}:r:mc: for Turmoil ${2} policy', (b) =>
           b.player(player).number(paymentTotal(payment)).partyName(PartyName.BUREAUCRATS));
         player.drawCard(1, {cardType: CardType.ACTIVE});
       });
@@ -105,7 +105,7 @@ class BureaucratsPolicy02 implements IPolicy {
     if (amountToPay > 0) {
       player.game.defer(new SelectPaymentDeferred(player, amountToPay, {title: 'Pay for Turmoil Bureaucrats (start of turn)'}))
         .andThen((payment) => {
-          player.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+          player.game.log('${0} paid ${1}:r:mc: for Turmoil ${2} policy', (b) =>
             b.player(player).number(paymentTotal(payment)).partyName(PartyName.BUREAUCRATS));
         });
     }

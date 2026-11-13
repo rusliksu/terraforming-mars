@@ -98,10 +98,14 @@ export type GameOptions = {
   modularMA: boolean;
   /** Solo victory by getting TR 63 by game end */
   soloTR: boolean;
+  /** A 1 player game played against MarsBot */
+  automa: boolean;
   customCorporationsList: ReadonlyArray<CardName>;
   bannedCards: ReadonlyArray<CardName>;
   includedCards: ReadonlyArray<CardName>;
   customColoniesList: ReadonlyArray<ColonyName>;
+  /** Colonies removed from the draw pool. */
+  bannedColonies: ReadonlyArray<ColonyName>;
   customPreludes: ReadonlyArray<CardName>;
   customCeos: ReadonlyArray<CardName>;
   /** Preselected milestones and awards, used instead of the board's. Only valid when randomMA is MANUAL. */
@@ -132,6 +136,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   customVenusSurfaceBoard: undefined,
   globalParameters: undefined,
   bannedCards: [],
+  bannedColonies: [],
   includedCards: [],
   ceoExtension: false,
   clonedGamedId: undefined,
@@ -225,6 +230,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   highOrbitExpansion: false,
   solarisExpansion: false,
   conglomeratesTeamAssignments: undefined,
+  automa: false,
   undoOption: false,
   undoStepOption: false,
   aiAnalysis: false,

@@ -166,4 +166,30 @@ describe('BoardPopup', () => {
     expect(wrapper.emitted('update:boards')).to.deep.eq([[[BoardName.THARSIS]]]);
     expect(wrapper.emitted('close')).to.have.length(1);
   });
+
+  it('offers the loaded custom map as a choice of its own', async () => {
+    const wrapper = mount(BoardPopup, {
+      ...globalConfig,
+      props: {boards: [BoardName.THARSIS], shuffleMap: false, customBoardName: 'Pasted Map'},
+    });
+    const custom = checkbox(wrapper, BoardName.CUSTOM);
+    expect(custom.exists()).is.true;
+    await custom.setValue();
+    expect(wrapper.emitted('update:boards')).to.deep.eq([[[BoardName.CUSTOM]]]);
+  });
+
+  it('drops the custom map when several boards may be drawn', async () => {
+    const wrapper = mount(BoardPopup, {
+      ...globalConfig,
+      props: {boards: [BoardName.CUSTOM], shuffleMap: false, customBoardName: 'Pasted Map'},
+    });
+    await wrapper.find('#boardMode-many-radio').setValue();
+    expect(wrapper.emitted('update:boards')).to.deep.eq([[[BoardName.THARSIS]]]);
+    expect(checkbox(wrapper, BoardName.CUSTOM).element.disabled).is.true;
+  });
+
+  it('has no custom choice without a loaded map code', () => {
+    const wrapper = mountPopup();
+    expect(checkbox(wrapper, BoardName.CUSTOM).exists()).is.false;
+  });
 });

@@ -14,3 +14,12 @@ enableAutoUnmount(afterEach);
 // The viewport meta tag is page state shared by every spec in the worker: an
 // owner left registered by one spec would change the layout the next one sees.
 beforeEach(() => resetViewportForTest());
+
+// vitest 5 / jsdom 30 expose `localStorage` as a getter-only property on the
+// window. The fork's specs swap it per test, so restore the writable global
+// the older environment provided.
+Object.defineProperty(global, 'localStorage', {
+  value: global.localStorage,
+  configurable: true,
+  writable: true,
+});

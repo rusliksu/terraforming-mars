@@ -56,7 +56,7 @@ describe('WaitingFor', () => {
 
   const thisPlayer: Partial<PublicPlayerModel> = {
     color: 'red',
-  } as any;
+  };
 
   const playerView: RecursivePartial<PlayerViewModel> = {
     id: 'p-player-id',
@@ -755,7 +755,7 @@ describe('WaitingFor', () => {
       },
       props: {
         playerView,
-        waitingfor: {type: 'option', title: 'test', buttonLabel: 'save'} as any,
+        waitingfor: {type: 'option', title: 'test', buttonLabel: 'save'},
       },
     });
   }

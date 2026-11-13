@@ -2,6 +2,7 @@ import {mount, shallowMount} from '@vue/test-utils';
 import {creationTransport, globalConfig} from './creationTestConfig';
 import {expect} from 'chai';
 import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
+import BoardSelector from '@/client/components/create/BoardSelector.vue';
 import {CreateGameSettingsStorage} from '@/client/components/create/CreateGameSettingsStorage';
 import {sharedEloState} from '@/client/utils/elo';
 import {ColonyName} from '@/common/colonies/ColonyName';
@@ -10,6 +11,8 @@ import {
   DEFAULT_PLAYER_COLORS,
 } from '@/common/Color';
 import {BoardName} from '@/common/boards/BoardName';
+import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
+import {boardOptions} from '@/common/boards/randomBoardOptions';
 import {DEFAULT_EXPANSIONS} from '@/common/cards/GameModule';
 import {JSONObject} from '@/common/Types';
 import {NewGameConfig} from '@/common/game/NewGameConfig';
@@ -117,6 +120,20 @@ describe('CreateGameForm', () => {
     expect(wrapper.text()).not.to.contain('/start');
   });
 
+  it('sends the selected player as first player', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const model = wrapper.vm as any;
+    model.playersCount = 3;
+    model.randomFirstPlayer = false;
+    model.firstIndex = 2;
+
+    const config = JSON.parse(await model.serializeSettings());
+
+    expect(config.players.map((player: {first: boolean}) => player.first)).deep.eq([false, true, false]);
+  });
+
   it('links each fan expansion checkbox to its own rules page on this fork\'s own wiki', async () => {
     // None of these are part of the upstream project, so unlike the official expansions'
     // (whose info icons link to the shared upstream wiki), their links must point at this
@@ -178,6 +195,35 @@ describe('CreateGameForm', () => {
     expect((wrapper.vm as any).customBoardCodeError).to.not.eq('');
   });
 
+  it('picks the board with the selector instead of a board list', () => {
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    expect(wrapper.findComponent(BoardSelector).exists()).is.true;
+    expect(wrapper.find('#hellas-checkbox').exists()).is.false;
+  });
+
+  it('sends every selected board, so one of them is picked at random', async () => {
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    const vm = wrapper.vm as any;
+    vm.playersCount = 2;
+    vm.boards = [BoardName.HELLAS, BoardName.ELYSIUM];
+    await wrapper.vm.$nextTick();
+
+    expect(vm.newGameConfig.boards).deep.eq([BoardName.HELLAS, BoardName.ELYSIUM]);
+    const payload = JSON.parse(await vm.serializeSettings());
+    expect(payload.boards).deep.eq([BoardName.HELLAS, BoardName.ELYSIUM]);
+  });
+
+
+  it('restores a legacy random board selection as the boards it stands for', async () => {
+    new CreateGameSettingsStorage(window.localStorage).saveSettings(createGameSettings({
+      boards: [RandomBoardOption.ALL],
+    }));
+
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.vm as any).boards).deep.eq(boardOptions(RandomBoardOption.ALL));
+  });
 
   it('restores the last saved game settings on load', async () => {
     new CreateGameSettingsStorage(window.localStorage).saveSettings(createGameSettings({
@@ -895,13 +941,13 @@ describe('CreateGameForm', () => {
 
     expect(vm.customCorporations).to.include(CardName.LAKEFRONT_RESORTS);
     expect(vm.customCorporations).to.include(CardName.UTOPIA_INVEST);
-    expect(vm.customCorporations).not.to.include(CardName.MANUTECH);
-    expect(vm.customCorporations).not.to.include(CardName.POINT_LUNA);
-    expect(vm.customCorporations).not.to.include(CardName.VITOR);
+    expect(vm.customCorporations).to.include(CardName.MANUTECH);
+    expect(vm.customCorporations).to.include(CardName.POINT_LUNA);
+    expect(vm.customCorporations).to.include(CardName.VITOR);
     expect(vm.customPreludes).to.include(CardName.CREW_TRAINING);
     expect(vm.customColonies).to.include(ColonyName.CALLISTO);
     expect(vm.customColonies).to.include(ColonyName.IAPETUS_II);
-    expect(vm.customColonies).not.to.include(ColonyName.PLUTO);
+    expect(vm.customColonies).to.include(ColonyName.PLUTO);
 
     await wrapper.setData({
       expansions: {
@@ -934,16 +980,8 @@ describe('CreateGameForm', () => {
       },
     });
 
-    expect(vm.customCorporations).not.to.include(CardName.MANUTECH);
-    expect(vm.customCorporations).not.to.include(CardName.POINT_LUNA);
-    expect(vm.customCorporations).not.to.include(CardName.VITOR);
-    expect(vm.customColonies).not.to.include(ColonyName.PLUTO);
-
-    vm.updateCustomCorporations([...vm.customCorporations, CardName.MANUTECH]);
-    vm.updateCustomColonies([...vm.customColonies, ColonyName.PLUTO]);
-    vm.syncCustomSelectionsWithExpansions();
-
     expect(vm.customCorporations).to.include(CardName.MANUTECH);
+    expect(vm.customCorporations).to.include(CardName.POINT_LUNA);
     expect(vm.customColonies).to.include(ColonyName.PLUTO);
 
     vm.updateCustomCorporations(vm.customCorporations.filter((card: CardName) => card !== CardName.MANUTECH));
@@ -1043,7 +1081,7 @@ describe('CreateGameForm', () => {
     expect(vm.customPreludes).not.to.include(CardName.BOOM_TOWN);
   });
 
-  it('excludes Double Down by default when the Merger variant is enabled', async () => {
+  it('bans Merger preset cards only when the optional ban is enabled', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
@@ -1062,15 +1100,19 @@ describe('CreateGameForm', () => {
 
     await wrapper.setData({twoCorpsVariant: true});
 
-    expect(vm.customPreludes).not.to.include(CardName.DOUBLE_DOWN);
-
-    vm.updateCustomPreludes([...vm.customPreludes, CardName.DOUBLE_DOWN]);
-    vm.syncCustomSelectionsWithExpansions();
-
     expect(vm.customPreludes).to.include(CardName.DOUBLE_DOWN);
+    expect(vm.bannedCards).not.to.include(CardName.DOUBLE_DOWN);
+
+    vm.banDoubleDown = true;
+
+    expect(vm.bannedCards).to.include(CardName.DOUBLE_DOWN);
+
+    vm.banDoubleDown = false;
+
+    expect(vm.bannedCards).not.to.include(CardName.DOUBLE_DOWN);
   });
 
-  it('applies default custom bans when loading legacy selections without exclusion metadata', async () => {
+  it('offers optional preset bans without excluding those cards automatically', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
@@ -1080,7 +1122,6 @@ describe('CreateGameForm', () => {
       showCorporationList: true,
       showColoniesList: true,
       showPreludesList: true,
-      twoCorpsVariant: true,
       expansions: {
         ...vm.expansions,
         colonies: true,
@@ -1089,25 +1130,87 @@ describe('CreateGameForm', () => {
         venus: true,
       },
     });
-
-    await wrapper.setData({
-      customCorporations: vm.getSelectableCustomCorporations(),
-      customColonies: vm.getSelectableCustomColonies(),
-      customPreludes: vm.getSelectableCustomPreludes(),
-    });
-
-    vm.rememberCustomSelectionExclusions({
-      preserveDefaultCorporationExclusions: true,
-      preserveDefaultPreludeExclusions: true,
-      preserveDefaultColonyExclusions: true,
-    });
     vm.syncCustomSelectionsWithExpansions();
 
-    expect(vm.customCorporations).not.to.include(CardName.MANUTECH);
-    expect(vm.customCorporations).not.to.include(CardName.POINT_LUNA);
-    expect(vm.customCorporations).not.to.include(CardName.VITOR);
-    expect(vm.customPreludes).not.to.include(CardName.DOUBLE_DOWN);
-    expect(vm.customColonies).not.to.include(ColonyName.PLUTO);
+    expect(vm.customCorporations).to.include(CardName.MANUTECH);
+    expect(vm.customCorporations).to.include(CardName.POINT_LUNA);
+    expect(vm.customCorporations).to.include(CardName.VITOR);
+    expect(vm.customPreludes).to.include(CardName.DOUBLE_DOWN);
+    expect(vm.customColonies).to.include(ColonyName.PLUTO);
+
+    vm.banManutech = true;
+    vm.banPointLunaAndVitor = true;
+    vm.banDoubleDown = true;
+    vm.banPluto = true;
+
+    expect(vm.bannedCards).to.have.members([
+      CardName.MANUTECH,
+      CardName.POINT_LUNA,
+      CardName.VITOR,
+      CardName.DOUBLE_DOWN,
+    ]);
+    expect(vm.bannedColonies).to.deep.eq([ColonyName.PLUTO]);
+
+    vm.banManutech = false;
+    vm.banPluto = false;
+
+    expect(vm.bannedCards).not.to.include(CardName.MANUTECH);
+    expect(vm.bannedCards).to.include(CardName.POINT_LUNA);
+    expect(vm.bannedColonies).to.deep.eq([]);
+  });
+
+  it('shows preset ban checkboxes only for their modules and writes the regular ban lists', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    expect(wrapper.find('#banManutech-checkbox').exists()).to.eq(false);
+    expect(wrapper.find('#banPluto-checkbox').exists()).to.eq(false);
+    expect(wrapper.find('#banPreludeCorps-checkbox').exists()).to.eq(false);
+    expect(wrapper.find('#banDoubleDown-checkbox').exists()).to.eq(false);
+
+    await wrapper.setData({expansions: {...vm.expansions, venus: true, prelude: true, colonies: true}});
+
+    expect(wrapper.find('#banManutech-checkbox').exists()).to.eq(true);
+    expect(wrapper.find('#banPluto-checkbox').exists()).to.eq(true);
+    expect(wrapper.find('#banPreludeCorps-checkbox').exists()).to.eq(true);
+    expect(wrapper.find('#banDoubleDown-checkbox').exists()).to.eq(false);
+
+    await wrapper.setData({twoCorpsVariant: true});
+
+    expect(wrapper.find('#banDoubleDown-checkbox').exists()).to.eq(true);
+
+    await wrapper.find('#banManutech-checkbox').setValue(true);
+    await wrapper.find('#banPluto-checkbox').setValue(true);
+
+    expect(vm.bannedCards).to.include(CardName.MANUTECH);
+    expect(vm.bannedColonies).to.deep.eq([ColonyName.PLUTO]);
+  });
+
+  it('serializes optional preset bans into the regular ban lists', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({expansions: {...vm.expansions, prelude: true, venus: true, colonies: true, promo: true}});
+    vm.banManutech = true;
+    vm.banPluto = true;
+    vm.banPointLunaAndVitor = true;
+    vm.banDoubleDown = true;
+
+    const serialized = await vm.serializeSettings();
+    expect(serialized).to.be.a('string');
+    const payload = JSON.parse(serialized);
+
+    expect(payload.bannedCards).to.have.members([
+      CardName.MANUTECH,
+      CardName.POINT_LUNA,
+      CardName.VITOR,
+      CardName.DOUBLE_DOWN,
+    ]);
+    expect(payload.bannedColonies).to.deep.eq([ColonyName.PLUTO]);
   });
 
   it('keeps typed player names from changing the selected colors', async () => {

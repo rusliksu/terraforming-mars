@@ -1,43 +1,44 @@
 <template>
-  <div>
-    <component v-if="presentation !== undefined" :is="presentation" :binding="presentationBinding" />
-    <div v-else class="cards-filter">
+  <component v-if="presentation !== undefined" :is="presentation" :binding="presentationBinding" />
+  <PopupPanel v-else class="cards-filter" @close="$emit('close')">
+    <template #header>
       <h2 v-i18n>{{ title }}</h2>
-      <div class="cards-filter-results-cont" v-if="selected.length">
-        <div class="cards-filter-result" v-for="cardName in selected" :key="cardName">
-          <label>{{ cardName }}
-            <i class="create-game-expansion-icon expansion-icon-prelude" title="This card is a prelude" v-if="isPrelude(cardName)"></i>
+    </template>
+    <div class="cards-filter-input">
+      <div>
+        <PresentationHost :hosts="inputHost" />
+      </div>
+      <div class="cards-filter-suggest" v-if="searchMatches.length">
+        <div class="cards-filter-suggest-item" v-for="(cardName, idx) in searchMatches" :key="cardName"
+          :class="{'cards-filter-suggest-item-highlighted': idx === activeIndex}"
+          @mouseenter="activeIndex = idx">
+          <a href="#" @click.prevent="addCard(cardName)">
+            {{ cardName }}
+            <i class="create-game-expansion-icon expansion-icon-prelude" title="This card is a Prelude" v-if="isPrelude(cardName)"></i>
             <i class="create-game-expansion-icon expansion-icon-ceo" title="This card is a CEO" v-if="isCEO(cardName)"></i>
             <template v-for="expansion in expansions(cardName)" :key="expansion">
               <i :class="`create-game-expansion-icon expansion-icon-${expansion}`" :title="expansion"></i>
             </template>
-          </label>
-          <AppButton size="small" type="close" @click="removeCard(cardName)" />
-        </div>
-      </div>
-      <div class="cards-filter-input">
-        <div>
-          <PresentationHost :hosts="inputHost" />
-        </div>
-        <div class="cards-filter-suggest" v-if="searchMatches.length">
-          <div class="cards-filter-suggest-item" v-for="cardName in searchMatches" :key="cardName">
-            <a href="#" @click.prevent="addCard(cardName)">
-              {{ cardName }}
-              <i class="create-game-expansion-icon expansion-icon-prelude" title="This card is a Prelude" v-if="isPrelude(cardName)"></i>
-              <i class="create-game-expansion-icon expansion-icon-ceo" title="This card is a CEO" v-if="isCEO(cardName)"></i>
-              <template v-for="expansion in expansions(cardName)" :key="expansion">
-                <i :class="`create-game-expansion-icon expansion-icon-${expansion}`" :title="expansion"></i>
-              </template>
-            </a>
-          </div>
+          </a>
         </div>
       </div>
     </div>
-    <InputPortal :target="inputHost.target.value">
-      <input ref="filter" :class="presentation === undefined ? 'form-input' : 'create-game-text-input'"
-        :placeholder="$t(hint)" v-model="searchTerm" @keydown="onFilterKeydown">
-    </InputPortal>
-  </div>
+    <div class="cards-filter-results-cont" v-if="selectedCards.length">
+      <div class="cards-filter-result" v-for="cardName in selectedCards" :key="cardName">
+        <AppButton size="small" type="close" @click="removeCard(cardName)" />
+        <label>{{ cardName }}
+          <i class="create-game-expansion-icon expansion-icon-prelude" title="This card is a prelude" v-if="isPrelude(cardName)"></i>
+          <i class="create-game-expansion-icon expansion-icon-ceo" title="This card is a CEO" v-if="isCEO(cardName)"></i>
+          <template v-for="expansion in expansions(cardName)" :key="expansion">
+            <i :class="`create-game-expansion-icon expansion-icon-${expansion}`" :title="expansion"></i>
+          </template>
+        </label>
+      </div>
+    </div>
+  </PopupPanel>
+  <InputPortal :target="inputHost.target.value">
+    <input ref="filter" class="form-input" :placeholder="$t(hint)" v-model="searchTerm" @keydown="onFilterKeydown">
+  </InputPortal>
 </template>
 
 <script lang="ts">
@@ -49,6 +50,7 @@ import {useCreateControls} from '@/client/wrybit/create/presentation';
 import type {CardsFilterBinding} from '@/client/wrybit/create/cardsFilter';
 import {CardName} from '@/common/cards/CardName';
 import AppButton from '@/client/components/common/AppButton.vue';
+import PopupPanel from '@/client/components/common/PopupPanel.vue';
 import {byType, getCard, getCards} from '@/client/cards/ClientCardManifest';
 import {CardType} from '@/common/cards/CardType';
 import {inplaceRemove, toName} from '@/common/utils/utils';
@@ -62,10 +64,11 @@ const ALL_CARDS: Array<CardName> = [
 ].map(toName)
   .sort((a, b) => a.localeCompare(b));
 
+/** The most suggestions shown at once. */
+const MAX_SEARCH_MATCHES = 5;
 
 type CardsFilterModel = {
-  selected: Array<CardName>;
-  searchMatches: Array<CardName>;
+  selectedCards: Array<CardName>;
   searchTerm: string;
   activeIndex: number;
 }
@@ -76,7 +79,7 @@ type Refs = {
 
 export default defineComponent({
   name: 'CardsFilter',
-  emits: ['cards-list-changed'],
+  emits: ['cards-list-changed', 'close'],
   setup() {
     const controls = useCreateControls();
     return {inputHost: createInputHosts(), presentation: computed(() => controls.value?.cardsFilter)};
@@ -90,21 +93,45 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    /** Cards selected when the popup opens. */
+    selected: {
+      type: Array as () => ReadonlyArray<CardName>,
+      default: () => [],
+    },
   },
   data(): CardsFilterModel {
     return {
-      selected: [],
-      searchMatches: [],
+      selectedCards: [...this.selected],
       searchTerm: '',
       activeIndex: 0,
     };
   },
   components: {
-    AppButton, InputPortal, PresentationHost,
+    AppButton, InputPortal, PresentationHost, PopupPanel,
   },
   computed: {
+    /** Up to MAX_SEARCH_MATCHES unselected cards whose names contain the search term. */
+    searchMatches(): Array<CardName> {
+      if (this.searchTerm === '') {
+        return [];
+      }
+      const searchTermLowercase = this.searchTerm.toLowerCase();
+      const matches: Array<CardName> = [];
+      for (const candidate of ALL_CARDS) {
+        if (this.selectedCards.includes(candidate)) {
+          continue;
+        }
+        if (candidate.toLowerCase().indexOf(searchTermLowercase) >= 0) {
+          matches.push(candidate);
+        }
+        if (matches.length === MAX_SEARCH_MATCHES) {
+          break;
+        }
+      }
+      return matches;
+    },
     presentationBinding(): CardsFilterBinding {
-      return {title: this.title, inputHost: this.inputHost, selected: this.selected, searchMatches: this.searchMatches,
+      return {title: this.title, inputHost: this.inputHost, selected: this.selectedCards, searchMatches: this.searchMatches,
         activeCard: this.searchMatches[this.activeIndex],
         highlight: (name) => {
           const index = this.searchMatches.indexOf(name);
@@ -125,15 +152,13 @@ export default defineComponent({
   },
   methods: {
     onFilterKeydown(event: KeyboardEvent) {
-      if (this.presentation === undefined) {
-        return;
-      }
       const count = this.searchMatches.length;
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
         if (count > 0) {
           const step = event.key === 'ArrowDown' ? 1 : -1;
-          this.activeIndex = (this.activeIndex + step + count) % count;
+          // Clamp at both ends: up at the top stays on the first entry.
+          this.activeIndex = Math.max(0, Math.min(this.activeIndex + step, count - 1));
         }
       } else if (event.key === 'Enter') {
         event.preventDefault();
@@ -153,29 +178,29 @@ export default defineComponent({
       return getCard(cardName)?.compatibility ?? [];
     },
     removeCard(cardName: CardName) {
-      inplaceRemove(this.selected, cardName);
+      inplaceRemove(this.selectedCards, cardName);
     },
     addCard(cardName: CardName) {
-      if (this.selected.includes(cardName)) {
+      if (this.selectedCards.includes(cardName)) {
         return;
       }
-      this.selected.push(cardName);
-      this.selected.sort();
+      this.selectedCards.push(cardName);
+      this.selectedCards.sort();
       this.searchTerm = '';
       this.typedRefs.filter.focus();
     },
   },
   watch: {
-    selected: {
+    selectedCards: {
       handler(value) {
         this.$emit('cards-list-changed', value);
       },
       deep: true,
     },
-    searchTerm(value: string) {
-      this.searchMatches = [];
+    searchMatches() {
       this.activeIndex = 0;
-
+    },
+    searchTerm(value: string) {
       // Allows multiple simultaneous entries
       // This is case sensitive, as opposed to the standard search
       if (value.indexOf(',') !== -1) {
@@ -185,26 +210,11 @@ export default defineComponent({
             this.addCard(item);
           }
         }
-        return;
-      }
-
-      if (value === '') {
-        return;
-      }
-
-      const searchTermLowercase = value.toLowerCase();
-      for (const candidate of ALL_CARDS) {
-        if (candidate.toLowerCase().indexOf(searchTermLowercase) >= 0) {
-          this.searchMatches.push(candidate);
-        }
-        if (this.searchMatches.length === 5) {
-          return;
-        }
       }
     },
   },
   mounted() {
-    this.typedRefs.filter.focus();
+    this.typedRefs.filter?.focus();
   },
 });
 </script>

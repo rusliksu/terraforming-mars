@@ -4,6 +4,7 @@ import {isSpecialTileSpace, Board} from '../../boards/Board';
 import {VenusPhase2Expansion} from '../../venusPhase2/VenusPhase2Expansion';
 
 export class Landshaper extends BaseMilestone {
+  public readonly automaDescription = '1+ city, 1+ greenery, Building track ≥ 5';
   constructor() {
     super(
       'Landshaper',

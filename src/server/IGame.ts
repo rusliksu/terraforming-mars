@@ -122,6 +122,18 @@ export interface IGame extends Logger {
    */
   resourceRemovalBlockedThisGeneration: boolean;
   readonly players: ReadonlyArray<IPlayer>;
+  /**
+   * MarsBot's player in an automa game, otherwise undefined.
+   *
+   * It is not in `players` because its turns don't go through the players' turn order.
+   */
+  readonly marsBotPlayer: IPlayer | undefined;
+  /**
+   * `players` and MarsBot's player.
+   *
+   * For anything MarsBot can own, like tiles, delegates and milestones.
+   */
+  readonly playersPlusMarsBot: ReadonlyArray<IPlayer>;
   readonly playersInGenerationOrder: ReadonlyArray<IPlayer>;
   /** Players created as automated participants; their games are excluded from reliability stats. */
   readonly botPlayerIds: ReadonlySet<PlayerId>;

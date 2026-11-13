@@ -1,9 +1,10 @@
 import {expect} from 'chai';
 import {mkdtemp, mkdir, writeFile, symlink, readFile, lstat} from 'node:fs/promises';
-import {join, resolve} from 'node:path';
+import {join} from 'node:path';
 import {gzipSync} from 'node:zlib';
 import {canonical, coverageOf, digest, groupFilename, Json, LIMITS, Manifest, sourceDigest} from '@/server/archive/ArchiveFormat';
 import {readManifest, readSave, verifyArchive} from '@/server/archive/ArchiveReader';
+import {archiveLab} from '@tests/testing/archiveLab';
 
 (process.platform === 'win32' ? describe : describe.skip)('ArchiveReader', () => {
   let root: string;
@@ -13,7 +14,7 @@ import {readManifest, readSave, verifyArchive} from '@/server/archive/ArchiveRea
   let manifest: Manifest;
 
   beforeEach(async () => {
-    const lab = resolve('D:/tm-db/smartbot-lab/archive-reader-tests');
+    const lab = archiveLab('archive-reader-tests');
     expect(lab.toLowerCase().startsWith('d:')).eq(true);
     await mkdir(lab, {recursive: true});
     expect((await lstat(lab)).isSymbolicLink()).eq(false);

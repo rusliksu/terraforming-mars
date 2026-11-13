@@ -79,6 +79,38 @@ describe('Reds', () => {
     expect(player.terraformRating).to.eq(20);
   });
 
+  it('Ruling bonus 1: MarsBot\'s TR counts', () => {
+    const [game, human] = testGame(1, {automa: true, turmoilExtension: true});
+    const botPlayer = game.marsBotPlayer!;
+
+    human.setTerraformRating(30);
+    botPlayer.setTerraformRating(25);
+    REDS_BONUS_1.grant(game);
+    expect(human.terraformRating).to.eq(30);
+    expect(botPlayer.terraformRating).to.eq(25);
+
+    human.setTerraformRating(25);
+    REDS_BONUS_1.grant(game);
+    expect(human.terraformRating).to.eq(26);
+    expect(botPlayer.terraformRating).to.eq(25);
+  });
+
+  it('Ruling bonus 2: MarsBot\'s TR counts', () => {
+    const [game, human] = testGame(1, {automa: true, turmoilExtension: true});
+    const botPlayer = game.marsBotPlayer!;
+
+    human.setTerraformRating(20);
+    botPlayer.setTerraformRating(25);
+    REDS_BONUS_2.grant(game);
+    expect(human.terraformRating).to.eq(20);
+    expect(botPlayer.terraformRating).to.eq(25);
+
+    human.setTerraformRating(25);
+    REDS_BONUS_2.grant(game);
+    expect(human.terraformRating).to.eq(24);
+    expect(botPlayer.terraformRating).to.eq(25);
+  });
+
   it('Ruling policy 1: When you take an action that raises TR, you MUST pay 3 M€ per step raised', () => {
     setRulingParty(game, PartyName.REDS, 'rp01');
 
@@ -86,7 +118,7 @@ describe('Reds', () => {
     player.increaseTerraformRating();
     game.deferredActions.runNext();
     expect(player.megaCredits).to.eq(0);
-    expect(game.gameLog.map(formatMessage)).includes('blue paid 3 M€ for Turmoil Reds policy');
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 3:r:mc: for Turmoil Reds policy');
   });
 
   it('Ruling policy 2: When you place a tile, pay 3 M€ or as much as possible', () => {
@@ -138,7 +170,7 @@ describe('Reds', () => {
     runAllActions(game);
 
     expect(player.megaCredits).to.eq(0);
-    expect(game.gameLog.map(formatMessage)).includes('blue paid 3 M€ for Turmoil Reds policy');
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 3:r:mc: for Turmoil Reds policy');
   });
 
   it('Ruling policy 2: reports a partial payment when the player cannot pay in full', () => {
@@ -149,7 +181,7 @@ describe('Reds', () => {
     runAllActions(game);
 
     expect(player.megaCredits).to.eq(0);
-    expect(game.gameLog.map(formatMessage)).includes('blue paid 2 M€ for Turmoil Reds policy');
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 2:r:mc: for Turmoil Reds policy');
   });
 
   it('Ruling policy 3: states who used the party action and what was actually paid', () => {
@@ -162,7 +194,7 @@ describe('Reds', () => {
     runAllActions(game);
 
     expect(player.megaCredits).to.eq(3);
-    expect(game.gameLog.map(formatMessage)).includes('blue paid 4 M€ for Turmoil Reds policy');
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 4:r:mc: for Turmoil Reds policy');
   });
 
   it('Ruling policy 3: Pay 4 M€ to reduce a non-maxed global parameter 1 step', () => {

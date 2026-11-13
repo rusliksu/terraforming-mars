@@ -1,9 +1,10 @@
 import {expect} from 'chai';
-import {forceGenerationEnd, runAllActions, simulateFinishingAction} from '../../TestingUtils';
+import {forceGenerationEnd, formatMessage, runAllActions, simulateFinishingAction} from '../../TestingUtils';
 import {testGame} from '../../TestGame';
 import {Phase} from '../../../src/common/Phase';
 import {PartyName} from '../../../src/common/turmoil/PartyName';
 import {Greta} from '../../../src/server/cards/ceos/Greta';
+import {Resource} from '../../../src/common/Resource';
 import {Omnicourt} from '../../../src/server/cards/venusNext/Omnicourt';
 import {BigAsteroid} from '../../../src/server/cards/base/BigAsteroid';
 import {GiantIceAsteroid} from '../../../src/server/cards/base/GiantIceAsteroid';
@@ -58,6 +59,35 @@ describe('Greta', () => {
 
     player.playCard(new Omnicourt()); // 2 Steps in ONE ACTION
     expect(player.megaCredits).to.eq(20);
+  });
+
+  it('Logs which of the 10 Greta uses granted the M€', () => {
+    const [game, player] = testGame(1, {ceoExtension: true});
+    player.playedCards.push(card);
+
+    runAllActions(game);
+    game.phase = Phase.ACTION;
+    card.action();
+    game.gameLog.length = 0;
+
+    player.game.increaseOxygenLevel(player, 1);
+    simulateFinishingAction(player);
+    player.game.increaseTemperature(player, 1);
+
+    const gains = game.gameLog.filter((message) => message.message === '${0} gained ${1}${2} because of ${3} (${4}/${5})');
+    expect(gains.map((message) => formatMessage(message))).deep.eq([
+      'blue gained 4:r:mc: because of Greta (1/10)',
+      'blue gained 4:r:mc: because of Greta (2/10)',
+    ]);
+    expect(gains[0].effect).deep.eq({
+      kind: 'resource',
+      resource: Resource.MEGACREDITS,
+      production: false,
+      amount: 4,
+      player: 'blue',
+      counter: {current: 1, max: 10},
+    });
+    expect(gains[1].effect?.counter).deep.eq({current: 2, max: 10});
   });
 
   it('Gains 4 M€ once for Giant Ice Asteroid', () => {

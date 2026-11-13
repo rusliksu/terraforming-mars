@@ -28,6 +28,29 @@ describe('Wrybit player table with our public data', () => {
       expect(wrapper.get('[data-test="tag-galactic"]').text()).contains('2');
       // An unplayed tag stays visible with an empty counter, matching the classic player bar.
       expect(wrapper.get('[data-test="tag-animal"]').text()).contains('·');
+      // The row carries the tag icon itself; an unplayed tag keeps it in place, dimmed
+      expect(wrapper.get('[data-test="tag-galactic"] .tag-count').classes()).contains('tag-galactic');
+      expect(wrapper.get('[data-test="tag-animal"]').classes()).contains('players-table-cell--tag-empty');
+      expect(wrapper.get('[data-test="tag-galactic"]').classes()).not.contains('players-table-cell--tag-empty');
+      // Main tags and the event group are separated by a divider
+      expect(wrapper.findAll('.players-table-row--player .players-table-tag-separator')).has.length(1);
+      // No header row and no section toggles: the table shows everything, the menu stays above it
+      expect(wrapper.find('.players-table-head').exists()).is.false;
+      expect(wrapper.find('[data-test="toggle-tags"]').exists()).is.false;
+      expect(wrapper.find('[data-test="game-menu-button"]').exists()).eq(true);
+      expect(wrapper.find('.players-table-cell--score .tag-vp').exists()).eq(true);
+      expect(wrapper.find('.players-table-cell--score .tag-tr').exists()).eq(true);
+      expect(wrapper.find('.players-table-cell--score .tag-cards').exists()).eq(true);
+      expect(wrapper.find('.players-table-cell--score .tag-action-card').exists()).eq(true);
+      // Classic order: cards in hand, actions, VP, TR, played cards, then the tags
+      const cells = wrapper.findAll('.players-table-row--player .players-table-cell');
+      const cellIndex = (selector: string) => cells.findIndex((cell) => cell.find(selector).exists());
+      expect(cellIndex('[data-test="hand"]')).greaterThan(-1);
+      expect(cellIndex('[data-test="hand"]')).lessThan(cellIndex('[data-test="actions"]'));
+      expect(cellIndex('[data-test="actions"]')).lessThan(cellIndex('[data-test="vp"]'));
+      expect(cellIndex('[data-test="vp"]')).lessThan(cellIndex('[data-test="tr"]'));
+      expect(cellIndex('[data-test="tr"]')).lessThan(cellIndex('[data-test="played-cards"]'));
+      expect(cellIndex('[data-test="played-cards"]')).lessThan(cells.findIndex((cell) => cell.classes().includes('players-table-cell--tag')));
       expect(wrapper.get('[data-test="tag-power"] .players-table-discount').text()).eq('-3');
       expect(wrapper.get('[data-test="discount-all"]').text()).eq('*');
       expect(wrapper.get('[data-test="vp"]').text()).eq('?');

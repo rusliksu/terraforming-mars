@@ -5,6 +5,7 @@ import {CreateGameModel} from './CreateGameModel';
 import {normalizePlayerNameForColor, PLAYER_COLORS} from '@/common/Color';
 import {NewPlayerModel, normalizePreludeHandicap} from '@/common/game/NewGameConfig';
 import {CardName} from '@/common/cards/CardName';
+import {ColonyName} from '@/common/colonies/ColonyName';
 import {cast} from '@/common/utils/utils';
 import {CARD_RENAMES} from '@/common/cards/CardRenames';
 import {sanitizeEscapeVelocityOptions} from '@/common/game/escapeVelocity';
@@ -22,6 +23,29 @@ function safeBoolean(val: JSONValue): boolean {
     return val;
   }
   throw new Error(`${val} is not boolean`);
+}
+
+/*
+ * Expands random-option entries in a saved board list into the boards they stand for and drops
+ * duplicates. The previous create form stored its radio value in `boards`, so older settings and
+ * links can still carry 'random official' or 'random all' there; the board picker expects a concrete
+ * board list.
+ */
+function expandLegacyBoardSelection(boards: Array<JSONValue>): Array<JSONValue> {
+  const expanded: Array<JSONValue> = [];
+  for (const board of boards) {
+    const choices = board === RandomBoardOption.OFFICIAL || board === RandomBoardOption.ALL ?
+      boardOptions(board) : [board];
+    for (const choice of choices) {
+      if (!expanded.includes(choice)) {
+        expanded.push(choice);
+      }
+    }
+  }
+  if (expanded.length === 0) {
+    return [BoardName.THARSIS];
+  }
+  return expanded;
 }
 
 export class JSONProcessor {
@@ -158,8 +182,8 @@ export class JSONProcessor {
         boardOptions(board) :
         [board];
     }
-    if (Array.isArray(json.boards) && json.boards.length === 0) {
-      json.boards = [BoardName.THARSIS];
+    if (Array.isArray(json.boards)) {
+      json.boards = expandLegacyBoardSelection(json.boards);
     }
 
     const ignoredFields = [
@@ -203,6 +227,16 @@ export class JSONProcessor {
     this.validateCardNames('customCeos', this.model.customCeos);
     this.validateCardNames('bannedCards', this.bannedCards);
     this.validateCardNames('includedCards', this.includedCards);
+    this.validateColonyNames('bannedColonies', this.model.bannedColonies);
+  }
+
+  private validateColonyNames(fieldLabel: string, names: ReadonlyArray<ColonyName>): void {
+    const validNames = new Set<string>(Object.values(ColonyName));
+    for (const name of names) {
+      if (!validNames.has(name)) {
+        this.warnings.push(`Unknown colony name '${name}' in ${fieldLabel}`);
+      }
+    }
   }
 
   private validateCardNames(fieldLabel: string, names: ReadonlyArray<CardName>): void {

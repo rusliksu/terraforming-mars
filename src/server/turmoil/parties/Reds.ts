@@ -37,7 +37,9 @@ class RedsBonus01 implements IBonus {
       }
       return;
     }
-    const min = Math.min(...game.players.map((p) => p.terraformRating));
+    // MarsBot's TR counts towards the lowest. MarsBot itself never gains the TR, so when it alone
+    // has the lowest, nobody does.
+    const min = Math.min(...game.playersPlusMarsBot.map((p) => p.terraformRating));
 
     game.players.forEach((player) => {
       if (player.terraformRating === min) {
@@ -63,7 +65,9 @@ class RedsBonus02 implements IBonus {
       }
       return;
     }
-    const max = Math.max(...game.players.map((p) => p.terraformRating));
+    // MarsBot's TR counts towards the highest. MarsBot itself never loses the TR, so when it alone
+    // has the highest, nobody does.
+    const max = Math.max(...game.playersPlusMarsBot.map((p) => p.terraformRating));
 
     game.players.forEach((player) => {
       if (player.terraformRating === max) {
@@ -92,7 +96,7 @@ class RedsPolicy02 implements IPolicy {
     if (amountToPay > 0) {
       player.game.defer(new SelectPaymentDeferred(player, amountToPay, {title: 'Select how to pay for tile placement'}))
         .andThen((payment) => {
-          player.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+          player.game.log('${0} paid ${1}:r:mc: for Turmoil ${2} policy', (b) =>
             b.player(player).number(paymentTotal(payment)).partyName(PartyName.REDS));
           return undefined;
         });
@@ -172,7 +176,7 @@ class RedsPolicy03 implements IPolicy {
 
     game.defer(new SelectPaymentDeferred(player, 4, {title: TITLES.payForPartyAction(PartyName.REDS)}))
       .andThen((payment) => {
-        game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+        game.log('${0} paid ${1}:r:mc: for Turmoil ${2} policy', (b) =>
           b.player(player).number(paymentTotal(payment)).partyName(PartyName.REDS));
         const orOptions = new OrOptions();
 

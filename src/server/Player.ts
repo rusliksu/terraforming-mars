@@ -467,7 +467,7 @@ export class Player implements IPlayer {
         return new SelectPaymentDeferred(this, redsCost, {title: 'Select how to pay for TR increase'})
           .andThen((payment) => {
             // Report what the player actually paid, which can be resources instead of megacredits.
-            this.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+            this.game.log('${0} paid ${1}:r:mc: for Turmoil ${2} policy', (b) =>
               b.player(this).number(paymentTotal(payment)).partyName(PartyName.REDS));
             raiseRating();
             return undefined;
@@ -2749,6 +2749,10 @@ export class Player implements IPlayer {
     player.oneActionPerTurnActiveGeneration = d.oneActionPerTurnActiveGeneration;
 
     player.timer = Timer.deserialize(d.timer, options.restoreTimerClock);
+    // Older saved games only have afterFirstAction, which is false for a player who has a corporation but hasn't acted yet.
+    if (d.timer.afterFirstAction !== undefined && (player.pickedCorporationCard !== undefined || player.playedCards.corporations().length > 0)) {
+      player.timer.enable();
+    }
     player.underworldData = d.underworldData;
     // Merge with defaults (not a plain ?? fallback) so an in-progress save from before
     // teamActionCosts moved to per-player data still gets a valid value for it.

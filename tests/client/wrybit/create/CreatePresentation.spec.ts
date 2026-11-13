@@ -377,7 +377,7 @@ describe('source creation view with our permanent form owner', () => {
       view.value = undefined;
       await flushPromises();
       expect(wrapper.getComponent(CardsFilter).get('input').element).eq(input);
-      expect(filter.vm.selected).deep.eq([matches[1]]);
+      expect(filter.vm.selectedCards).deep.eq([matches[1]]);
       view.value = markRaw(SourceCreate);
       await flushPromises();
       await wrapper.get('.cards-filter-selected .create-game-card-grid-remove').trigger('click');

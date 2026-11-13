@@ -5,7 +5,7 @@ import PlayerHome from '@/client/components/PlayerHome.vue';
 import CardSortButtons from '@/client/components/CardSortButtons.vue';
 import SortableCards from '@/client/components/SortableCards.vue';
 import {fakeGameModel, fakePlayerViewModel, fakePublicPlayerModel} from './testHelpers';
-import {FakeLocalStorage} from './FakeLocalStorage';
+import {useFakeLocalStorage} from './FakeLocalStorage';
 import {CardName} from '@/common/cards/CardName';
 import raw_settings from '@/genfiles/settings.json';
 import {Phase} from '@/common/Phase';
@@ -19,19 +19,17 @@ import {RecursivePartial} from '@/common/utils/utils';
 import {vi} from 'vitest';
 
 describe('PlayerHome', () => {
-  let localStorage: FakeLocalStorage;
   const originalScrollIntoView = Element.prototype.scrollIntoView;
 
+  useFakeLocalStorage();
+
   beforeEach(() => {
-    localStorage = new FakeLocalStorage();
-    FakeLocalStorage.register(localStorage);
     PreferencesManager.resetForTest();
     Element.prototype.scrollIntoView = vi.fn();
     window.history.replaceState({}, '', '/player?id=p-blue-id');
   });
 
   afterEach(() => {
-    FakeLocalStorage.deregister(localStorage);
     PreferencesManager.resetForTest();
     Element.prototype.scrollIntoView = originalScrollIntoView;
     window.history.replaceState({}, '', '/player?id=p-blue-id');
@@ -51,7 +49,7 @@ describe('PlayerHome', () => {
           getVisibilityState: () => true,
           setVisibilityState: () => {},
         },
-      } as any,
+      },
       props: {
         playerView: fakePlayerViewModel({
           game: fakeGameModel({gameId: 'game-id-123', phase}),
@@ -181,7 +179,7 @@ describe('PlayerHome', () => {
           getVisibilityState: () => true,
           setVisibilityState: () => {},
         },
-      } as any,
+      },
       props: {
         playerView,
         settings: raw_settings,

@@ -7,9 +7,12 @@ import {Resource} from '../Resource';
 import {GlobalParameter} from '../GlobalParameter';
 import {AiDecisionSummary} from '../ai/AiDecisionSummary';
 
+/** How many uses a limited ability has spent out of its maximum. */
+export type LogEffectCounter = {current: number, max: number};
+
 export type LogEffect =
-  | {kind: 'resource', resource: Resource, production: boolean, amount: number, player: Color}
-  | {kind: 'tr', amount: number, player: Color};
+  | {kind: 'resource', resource: Resource, production: boolean, amount: number, player: Color, counter?: LogEffectCounter}
+  | {kind: 'tr', amount: number, player: Color, counter?: LogEffectCounter};
 
 export type LogGlobalEffect = {
   kind: 'global';

@@ -159,6 +159,7 @@ export class Server {
     const thisPlayer: PublicPlayerModel = players[thisPlayerIndex];
 
     const rv: PlayerViewModel = {
+      gameId: game.id,
       canStepBack: game.gameOptions.undoStepOption === true &&
         game.actionReplayState !== undefined &&
         game.actionReplayState !== null &&
@@ -192,6 +193,7 @@ export class Server {
     return {
       color: 'neutral',
       id: game.spectatorId,
+      gameId: game.id,
       game: this.getGameModel(game),
       players: game.playersInGenerationOrder.map((p) => this.getPlayer(p, false)),
       thisPlayer: undefined,
@@ -350,7 +352,7 @@ export class Server {
       steelValue: player.getSteelValue(),
       tags: player.tags.countAllTags(),
       terraformRating: player.terraformRating,
-      timer: player.timer.serialize(),
+      timer: player.timer.toModel(),
       titanium: player.titanium,
       titaniumProduction: player.production.titanium,
       titaniumValue: player.getTitaniumValue(),
@@ -556,6 +558,7 @@ export class Server {
         resolveGlobalParameters(options.globalParameters, true, options.venusPhase2Max) : options.globalParameters,
       customBoardRows: options.customBoard?.rows,
       bannedCards: options.bannedCards,
+      bannedColonies: options.bannedColonies ?? [],
       draftVariant: options.draftVariant,
       escapeVelocity: options.escapeVelocity ?? undefined,
       expansions: {

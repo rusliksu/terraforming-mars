@@ -84,8 +84,9 @@ confirmed abandoned in the operator ledger. `-RealtimeGameStaleDays` (default
 promotion.
 
 - Ledger: `C:\Users\Ruslan\tm\.tmp\tm-release\prod-ignored-games.txt`
-  (opt in with `-IgnoredRealtimeGameIdFile`; never committed, never inferred,
-  and never loaded automatically by a release).
+  (loaded by default by the release and rollout wrappers so a promotion cannot
+  silently skip it; override with `-IgnoredRealtimeGameIdFile`; never committed,
+  never inferred).
 - Format: one `<game-id>` per line, optional trailing `# note`.
 
 ```powershell
@@ -95,11 +96,12 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_
 ```
 
 Only a human declares a game abandoned: nothing infers it. `release_tm_prod.ps1`
-and `rollout_tm_server.ps1` merge a ledger only when its path is supplied explicitly
-with the per-run `-IgnoredRealtimeGameId` ids, and the merged count and ids are
-echoed before the locked remote gate runs. The gate fails closed for unknown ids,
-missing or future save timestamps, fresh realtime games, and stale realtime games
-that are not explicitly listed.
+loads the default ledger and `rollout_tm_server.ps1` forwards the same file, then
+merges it with the per-run `-IgnoredRealtimeGameId` ids; the merged count and ids
+are echoed before the locked remote gate runs. The gate fails closed for unknown
+ids, missing or future save timestamps, fresh realtime games, and stale realtime
+games that are not explicitly listed. Point `-IgnoredRealtimeGameIdFile` at a
+missing or empty file to run without the operator ledger.
 
 The current idle time of every running game is visible read-only from the
 release checkout; the query mirrors the gate's own latest-save lookup:
@@ -113,6 +115,60 @@ sqlite3 -readonly "file:/home/openclaw/tm-runtime/prod/shared/db/game.db?mode=ro
    WHERE trim(latest.status) = 'running' ORDER BY idle_seconds ASC;"
 ```
 
+## Staging Game Cleanup
+
+Staging accumulates abandoned test games. `scripts/cleanup_tm_games.ps1` lists them and
+deletes explicit ids (or a deliberately bounded bulk selection) with a replayed-and-verified
+backup, using the same latest-save idle rule as the prod promote gate.
+
+```powershell
+# What is running, with seats, phase and idle hours (read-only)
+pwsh -File scripts\cleanup_tm_games.ps1 -Environment staging -List
+
+# Dry run for explicit ids: shows row counts, deletes nothing
+pwsh -File scripts\cleanup_tm_games.ps1 -Environment staging -GameId ga55c39032531
+
+# Delete explicit ids (backup is verified by replay before anything is deleted)
+pwsh -File scripts\cleanup_tm_games.ps1 -Environment staging -GameId ga55c39032531 -Apply
+
+# Bulk: single-seat games idle for 90+ days, at most 400 of them
+pwsh -File scripts\cleanup_tm_games.ps1 -Environment staging -MinIdleDays 90 -AllowBulk -MaxGames 400 -Apply
+```
+
+Guards:
+
+- `prod` requires `-AllowProd`; bulk selection requires `-AllowBulk` on top of `-Apply`;
+- a game whose latest save is newer than `-MinIdleMinutes` (default 60) is treated as active and refused;
+- **a game with 2+ seats is refused** (and skipped in bulk) unless `-AllowMultiplayer` says otherwise:
+  a two-seat staging game can be somebody's real match;
+- **fresh phases (`initial_drafting`, corporation drafting, `prelude`, `ceos`) are refused** unless
+  `-AllowFresh`: a game still picking its opening cards is not abandoned;
+- games with a `history_archives` row are refused via explicit ids and skipped in bulk;
+- bulk selection above `-MaxGames` (default 50) is refused, so the cap is raised on purpose;
+- unknown ids fail before anything is written.
+
+Backup and restore:
+
+- before deleting, every affected row is dumped as `INSERT` statements written by one
+  `sqlite3` process (the earlier build wrote `.mode insert` as text, which was not replayable);
+- the backup is replayed into a scratch database created from the live schema and the per-table
+  row counts must match, otherwise the run stops before deleting (`-SkipBackupVerify` opts out);
+- restore a game exactly as it was:
+
+```bash
+sqlite3 /home/openclaw/tm-runtime/staging/shared/db/game.db < game-cleanup-staging-<stamp>.sql
+```
+
+Deletion runs in one transaction over `history_archives`, `game_results`, `completed_game`,
+`participants` and `games`, and the script re-reads the database afterwards, failing if any row
+is left. The running service keeps already-loaded games in memory, so a deleted game can still
+answer until it is evicted or the service restarts; verify removal from the database, not only
+from the API.
+
+Run log: `2026-11-11` test game `ga55c39032531` (restored after an accidental delete) plus 96
+games idle for 180+ days, then 107 single-seat games idle for 90+ days with the new guards
+(30 multiplayer/fresh games skipped, one seat each restored-verified); running games
+523 -> 321, `PRAGMA quick_check` = ok.
 ## Branch Naming
 
 - `main`: your fork's integration branch on `origin`. Only release commits that are intended to live there.
@@ -162,10 +218,13 @@ After resolving and staging an understood conflict, resume the immutable saved
 validation plan with `-Mode Continue`. `-PushCandidate` is a separate opt-in and
 pushes only the exact SHA that passed validation, using a normal non-force push.
 
-The weekly Codex task runs Mondays at 10:00 Moscow time and starts paused. It
-may prepare and validate a candidate, but it never merges or deploys. Activate
-it only after the bootstrap candidate has been merged and one manual sync cycle
-has completed successfully.
+The weekly DSH task (`TM: недельный sync апстрима`) runs Mondays at 10:00
+Moscow time. It prepares and validates a candidate, merges it with a merge
+commit once its CI gate is green, then refreshes the release checkout, deploys
+and verifies that exact `origin/main` on staging. It never squashes the
+candidate and never touches production. Production stays a manual command with
+the pinned staging pair:
+`release_tm_prod.ps1 -ExpectedGitSha <sha> -ExpectedArtifactSha <sha>`.
 
 ## Commands
 
@@ -253,8 +312,9 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\release_tm_
 The production gate reads every latest running save directly from the live
 SQLite database in read-only/query-only mode and repeats the check immediately
 before switching public traffic. Realtime games block promotion. If Ruslan has
-separately confirmed a listed game is abandoned, pass its safe id explicitly as
-`-IgnoredRealtimeGameId <game-id>`; this exception is never inferred or stored
+separately confirmed a listed game is abandoned, record it in the operator ledger
+(`tm_ignored_realtime_games.ps1 -Add <game-id>`) or pass its safe id explicitly as
+`-IgnoredRealtimeGameId <game-id>`; this exception is never inferred
 automatically. Promotion requires the existing
 `/home/openclaw/tm-runtime/prod/shared/db/game.db`; it never bootstraps or
 migrates a production database.

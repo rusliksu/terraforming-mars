@@ -30,6 +30,8 @@ function mountShellHost() {
 
 describe('GameShell App bridge', () => {
   beforeEach(() => {
+    // The shared jsdom outlives each spec file, so start from a known storage.
+    window.localStorage.clear();
     gameShell.stop();
     gameShell.reset();
   });

@@ -9,6 +9,7 @@ export function projectCreateModel(owner: CreateGameModel): CreateModelView {
     altVenusBoard: owner.altVenusBoard,
     aresExtremeVariant: owner.aresExtremeVariant,
     bannedCards: owner.bannedCards,
+    bannedColonies: owner.bannedColonies,
     board: owner.board ?? owner.boards[0] ?? BoardName.THARSIS,
     boards: owner.boards,
     botGame: owner.botGame,

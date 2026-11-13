@@ -9,8 +9,9 @@
     record stay intact, so the game still loads and history is preserved.
 
     Dry run by default. -Apply requires -AllowBulk. Every deleted row is exported into a
-    local SQL backup first and replayed into a scratch database before deletion.
-    Prod requires -AllowProd.
+    SQL backup first and replayed into a scratch database before deletion.
+    Prod requires -AllowProd. -KeepBackupRemote leaves the verified backup on the VPS,
+    which mass batches need because the download is slower than the deletion itself.
 
     The database file does not shrink automatically: SQLite reuses freed pages. Run a
     separate VACUUM (with the server stopped) to return space to the OS.
@@ -32,6 +33,10 @@ param(
     [switch]$Apply,
 
     [switch]$SkipBackupVerify,
+
+    # Keep the verified SQL backup on the VPS instead of downloading it.
+    # Mass batches would otherwise spend more time copying backups than deleting saves.
+    [switch]$KeepBackupRemote,
 
     [string]$BackupDir = "",
 
@@ -171,6 +176,10 @@ wc -l < "$REMOTE"
     $text = (($output | Out-String).Trim())
     if (-not $SkipBackupVerify) {
         Assert-True ($text -match 'backup verified: ') "Backup verification failed: $text"
+    }
+
+    if ($KeepBackupRemote) {
+        return $remotePath
     }
 
     if ([string]::IsNullOrWhiteSpace($BackupDir)) {

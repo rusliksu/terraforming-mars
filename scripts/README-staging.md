@@ -182,6 +182,9 @@ pwsh -File scripts\compact_finished_games.ps1 -Environment prod -AllowProd -MinI
 
 # Apply on staging for one game (needs -AllowBulk)
 pwsh -File scripts\compact_finished_games.ps1 -Environment staging -MinIdleDays 30 -MaxGames 1 -AllowBulk -Apply
+
+# Mass batch: keep the verified backup on the VPS
+pwsh -File scripts\compact_finished_games.ps1 -Environment prod -AllowProd -MinIdleDays 30 -MaxGames 20 -MaxSavesPerRun 6000 -AllowBulk -Apply -KeepBackupRemote
 ```
 
 Guards:
@@ -190,6 +193,8 @@ Guards:
 - only games listed in `completed_game` are considered, and games with a `history_archives` row are skipped;
 - the final save of every selected game is never deleted;
 - `-MaxGames` (default 5) and `-MaxSavesPerRun` (default 2000) cap a single run;
+- `-KeepBackupRemote` leaves the verified backup on the VPS instead of downloading it; use it for
+  mass batches where the copy would dominate the runtime;
 - restore: `sqlite3 game.db < finished-compaction-<env>-<stamp>.sql`.
 
 Limits:

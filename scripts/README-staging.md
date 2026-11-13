@@ -169,6 +169,36 @@ Run log: `2026-11-11` test game `ga55c39032531` (restored after an accidental de
 games idle for 180+ days, then 107 single-seat games idle for 90+ days with the new guards
 (30 multiplayer/fresh games skipped, one seat each restored-verified); running games
 523 -> 321, `PRAGMA quick_check` = ok.
+## Finished Game Compaction
+
+Finished games keep every intermediate save, and those saves dominate the SQLite file.
+`scripts/compact_finished_games.ps1` removes saves older than the final one and keeps the
+final save, participants, results and the completion record. Dry run by default; every
+removed row is backed up and the backup is replayed before deletion.
+
+```powershell
+# Dry run for prod: 3 games whose final save is at least 30 days old
+pwsh -File scripts\compact_finished_games.ps1 -Environment prod -AllowProd -MinIdleDays 30 -MaxGames 3 -OutputJson
+
+# Apply on staging for one game (needs -AllowBulk)
+pwsh -File scripts\compact_finished_games.ps1 -Environment staging -MinIdleDays 30 -MaxGames 1 -AllowBulk -Apply
+```
+
+Guards:
+
+- `prod` requires `-AllowProd`; deletion requires `-Apply -AllowBulk`;
+- only games listed in `completed_game` are considered, and games with a `history_archives` row are skipped;
+- the final save of every selected game is never deleted;
+- `-MaxGames` (default 5) and `-MaxSavesPerRun` (default 2000) cap a single run;
+- restore: `sqlite3 game.db < finished-compaction-<env>-<stamp>.sql`.
+
+Limits:
+
+- SQLite reuses freed pages, so the file does not shrink by itself. Reclaim OS space with a
+  separate `VACUUM` while the server is stopped; plan it as a maintenance window.
+- Deleting rows behind the running service can confuse an already-loaded game until eviction;
+  only finished games whose final save is at least `-MinIdleDays` old are selected.
+
 ## Branch Naming
 
 - `main`: your fork's integration branch on `origin`. Only release commits that are intended to live there.

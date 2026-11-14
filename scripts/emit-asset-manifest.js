@@ -40,6 +40,18 @@ function newest(files) {
     .sort((a, b) => b.mtime - a.mtime);
 }
 
+// Webpack never cleans the build root, so a rebuild in the same checkout can leave the
+// previous, unhashed main.js/vendors.js behind. Shipping those would serve stale code to a
+// tab that still holds pre-release HTML, so they are removed here.
+function removeLegacyEntry(baseName) {
+  for (const suffix of ['', '.gz', '.br']) {
+    fs.rmSync(path.join(BUILD_DIR, baseName + '.js' + suffix), {force: true});
+  }
+  for (const suffix of ['', '.gz', '.br']) {
+    fs.rmSync(path.join(BUILD_DIR, baseName + '.js.map' + suffix), {force: true});
+  }
+}
+
 function pickHashedEntry(baseName) {
   const pattern = new RegExp('^' + baseName + '\\.[0-9a-f]{' + HASH_LENGTH + '}\\.js$');
   const matches = newest(fs.readdirSync(BUILD_DIR).filter((file) => pattern.test(file)));
@@ -101,9 +113,14 @@ for (const file of fs.readdirSync(BUILD_DIR)) {
   }
 }
 
+const mainName = pickHashedEntry('main');
+const vendorsName = pickHashedEntry('vendors');
+removeLegacyEntry('main');
+removeLegacyEntry('vendors');
+
 const manifest = {
-  'main.js': pickHashedEntry('main'),
-  'vendors.js': pickHashedEntry('vendors'),
+  'main.js': mainName,
+  'vendors.js': vendorsName,
   'styles.css': styles.name,
 };
 fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + '\n');

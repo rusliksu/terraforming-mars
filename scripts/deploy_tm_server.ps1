@@ -293,6 +293,11 @@ foreach ($logicalAssetName in @("main.js", "vendors.js", "styles.css")) {
         throw "build/asset-manifest.json in $resolvedSourceRoot points at missing build/$hashedAssetName."
     }
 }
+foreach ($legacyEntry in @("main.js", "vendors.js")) {
+    if (Test-Path (Join-Path $buildDir $legacyEntry)) {
+        throw "Source build still contains the legacy unhashed $legacyEntry in $resolvedSourceRoot. Clear build/ and rebuild so a stale entry bundle is not shipped."
+    }
+}
 if (-not (Test-Path (Join-Path $buildDir "src/server/server.js"))) {
     throw "Source build is missing build/src/server/server.js in $resolvedSourceRoot. Run the build there before deploy."
 }

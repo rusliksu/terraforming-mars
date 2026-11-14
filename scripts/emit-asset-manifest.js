@@ -21,7 +21,9 @@ const zlib = require('zlib');
 const BUILD_DIR = path.resolve(__dirname, '..', 'build');
 const MANIFEST_PATH = path.join(BUILD_DIR, 'asset-manifest.json');
 const HASH_LENGTH = 16;
-const COMPRESSED_SUFFIXES = ['', '.gz', '.br', '.map', '.map.gz', '.map.br'];
+// Terser writes <file>.LICENSE.txt next to every bundle, so sidecars must include it.
+const COMPRESSED_SUFFIXES = ['', '.gz', '.br', '.map', '.map.gz', '.map.br',
+  '.LICENSE.txt', '.LICENSE.txt.gz', '.LICENSE.txt.br'];
 
 function fail(message) {
   console.error('emit-asset-manifest: ' + message);
@@ -44,11 +46,8 @@ function newest(files) {
 // previous, unhashed main.js/vendors.js behind. Shipping those would serve stale code to a
 // tab that still holds pre-release HTML, so they are removed here.
 function removeLegacyEntry(baseName) {
-  for (const suffix of ['', '.gz', '.br']) {
+  for (const suffix of COMPRESSED_SUFFIXES) {
     fs.rmSync(path.join(BUILD_DIR, baseName + '.js' + suffix), {force: true});
-  }
-  for (const suffix of ['', '.gz', '.br']) {
-    fs.rmSync(path.join(BUILD_DIR, baseName + '.js.map' + suffix), {force: true});
   }
 }
 

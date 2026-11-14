@@ -9,9 +9,11 @@
     record stay intact, so the game still loads and history is preserved.
 
     Dry run by default. -Apply requires -AllowBulk. Every deleted row is exported into a
-    SQL backup first and replayed into a scratch database before deletion.
-    Prod requires -AllowProd. -KeepBackupRemote leaves the verified backup on the VPS,
-    which mass batches need because the download is slower than the deletion itself.
+    SQL backup first and replayed into a scratch database before deletion. The verified
+    backup stays on the VPS in a durable per-environment directory, so a reboot or a later
+    run cannot lose it; -DownloadBackup additionally copies it to the operator machine.
+    -KeepBackupRemote is still accepted for compatibility, but keeping the remote backup
+    is now the default. Prod requires -AllowProd.
 
     The database file does not shrink automatically: SQLite reuses freed pages. Run a
     separate VACUUM (with the server stopped) to return space to the OS.
@@ -34,9 +36,14 @@ param(
 
     [switch]$SkipBackupVerify,
 
-    # Keep the verified SQL backup on the VPS instead of downloading it.
-    # Mass batches would otherwise spend more time copying backups than deleting saves.
+    # Legacy switch: keeping the verified backup on the VPS is now always the default.
     [switch]$KeepBackupRemote,
+
+    # Also copy the verified backup from the VPS to -BackupDir.
+    [switch]$DownloadBackup,
+
+    # Remote directory for the verified backup; defaults to the environment's backups.
+    [string]$RemoteBackupDir = "",
 
     [string]$BackupDir = "",
 
@@ -178,17 +185,35 @@ wc -l < "$REMOTE"
         Assert-True ($text -match 'backup verified: ') "Backup verification failed: $text"
     }
 
-    if ($KeepBackupRemote) {
-        return $remotePath
+    if ([string]::IsNullOrWhiteSpace($RemoteBackupDir)) {
+        $RemoteBackupDir = "/home/openclaw/tm-runtime/$Environment/backups/finished-compaction"
     }
+    $fileName = "finished-compaction-$Environment-$Stamp.sql"
+    $durablePath = "$RemoteBackupDir/$fileName"
+    $moveBody = @'
+set -eu
+DIR="__DIR__"
+SRC="__SRC__"
+DEST="__DEST__"
+mkdir -p "$DIR"
+if [ -e "$DEST" ]; then echo "backup destination already exists: $DEST" >&2; exit 1; fi
+mv "$SRC" "$DEST"
+wc -c < "$DEST"
+'@
+    $moveBody = $moveBody.Replace('__DIR__', $RemoteBackupDir).Replace('__SRC__', $remotePath).Replace('__DEST__', $durablePath)
+    $storedBytes = ((Invoke-TmSshScript -HostAlias $HostAlias -ScriptText $moveBody | Out-String).Trim() -split "\r?\n" | Select-Object -Last 1)
+    Assert-True ($storedBytes -match '^\d+$' -and [int64]$storedBytes -gt 0) "Could not store the verified backup on the VPS: $storedBytes"
 
-    if ([string]::IsNullOrWhiteSpace($BackupDir)) {
-        $BackupDir = Join-Path (Join-Path $env:TEMP "tm-finished-compaction") $Environment
+    if ($DownloadBackup) {
+        if ([string]::IsNullOrWhiteSpace($BackupDir)) {
+            $BackupDir = Join-Path (Join-Path $env:TEMP "tm-finished-compaction") $Environment
+        }
+        New-Item -ItemType Directory -Force -Path $BackupDir | Out-Null
+        $localPath = Join-Path $BackupDir $fileName
+        Invoke-TmScpDownload -HostAlias $HostAlias -RemotePath $durablePath -LocalPath $localPath | Out-Null
+        return $localPath
     }
-    New-Item -ItemType Directory -Force -Path $BackupDir | Out-Null
-    $localPath = Join-Path $BackupDir ("finished-compaction-{0}-{1}.sql" -f $Environment, $Stamp)
-    Invoke-TmScpDownload -HostAlias $HostAlias -RemotePath $remotePath -LocalPath $localPath | Out-Null
-    return $localPath
+    return $durablePath
 }
 
 function Remove-Saves {

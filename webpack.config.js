@@ -117,6 +117,15 @@ module.exports = {
     path: __dirname + '/build',
     hashFunction: 'xxhash64',
     publicPath: '',
+    // Content-hashed entry files can be cached forever in the browser. sw.js has to keep
+    // a stable URL because it is registered by name, and development builds keep stable
+    // names so the dev server can hot-swap them.
+    filename: (pathData) => {
+      if (pathData.chunk?.name === 'sw' || process.env.NODE_ENV !== 'production') {
+        return '[name].js';
+      }
+      return '[name].[contenthash:16].js';
+    },
     chunkFilename: 'chunks/[name].[contenthash:8].js',
   },
   optimization: {

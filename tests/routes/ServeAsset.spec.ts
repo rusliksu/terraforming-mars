@@ -56,6 +56,33 @@ class IndexHtmlFileApiMock extends FileApiMock {
   }
 }
 
+const ASSET_MANIFEST = {
+  'main.js': 'main.0123456789abcdef.js',
+  'vendors.js': 'vendors.fedcba9876543210.js',
+  'styles.css': 'styles.abcdef0123456789.css',
+};
+
+class ManifestFileApiMock extends FileApiMock {
+  public override readFileSync(path: string): Buffer {
+    this.counts.readFileSync++;
+    if (path === 'build/asset-manifest.json') {
+      return Buffer.from(JSON.stringify(ASSET_MANIFEST));
+    }
+    return Buffer.from('data: ' + path);
+  }
+  public override readFile(path: string): Promise<Buffer> {
+    this.counts.readFile++;
+    if (path === 'assets/index.html') {
+      return Promise.resolve(Buffer.from([
+        '<link rel="stylesheet" href="styles.css?v=old" />',
+        '<script src="vendors.js"></script>',
+        '<script src="main.js"></script>',
+      ].join('\n')));
+    }
+    return Promise.resolve(Buffer.from('data: ' + path));
+  }
+}
+
 describe('ServeAsset', () => {
   let instance: ServeAsset;
   let scaffolding: RouteTestScaffolding;
@@ -65,7 +92,7 @@ describe('ServeAsset', () => {
   // used and overridden below. That makes how individual condition changes these calls.
   const primedCache = {
     readFile: 0,
-    readFileSync: 3,
+    readFileSync: 4,
     existsSync: 0,
   };
 
@@ -132,6 +159,35 @@ describe('ServeAsset', () => {
     expect(res.content).contains(`vendors.js?v=${version}`);
     expect(res.content).contains(`main.js?v=${version}`);
     expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
+  });
+
+  it('index.html points at content-hashed assets when the manifest exists', async () => {
+    instance = new ServeAsset(undefined, false, new ManifestFileApiMock());
+    scaffolding.url = '/assets/index.html';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+
+    expect(res.content).contains(`href="${ASSET_MANIFEST['styles.css']}"`);
+    expect(res.content).contains(`src="${ASSET_MANIFEST['vendors.js']}"`);
+    expect(res.content).contains(`src="${ASSET_MANIFEST['main.js']}"`);
+    expect(res.content.includes('?v=')).eq(false);
+    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
+  });
+
+  it('serves a content-hashed asset named by the manifest', async () => {
+    instance = new ServeAsset(undefined, false, new ManifestFileApiMock());
+    scaffolding.url = `/${ASSET_MANIFEST['main.js']}`;
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+    expect(res.content).eq(`data: build/${ASSET_MANIFEST['main.js']}`);
+  });
+
+  it('404s an unknown content-hashed asset name', async () => {
+    instance = new ServeAsset(undefined, false, new ManifestFileApiMock());
+    scaffolding.url = '/main.ffffffffffffffff.js';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+    expect(res.statusCode).eq(statusCode.notFound);
   });
 
   it('styles.css', async () => {

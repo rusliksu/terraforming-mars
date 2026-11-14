@@ -15,6 +15,12 @@ import {RouteError} from './RouteError';
 type Encoding = 'gzip' | 'br';
 type ErrnoLikeError = Error & { code?: string };
 
+// Map of logical asset name ("main.js") to the content-hashed file name ("main.<hash>.js")
+// written by scripts/emit-asset-manifest.js.
+type AssetManifest = {[logicalName: string]: string};
+const ASSET_MANIFEST_PATH = 'build/asset-manifest.json';
+const MANIFEST_ASSET_NAMES = ['main.js', 'vendors.js', 'styles.css'];
+
 export class FileAPI {
   public static readonly INSTANCE: FileAPI = new FileAPI();
 
@@ -42,6 +48,7 @@ export class ServeAsset extends Handler {
   public static readonly INSTANCE: ServeAsset = new ServeAsset();
   private readonly cache = new BufferCache();
   private assetVersion: string | undefined;
+  private assetManifest: AssetManifest | undefined;
 
   // Public for tests
   public constructor(private cacheAgeSeconds: string | number = process.env.ASSET_CACHE_MAX_AGE || 0,
@@ -49,13 +56,17 @@ export class ServeAsset extends Handler {
     private cacheAssets: boolean = isProduction(),
     private fileApi: FileAPI = FileAPI.INSTANCE) {
     super();
-    // prime the cache with styles.css and a compressed copy of it styles.css
-    const styles = fileApi.readFileSync('build/styles.css');
-    this.cache.set('build/styles.css', styles);
-    const compressed = fileApi.readFileSync('build/styles.css.gz');
-    this.cache.set('build/styles.css.gz', compressed);
-    const brotli = fileApi.readFileSync('build/styles.css.br');
-    this.cache.set('build/styles.css.br', brotli);
+    this.assetManifest = this.readAssetManifestSync();
+    // Prime the cache with the stylesheet and its compressed copies. A missing file is not
+    // fatal here: the request itself reports a 404, and tests/dev can run without a build.
+    const stylesFile = `build/${this.assetManifest?.['styles.css'] ?? 'styles.css'}`;
+    for (const file of [stylesFile, `${stylesFile}.gz`, `${stylesFile}.br`]) {
+      try {
+        this.cache.set(file, fileApi.readFileSync(file));
+      } catch (_err) {
+        // Ignore missing files here; see the comment above.
+      }
+    }
   }
 
   public override async get(req: Request, res: Response, _ctx: Context): Promise<void> {
@@ -172,10 +183,11 @@ export class ServeAsset extends Handler {
   }
 
   private async serveIndexHtml(res: Response): Promise<void> {
-    const version = await this.getAssetVersion();
-    const html = this.withAssetVersion(
-      (await this.fileApi.readFile('assets/index.html')).toString('utf8'),
-      version);
+    const template = (await this.fileApi.readFile('assets/index.html')).toString('utf8');
+    const manifest = this.assetManifest;
+    const html = manifest !== undefined ?
+      this.withAssetManifest(template, manifest) :
+      this.withAssetVersion(template, await this.getAssetVersion());
     const data = Buffer.from(html);
     res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -211,6 +223,63 @@ export class ServeAsset extends Handler {
       .replace(/main\.js(?:\?v=[^"]*)?/g, `main.js${suffix}`);
   }
 
+  private readAssetManifestSync(): AssetManifest | undefined {
+    try {
+      const parsed: unknown = JSON.parse(this.fileApi.readFileSync(ASSET_MANIFEST_PATH).toString('utf8'));
+      if (parsed === null || typeof parsed !== 'object') {
+        return undefined;
+      }
+      const manifest: AssetManifest = {};
+      for (const logicalName of MANIFEST_ASSET_NAMES) {
+        const value = (parsed as Record<string, unknown>)[logicalName];
+        if (typeof value === 'string' && value !== '' && !value.startsWith('/') && !value.includes('..')) {
+          manifest[logicalName] = value;
+        }
+      }
+      if (manifest['main.js'] === undefined || manifest['styles.css'] === undefined) {
+        return undefined;
+      }
+      return manifest;
+    } catch (_err) {
+      return undefined;
+    }
+  }
+
+  private withAssetManifest(html: string, manifest: AssetManifest): string {
+    return html
+      .replace(/styles\.css(?:\?v=[^"]*)?/g, manifest['styles.css'] ?? 'styles.css')
+      .replace(/vendors\.js(?:\?v=[^"]*)?/g, manifest['vendors.js'] ?? 'vendors.js')
+      .replace(/main\.js(?:\?v=[^"]*)?/g, manifest['main.js'] ?? 'main.js');
+  }
+
+  // Returns the hashed url name when urlPath addresses a content-hashed manifest asset.
+  private manifestAssetPath(urlPath: string): string | undefined {
+    const manifest = this.assetManifest;
+    if (manifest === undefined) {
+      return undefined;
+    }
+    for (const logicalName of MANIFEST_ASSET_NAMES) {
+      const hashedName = manifest[logicalName];
+      if (hashedName !== undefined && (urlPath === hashedName || urlPath === `${hashedName}.map`)) {
+        return hashedName;
+      }
+    }
+    return undefined;
+  }
+
+  private toHashedFile(urlPath: string, encodings: Set<Encoding>): { file?: string, encoding?: Encoding } {
+    const file = `build/${urlPath}`;
+    if (isProduction()) {
+      if (encodings.has('br')) {
+        return {file: file + '.br', encoding: 'br'};
+      }
+      if (encodings.has('gzip')) {
+        return {file: file + '.gz', encoding: 'gzip'};
+      }
+    }
+    return {file, encoding: undefined};
+  }
+
   private toMainFile(urlPath: string, encodings: Set<Encoding>): { file?: string, encoding?: Encoding } {
     const file = `build/${urlPath}`;
 
@@ -239,6 +308,10 @@ export class ServeAsset extends Handler {
     const eloAsset = resolveEloAssetPath(urlPath);
     if (eloAsset !== undefined) {
       return {file: eloAsset};
+    }
+
+    if (this.manifestAssetPath(urlPath) !== undefined) {
+      return this.toHashedFile(urlPath, encodings);
     }
 
     switch (urlPath) {
@@ -309,6 +382,10 @@ export class ServeAsset extends Handler {
   }
 
   private shouldRevalidateScriptAsset(urlPath: string): boolean {
+    // Content-hashed files never need revalidation: a new build changes the file name.
+    if (this.manifestAssetPath(urlPath) !== undefined) {
+      return false;
+    }
     switch (urlPath) {
     case 'main.js':
     case 'main.js.map':

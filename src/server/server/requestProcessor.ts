@@ -182,6 +182,11 @@ function getHandler(pathname: string): IHandler | undefined {
   if (pathname.startsWith('chunks/')) {
     return ServeAsset.INSTANCE;
   }
+  // Content-hashed entry files emitted by scripts/emit-asset-manifest.js.
+  if (/^(main|vendors)\.[0-9a-f]{16}\.js(?:\.map)?$/.test(pathname) ||
+      /^styles\.[0-9a-f]{16}\.css$/.test(pathname)) {
+    return ServeAsset.INSTANCE;
+  }
   // Dynamic ELO snapshots are public assets, but they are not under /assets/:
   // route them explicitly to ServeAsset so /elo/data.json does not fall through
   // to the generic 404 handler.

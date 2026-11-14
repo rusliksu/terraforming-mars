@@ -208,6 +208,30 @@ Limits:
 - Deleting rows behind the running service can confuse an already-loaded game until eviction;
   only finished games whose final save is at least `-MinIdleDays` old are selected.
 
+### Point restore from a full snapshot
+
+When a run's per-run SQL backup is gone, a full database snapshot still keeps the removed rows.
+`scripts/restore_finished_game_history.ps1` extracts the snapshot, validates every game
+(finished, completion record present, only the final save locally, final save id equal to the
+snapshot) and copies the missing rows back in one transaction per game.
+
+```powershell
+# Dry run: what would come back for two compacted games
+pwsh -File scripts\restore_finished_game_history.ps1 -Environment prod -AllowProd -Games g10737534e5cd,g13190060e75d
+
+# Restore them
+pwsh -File scripts\restore_finished_game_history.ps1 -Environment prod -AllowProd -Games g10737534e5cd,g13190060e75d -Apply
+```
+
+- the snapshot defaults to the newest `*-game.db.gz` in `<env>/backups`; `-Snapshot` overrides it;
+- the extracted database lives in `/tmp/tm-restore-history/` and is removed after the run
+  unless `-KeepExtracted` is used;
+- `-MaxRows` (default 5000) caps one game and `-MinFreeGb` (default 24) guards the temp filesystem;
+- `-DatabasePath` with `-AllowCustomDatabase` points the script at a maintenance copy for tests.
+
+2026-11-14 check: 271 compacted games had 101,594 rows (14.83 GB) in the 2026-11-08 snapshot,
+every final save id matched, and sampled rows were byte-identical to the attached archives.
+
 ## Branch Naming
 
 - `main`: your fork's integration branch on `origin`. Only release commits that are intended to live there.

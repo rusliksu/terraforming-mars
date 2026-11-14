@@ -82,12 +82,47 @@ if ([string]::IsNullOrWhiteSpace($gitHead) -and -not [string]::IsNullOrWhiteSpac
 }
 $gitStatusLines = Join-Lines -Text $gitStatusText
 $backupDirs = Join-Lines -Text (Try-Invoke-SshText "cd $RemoteRoot && ls -d build.bak-* assets.bak-* 2>/dev/null || true")
-$fileMtimes = Try-Invoke-SshText "cd $RemoteRoot && ls -l --time-style=long-iso build/main.js build/vendors.js build/chunks/player-input.js build/chunks/738.js build/src/common/inputs/Payment.js build/src/server/routes/PlayerInput.js build/src/server/server/requestProcessor.js 2>/dev/null"
+# Entry bundles are content-hashed (main.<hash>.js, vendors.<hash>.js). Resolve their names
+# from the served HTML first, then from build/asset-manifest.json, then fall back to the
+# legacy unhashed names for releases that predate the manifest.
+$servedHomeHtml = ""
+if (-not [string]::IsNullOrWhiteSpace($servicePort)) {
+    $servedHomeHtml = Try-Invoke-SshText "curl -fsS http://127.0.0.1:$servicePort/ 2>/dev/null"
+}
+$assetManifestText = Try-Invoke-SshText "cd $RemoteRoot && cat build/asset-manifest.json 2>/dev/null"
+$assetManifest = $null
+if (-not [string]::IsNullOrWhiteSpace($assetManifestText)) {
+    try {
+        $assetManifest = $assetManifestText | ConvertFrom-Json
+    } catch {
+        $assetManifest = $null
+    }
+}
+$mainJsName = ""
+$vendorsJsName = ""
+if ($null -ne $assetManifest) {
+    $mainJsName = [string]$assetManifest.'main.js'
+    $vendorsJsName = [string]$assetManifest.'vendors.js'
+}
+if ($servedHomeHtml -match 'src="(main\.[0-9a-f]+\.js)"') {
+    $mainJsName = $Matches[1]
+}
+if ($servedHomeHtml -match 'src="(vendors\.[0-9a-f]+\.js)"') {
+    $vendorsJsName = $Matches[1]
+}
+if ([string]::IsNullOrWhiteSpace($mainJsName)) {
+    $mainJsName = "main.js"
+}
+if ([string]::IsNullOrWhiteSpace($vendorsJsName)) {
+    $vendorsJsName = "vendors.js"
+}
+$entryFiles = @("build/asset-manifest.json", "build/$mainJsName", "build/$vendorsJsName")
+$fileMtimes = Try-Invoke-SshText ("cd $RemoteRoot && ls -l --time-style=long-iso " + ($entryFiles -join " ") + " build/chunks build/src/common/inputs/Payment.js build/src/server/routes/PlayerInput.js build/src/server/server/requestProcessor.js 2>/dev/null")
 
 $headers = [pscustomobject]@{
-    mainJs = Get-HeaderLines -Path "/main.js"
-    vendorsJs = Get-HeaderLines -Path "/vendors.js"
-    playerInputChunk = Get-HeaderLines -Path "/chunks/player-input.js"
+    mainJs = Get-HeaderLines -Path "/$mainJsName"
+    vendorsJs = Get-HeaderLines -Path "/$vendorsJsName"
+    releaseJson = Get-HeaderLines -Path "/release.json"
 }
 
 $result = [pscustomobject]@{
@@ -135,6 +170,8 @@ $markdownLines = @(
     "- CWD: $cwd"
     "- GitHead: $gitHead"
     "- GitStatusCount: $($gitStatusLines.Count)"
+    "- MainJs: $mainJsName"
+    "- VendorsJs: $vendorsJsName"
     ""
     "## Service"
     ""
@@ -166,22 +203,22 @@ $markdownLines = @(
     $fileMtimes
     '```'
     ""
-    "## main.js Headers"
+    "## main.js Headers ($mainJsName)"
     ""
     '```text'
     ($headers.mainJs -join "`n")
     '```'
     ""
-    "## vendors.js Headers"
+    "## vendors.js Headers ($vendorsJsName)"
     ""
     '```text'
     ($headers.vendorsJs -join "`n")
     '```'
     ""
-    "## chunks/player-input.js Headers"
+    "## release.json Headers"
     ""
     '```text'
-    ($headers.playerInputChunk -join "`n")
+    ($headers.releaseJson -join "`n")
     '```'
 )
 

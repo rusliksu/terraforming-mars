@@ -32,6 +32,7 @@ export function projectCreateModel(owner: CreateGameModel): CreateModelView {
     expansions: owner.expansions,
     fastModeOption: owner.fastModeOption,
     firstIndex: owner.firstIndex,
+    goals: owner.goals,
     includedCards: owner.includedCards,
     includeFanMA: owner.includeFanMA,
     initialDraft: owner.initialDraft,

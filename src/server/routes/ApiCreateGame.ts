@@ -30,6 +30,7 @@ import {readBody} from './readBody';
 import {RouteError} from './RouteError';
 import {CEO_CARDS_DEALT_PER_PLAYER} from '../../common/constants';
 import {validateCustomMA} from '../../common/ma/CustomMA';
+import {validateCustomMAExpansions} from '../ma/MilestoneAwardSelector';
 import {hasNegativeEscapeVelocityOption} from '../../common/game/escapeVelocity';
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
@@ -422,6 +423,7 @@ export class ApiCreateGame extends Handler {
       };
       try {
         validateCustomMA(gameOptions.customMA, gameOptions.randomMA, gameOptions.venusNextExtension);
+        validateCustomMAExpansions(gameOptions.customMA, gameOptions.expansions);
       } catch (e) {
         throw RouteError.badRequest(e instanceof Error ? e.message : String(e));
       }

@@ -8,7 +8,7 @@ import {PoliticalAgendas} from '../PoliticalAgendas';
 import {IParty} from './IParty';
 
 export abstract class Party {
-  public abstract name: PartyName;
+  public abstract readonly name: PartyName;
   public partyLeader: undefined | Delegate = undefined;
   public delegates = new MultiSet<Delegate>();
 

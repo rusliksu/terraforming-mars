@@ -3,6 +3,7 @@ import {expect} from 'chai';
 import {h} from 'vue';
 import {globalConfig} from '../getLocalVue';
 import ModuleItemFilter from '@/client/components/create/ModuleItemFilter.vue';
+import {GameModule} from '@/common/cards/GameModule';
 
 // Stub that renders both named slots so template content is accessible in tests.
 const PopupPanelStub = {
@@ -11,10 +12,9 @@ const PopupPanelStub = {
   emits: ['close'],
 };
 
-const GROUPS = [
-  {key: 'alpha', label: 'Group Alpha'},
-  {key: 'beta', label: 'Group Beta'},
-];
+// The component groups by game module; any key works for these fixtures.
+const group = (key: string, label: string) => ({key: key as GameModule, label});
+const GROUPS = [group('alpha', 'Group Alpha'), group('beta', 'Group Beta')];
 
 const ITEMS_BY_GROUP: Record<string, Array<string>> = {
   alpha: ['item-a1', 'item-a2'],

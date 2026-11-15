@@ -13,7 +13,7 @@ import {cast} from '@/common/utils/utils';
 describe('PoliticalAgendas', () => {
   let player1: TestPlayer;
   let player2: TestPlayer;
-  let randomElement: (list: Array<any>) => any;
+  let randomElement: typeof PoliticalAgendas.randomElement;
 
   beforeEach(() => {
     player1 = TestPlayer.BLUE.newPlayer();
@@ -102,8 +102,7 @@ describe('PoliticalAgendas', () => {
 
     it('Chairman mode, human chairperson' + suffix, () => {
       // For the neutral chairman to always pick the second item in the list.
-      // Some placeholder parties only have one bonus/policy; fall back to index 0 for those.
-      PoliticalAgendas.randomElement = (list: Array<any>) => list[Math.min(1, list.length - 1)];
+      PoliticalAgendas.randomElement = <T>(list: ReadonlyArray<T>): T => list[1];
 
       let game = Game.newInstance('gameid', [player1, player2], player1, 'spectatorid', {turmoilExtension: true, politicalAgendasExtension: 'Chairman'});
       let newPlayer2: IPlayer = player2;
@@ -141,8 +140,7 @@ describe('PoliticalAgendas', () => {
 
     it('Chairman mode, neutral chairperson' + suffix, () => {
       // For the neutral chairperson to always pick the second item.
-      // Some placeholder parties only have one bonus/policy; fall back to index 0 for those.
-      PoliticalAgendas.randomElement = (list: Array<any>) => list[Math.min(1, list.length - 1)];
+      PoliticalAgendas.randomElement = <T>(list: ReadonlyArray<T>): T => list[1];
 
       let game = Game.newInstance('gameid', [player1, player2], player1, 'spectatorid', {turmoilExtension: true, politicalAgendasExtension: 'Chairman'});
       if (deserialize) {

@@ -15,23 +15,23 @@ type ThreeDigits = `${Digit}${Digit}${Digit}`;
 export type SpaceId = `${TwoDigits}` | `${ThreeDigits}` | `c${TwoDigits}` | `m${TwoDigits}`;
 export type Named<T> = {name: T};
 
-export function isPlayerId(object: any): object is PlayerId {
-  return object?.charAt?.(0) === 'p';
+export function isPlayerId(object: unknown): object is PlayerId {
+  return typeof object === 'string' && object.charAt(0) === 'p';
 }
 
-export function isGameId(object: string): object is GameId {
-  return object?.charAt?.(0) === 'g';
+export function isGameId(object: unknown): object is GameId {
+  return typeof object === 'string' && object.charAt(0) === 'g';
 }
 
-export function isSpectatorId(object: string): object is SpectatorId {
-  return object?.charAt?.(0) === 's';
+export function isSpectatorId(object: unknown): object is SpectatorId {
+  return typeof object === 'string' && object.charAt(0) === 's';
 }
 
-export function isSpaceId(object: string): object is SpaceId {
-  return /^([cm][0-9]{2}|[0-9]{2,3})$/.test(object);
+export function isSpaceId(object: unknown): object is SpaceId {
+  return typeof object === 'string' && /^([cm][0-9]{2}|[0-9]{2,3})$/.test(object);
 }
 
-export function safeCast<T>(object: any, tester: (object: any) => object is T) {
+export function safeCast<T>(object: unknown, tester: (object: unknown) => object is T) {
   if (tester(object)) {
     return object;
   }

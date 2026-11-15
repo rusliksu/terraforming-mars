@@ -127,6 +127,7 @@
 <script lang="ts">
 import {defineComponent} from 'vue';
 import {GameModule} from '@/common/cards/GameModule';
+import {expansionIconClass} from '@/client/utils/expansionIcon';
 
 // A single icon-legend entry: the CSS class that draws the icon, its label, and (for anything
 // that came from a specific expansion) the small expansion badge(s) shown next to it. This lets
@@ -139,15 +140,6 @@ type IconEntry = {
   official: boolean;
   expansions?: ReadonlyArray<GameModule>;
   innerText?: string;
-};
-
-// Mirrors the same expansion -> badge-class exceptions used by CardList.vue's
-// expansionIconClass() -- most modules match their own name, a few don't.
-const EXPANSION_ICON_CLASS: Partial<Record<GameModule, string>> = {
-  base: 'expansion-icon-base',
-  corpera: 'expansion-icon-CE',
-  colonies: 'expansion-icon-colony',
-  moon: 'expansion-icon-themoon',
 };
 
 const CARD_TAGS: ReadonlyArray<IconEntry> = [
@@ -285,9 +277,7 @@ export default defineComponent({
     },
   },
   methods: {
-    expansionIconClass(expansion: GameModule): string {
-      return EXPANSION_ICON_CLASS[expansion] ?? `expansion-icon-${expansion}`;
-    },
+    expansionIconClass,
   },
 });
 </script>

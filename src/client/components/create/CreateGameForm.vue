@@ -951,6 +951,7 @@ import {statusCode} from '@/common/http/statusCode';
 import {redirectToLogin} from '@/client/utils/loginRedirect';
 import {JSONProcessor} from './JSONProcessor';
 import {defaultCreateGameModel} from './defaultCreateGameModel';
+import {getAward, getMilestone} from '@/client/MilestoneAwardManifest';
 import {CreateGameSettingsStorage} from './CreateGameSettingsStorage';
 import {TemplateManager, GameTemplate} from './TemplateManager';
 import {decodeSettingsHash, encodeSettingsHash} from './settingsLink';
@@ -1456,6 +1457,8 @@ export default defineComponent({
         getColonyExpansion: (name) => {
           return getColony(name)?.expansion;
         },
+        getMilestoneExpansion: (name) => getMilestone(name)?.requirements,
+        getAwardExpansion: (name) => getAward(name)?.requirements,
       });
     },
     hasValidationProblems(): boolean {

@@ -52,6 +52,7 @@ import {LogHelper} from './LogHelper';
 import {UndoActionOption} from './inputs/UndoActionOption';
 import {PathfindersExpansion} from './pathfinders/PathfindersExpansion';
 import {ColoniesHandler} from './colonies/ColoniesHandler';
+import {HeadStart} from './cards/promo/HeadStart';
 import {InputResponse} from '../common/inputs/InputResponse';
 import {Tags} from './player/Tags';
 import {Colonies} from './player/Colonies';
@@ -1963,12 +1964,7 @@ export class Player implements IPlayer {
   }
 
   private headStartIsInEffect() {
-    if (this.game.phase === Phase.PRELUDES && this.playedCards.has(CardName.HEAD_START)) {
-      if (this.actionsTakenThisRound < 2) {
-        return true;
-      }
-    }
-    return false;
+    return HeadStart.actionsRemaining(this) > 0;
   }
 
   /**
@@ -2077,24 +2073,54 @@ export class Player implements IPlayer {
       }
 
       this.setWaitingFor(orOptions, () => game.drainQueue(() => {
-        if (this.pendingInitialActions.length === 0) {
-          this.incrementActionsTaken();
-        }
         this.timer.rebate(constants.BONUS_SECONDS_PER_ACTION * 1000);
+        // All of the corporations' first actions together make one action.
+        if (this.pendingInitialActions.length === 0) {
+          // The corporation's first action spends one of Head Start's actions.
+          this.finishAction(headStartIsInEffect);
+          return;
+        }
         this.takeAction();
       }));
       return;
     }
 
-    this.setWaitingFor(this.getActions(), () => game.drainQueue(() => {
-      // Sistemas Seebeck (fan): a free conversion sets this instead of consuming an action.
-      if (this.skipNextActionIncrement) {
-        this.skipNextActionIncrement = false;
-      } else {
-        this.incrementActionsTaken();
-      }
-      this.takeAction();
-    }));
+    const actions = this.getActions();
+    // Head Start's actions are not optional, so one is only lost when there is nothing to do.
+    if (headStartIsInEffect && actions.options.length === 0) {
+      game.log('${0} had no action to take for Head Start', (b) => b.player(this));
+      this.finishHeadStartAction();
+      return;
+    }
+
+    this.setWaitingFor(actions, () => game.drainQueue(() => this.finishAction(headStartIsInEffect)));
+  }
+
+  /** Wraps up an ordinary action or one of Head Start's extra actions. */
+  private finishAction(headStartAction: boolean): void {
+    if (headStartAction) {
+      this.actionsTakenThisGame++;
+      this.finishHeadStartAction();
+      return;
+    }
+    // Sistemas Seebeck (fan): a free conversion sets this instead of consuming an action.
+    if (this.skipNextActionIncrement) {
+      this.skipNextActionIncrement = false;
+    } else {
+      this.incrementActionsTaken();
+    }
+    this.takeAction();
+  }
+
+  /** Uses up one Head Start action and moves on to the player's next action. */
+  private finishHeadStartAction(): void {
+    HeadStart.useAction(this);
+    // Head Start was the last prelude: hand the turn on rather than falling into the action phase.
+    if (this.game.phase === Phase.PRELUDES && !this.headStartIsInEffect() && this.preludeCardsInHand.length === 0) {
+      this.game.playerIsFinishedTakingActions();
+      return;
+    }
+    this.takeAction();
   }
 
   private incrementActionsTaken(): void {
@@ -2110,8 +2136,10 @@ export class Player implements IPlayer {
   }
 
   public /* for testing */ getActions() {
+    const headStartInEffect = this.headStartIsInEffect();
+    const firstAction = headStartInEffect ? HeadStart.actionsRemaining(this) >= 2 : this.actionsTakenThisRound === 0;
     const action = new OrOptions()
-      .setTitle(this.actionsTakenThisRound === 0 ? 'Take your first action' : 'Take your next action')
+      .setTitle(firstAction ? 'Take your first action' : 'Take your next action')
       .setButtonLabel('Take action');
 
     const claimableMilestones = this.claimableMilestones();
@@ -2201,7 +2229,8 @@ export class Player implements IPlayer {
     // taken, without it counting as passing, for the rest of the generation it was played.
     const administrativeDelayInEffect = this.administrativeDelayActiveGeneration === this.game.generation;
     // AI players pass instead: ending turns without passing would keep a generation running forever.
-    if (this.aiLevel === undefined &&
+    if (!headStartInEffect &&
+      this.aiLevel === undefined &&
       this.game.players.length > 1 &&
       (this.actionsTakenThisRound > 0 || administrativeDelayInEffect) &&
       !this.game.gameOptions.fastModeOption &&
@@ -2223,13 +2252,19 @@ export class Player implements IPlayer {
 
     // Standard Projects -- Cloud City/Gas Mine/Floater Array (Venus Phase 2's own) are included
     // in this grouped list too now, via their own canPayWith({anyFloaters: true}).
-    action.options.push(this.getStandardProjectOption());
+    const standardProjects = this.getStandardProjectOption();
+    // During Head Start, only standard projects the player can take are offered.
+    if (standardProjects.config?.enabled?.includes(true) || !headStartInEffect) {
+      action.options.push(standardProjects);
+    }
 
     // High Orbit (fan): acquire an Infrastructure card from the shared supply.
     action.options.push(...this.getHighOrbitInfrastructureOptions());
 
-    // Pass
-    action.options.push(this.passOption());
+    // Pass. Head Start's actions can't be passed.
+    if (!headStartInEffect) {
+      action.options.push(this.passOption());
+    }
 
     // Sell patents
     const sellPatents = new SellPatentsStandardProject();
@@ -2238,7 +2273,8 @@ export class Player implements IPlayer {
     }
 
     // Surrender belongs to human seats: an AI player is already the bot.
-    if (this.aiLevel === undefined &&
+    if (!headStartInEffect &&
+      this.aiLevel === undefined &&
       this.game.players.length > 1 &&
       !this.game.botPlayerIds.has(this.id) &&
       !this.game.surrenderedPlayerIds.has(this.id) &&
@@ -2249,7 +2285,7 @@ export class Player implements IPlayer {
 
     // Propose undo action only if you have done one action this turn
     // Undo is a human-only control.
-    if (this.aiLevel === undefined && this.actionsTakenThisRound > 0 && this.game.gameOptions.undoOption) {
+    if (this.aiLevel === undefined && this.actionsTakenThisRound > 0 && this.game.gameOptions.undoOption && !headStartInEffect) {
       action.options.push(new UndoActionOption());
     }
 

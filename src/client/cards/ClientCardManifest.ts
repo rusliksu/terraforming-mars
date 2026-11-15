@@ -3,10 +3,9 @@ import {CardType} from '@/common/cards/CardType';
 import {GameModule} from '@/common/cards/GameModule';
 import {ClientCard} from '@/common/cards/ClientCard';
 import {CardReplacementRules} from '@/common/cards/CardReplacementRules';
-// @ts-ignore cards.json doesn't exist during npm run build
-import cardJson from '@/genfiles/cards.json' assert {type: 'json'};
+import cardJson from '@/genfiles/cards.json';
 // @ts-ignore Generated during npm run make:cards.
-import replacementJson from '@/genfiles/card-replacement-rules.json' assert {type: 'json'};
+import replacementJson from '@/genfiles/card-replacement-rules.json';
 
 const cards: Map<CardName, ClientCard> = new Map();
 const cardArray: Array<ClientCard> = [];
@@ -40,7 +39,7 @@ export function byModule(module: GameModule): (card: ClientCard) => boolean {
 }
 
 function initialize() {
-  (cardJson as any as Array<ClientCard>).forEach((card) => {
+  cardJson.forEach((card) => {
     cards.set(card.name, card);
     cardArray.push(card);
   });

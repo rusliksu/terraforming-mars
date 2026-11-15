@@ -5,8 +5,8 @@ import {CustomCardDefinition} from './CustomCardDefinition';
 // no `approved` tag is shown). See `customCardCodec.ts` for the opaque `shareCode` format.
 export type CustomCardEntryId = `c${string}`;
 
-export function isCustomCardEntryId(object: string): object is CustomCardEntryId {
-  return object?.charAt?.(0) === 'c';
+export function isCustomCardEntryId(object: unknown): object is CustomCardEntryId {
+  return typeof object === 'string' && object.charAt(0) === 'c';
 }
 
 export type CustomCardStatus = 'submitted' | 'approved';

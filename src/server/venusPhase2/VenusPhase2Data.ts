@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace -- Venus Phase 2 keeps its data in a namespace to mirror the module layout used by the fork. */
 import {Board} from '../boards/Board';
 import {IPlayer} from '../IPlayer';
 import {VenusSurfaceBoard} from './VenusSurfaceBoard';

@@ -927,7 +927,6 @@ describe('PlayerInput', () => {
     scaffolding.url = `/player/input?id=${player.id}`;
     const game = Game.newInstance('gameid', [player], player, 'spectatorid');
     await scaffolding.ctx.gameLoader.add(game);
-    const waitingFor = player.getWaitingFor();
     const powerPlant: OrOptionsResponse = {type: 'or', index: 1, response: {type: 'projectCard', card: CardName.POWER_PLANT_STANDARD_PROJECT, payment: Payment.of({megacredits: 11})}};
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);

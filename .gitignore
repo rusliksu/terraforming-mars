@@ -57,6 +57,11 @@ elo/elo-data.json
 elo/*.local-backup-*.json
 elo/backups/
 
+# Generated public ELO history: written by the running server (ELO_DATA_DIR, assets/elo by
+# default). A committed copy used to leak benchmark games into the statistics page.
+assets/elo/data.json
+assets/elo/elo-data.json
+
 # Local analytics exports
 artifacts/
 

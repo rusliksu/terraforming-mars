@@ -61,6 +61,35 @@ describe('EloSyncService', () => {
     expect(primary.games[0].results[0].completionOutcome).eq(undefined);
   });
 
+  it('does not record bot accounts or a benchmark line-up without botPlayerIds', async () => {
+    await service.recordCompletedGameSummary({
+      key: 'g-bot',
+      completedTime: 1712188800,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      players: [
+        {name: 'bot vega', vp: 86, corp: 'Tharsis Republic'},
+        {name: 'gydro', vp: 66, corp: 'Recyclon'},
+      ],
+    });
+    await service.recordCompletedGameSummary({
+      key: 'g-benchmark',
+      completedTime: 1712188900,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 11,
+      players: [
+        {name: 'c', vp: 79, corp: 'Polyphemos'},
+        {name: 'b', vp: 62, corp: 'Inventrix'},
+        {name: 'a', vp: 61, corp: 'Pristar'},
+      ],
+    });
+
+    expect(await pathExists(primaryPath)).false;
+    expect(await pathExists(mirrorPath)).false;
+  });
+
   it('tracks only confirmed human leaves in a rolling window without changing Elo', () => {
     const games = Array.from({length: 10}, (_value, index) => ({
       _key: `g-reliability-${index}`,

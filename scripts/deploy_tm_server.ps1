@@ -279,8 +279,24 @@ $eloSourceFiles = @(
 )
 $generatedSettingsPath = Join-Path $resolvedSourceRoot "src\\genfiles\\settings.json"
 
-if (-not (Test-Path (Join-Path $buildDir "main.js"))) {
-    throw "Source build is missing build/main.js in $resolvedSourceRoot. Run the build there before deploy."
+$buildManifestPath = Join-Path $buildDir "asset-manifest.json"
+if (-not (Test-Path $buildManifestPath)) {
+    throw "Source build is missing build/asset-manifest.json in $resolvedSourceRoot. Run the build there before deploy."
+}
+$buildAssetManifest = Get-Content -LiteralPath $buildManifestPath -Raw | ConvertFrom-Json
+foreach ($logicalAssetName in @("main.js", "vendors.js", "styles.css")) {
+    $hashedAssetName = [string]$buildAssetManifest.$logicalAssetName
+    if ([string]::IsNullOrWhiteSpace($hashedAssetName)) {
+        throw "build/asset-manifest.json in $resolvedSourceRoot has no $logicalAssetName entry."
+    }
+    if (-not (Test-Path (Join-Path $buildDir $hashedAssetName))) {
+        throw "build/asset-manifest.json in $resolvedSourceRoot points at missing build/$hashedAssetName."
+    }
+}
+foreach ($legacyEntry in @("main.js", "vendors.js")) {
+    if (Test-Path (Join-Path $buildDir $legacyEntry)) {
+        throw "Source build still contains the legacy unhashed $legacyEntry in $resolvedSourceRoot. Clear build/ and rebuild so a stale entry bundle is not shipped."
+    }
 }
 if (-not (Test-Path (Join-Path $buildDir "src/server/server.js"))) {
     throw "Source build is missing build/src/server/server.js in $resolvedSourceRoot. Run the build there before deploy."
@@ -387,7 +403,7 @@ New-Item -ItemType Directory -Path $eloPayloadDir -Force | Out-Null
 foreach ($eloFile in $eloSourceFiles) {
     Copy-Item -LiteralPath (Join-Path $eloDir $eloFile) -Destination (Join-Path $eloPayloadDir $eloFile) -Force
 }
-$buildMainJs = Join-Path $buildDir "main.js"
+$buildMainJs = Join-Path $buildDir ([string]$buildAssetManifest."main.js")
 $buildMainJsItem = Get-Item -LiteralPath $buildMainJs
 $buildMainJsTimestampUtc = $buildMainJsItem.LastWriteTimeUtc
 $buildMainJsMtimeUtc = $buildMainJsTimestampUtc.ToString("o")
@@ -724,7 +740,10 @@ rm -rf "$release_root"
 mkdir -p "$release_unpack_dir"
 tar -xzf "$archive" -C "$release_unpack_dir"
 
-test -f "$release_unpack_dir/build/main.js"
+test -f "$release_unpack_dir/build/asset-manifest.json"
+main_js_name="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["main.js"])' "$release_unpack_dir/build/asset-manifest.json")"
+test -n "$main_js_name"
+test -f "$release_unpack_dir/build/$main_js_name"
 test -f "$release_unpack_dir/build/src/server/server.js"
 test -f "$release_unpack_dir/assets/index.html"
 test -f "$release_unpack_dir/elo/index.html"
@@ -811,7 +830,9 @@ if [ -n "$elo_service" ]; then
 fi
 
 healthy=0
-for attempt in $(seq 1 20); do
+# Startup can legitimately take ~45s on a warm database (hundreds of preloaded game IDs,
+# SQLite connect, Sentry init), so allow 45 attempts x 2s = 90s before rollback.
+for attempt in $(seq 1 45); do
   if curl -fsS -I "$health_url" >/dev/null 2>&1; then
     healthy=1
     break

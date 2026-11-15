@@ -8,6 +8,9 @@ import {Phase} from '../../../common/Phase';
 import {ICeoCard} from './ICeoCard';
 import {OncePerAction} from '@/server/utils/OncePerAction';
 
+const MAX_TRIGGER_COUNT = 10;
+const MEGA_CREDITS_GAINED = 4;
+
 export class Greta extends CeoCard implements ICeoCard {
   constructor() {
     super({
@@ -42,10 +45,27 @@ export class Greta extends CeoCard implements ICeoCard {
   public onIncreaseTerraformRatingByAnyPlayer(cardOwner: IPlayer, player: IPlayer) {
     const game = player.game;
     this.oncePerAction.oncePerAction(game, () => {
-      if (this.opgActionIsActive === true && this.data.effectTriggerCount < 10) {
+      if (this.opgActionIsActive === true && this.data.effectTriggerCount < MAX_TRIGGER_COUNT) {
         if (player === cardOwner && game.activePlayer === player && game.phase === Phase.ACTION) {
-          player.stock.add(Resource.MEGACREDITS, 4, {log: true, from: {card: this}});
           this.data.effectTriggerCount++;
+          player.stock.add(Resource.MEGACREDITS, MEGA_CREDITS_GAINED);
+          game.log('${0} gained ${1}${2} because of ${3} (${4}/${5})', (b) => b
+            .player(player)
+            .number(MEGA_CREDITS_GAINED)
+            .resource(Resource.MEGACREDITS)
+            .card(this)
+            .number(this.data.effectTriggerCount)
+            .number(MAX_TRIGGER_COUNT),
+          {
+            effect: {
+              kind: 'resource',
+              resource: Resource.MEGACREDITS,
+              production: false,
+              amount: MEGA_CREDITS_GAINED,
+              player: player.color,
+              counter: {current: this.data.effectTriggerCount, max: MAX_TRIGGER_COUNT},
+            },
+          });
         }
       }
       return undefined;

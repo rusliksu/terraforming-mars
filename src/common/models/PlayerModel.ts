@@ -5,7 +5,7 @@ import {VictoryPointsBreakdown} from '../game/VictoryPointsBreakdown';
 import {PlayerInputModel} from './PlayerInputModel';
 import {TimerModel} from './TimerModel';
 import {GameModel} from './GameModel';
-import {PlayerId, ParticipantId} from '../Types';
+import {GameId, PlayerId, ParticipantId} from '../Types';
 import {AiLevel} from '../ai/AiLevel';
 import {CardName} from '../cards/CardName';
 import {Resource} from '../Resource';
@@ -20,6 +20,7 @@ import {ColonyTradeContextModel} from './ColonyTradeContextModel';
 import {OceanPlacementContextModel} from './OceanPlacementContextModel';
 
 export interface ViewModel {
+  gameId?: GameId;
   canStepBack?: boolean;
   canUndoResearchPurchase?: boolean;
   game: GameModel;

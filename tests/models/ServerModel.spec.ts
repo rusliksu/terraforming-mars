@@ -28,6 +28,15 @@ import {ICard} from '../../src/server/cards/ICard';
 import {SpaceType} from '../../src/common/boards/SpaceType';
 
 describe('ServerModel', () => {
+  it('exposes the game id in player and spectator view models', () => {
+    const [game, player] = testGame(2);
+    const playerModel = Server.getPlayerModel(player);
+    const spectatorModel = Server.getSpectatorModel(game);
+    expect(playerModel.gameId).eq(game.id);
+    expect(spectatorModel.gameId).eq(game.id);
+    expect(playerModel.gameId).matches(/^g/);
+    expect(playerModel.game.gameId).eq(game.id);
+  });
   it('projects conditional discounts from canonical methods without changing payable prices or pending input', () => {
     const [, player] = testGame(2);
     const technology: ICard = new CuttingEdgeTechnology();

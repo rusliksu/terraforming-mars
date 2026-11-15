@@ -31,6 +31,11 @@ describe('FanmadeCatalogRevision', () => {
     expect(check).not.to.throw();
     writeFileSync(source, readFileSync(source, 'utf8') + '\n// deliberate source mutation\n');
     expect(check).to.throw('Reviewed source changed');
+    expect(check).to.throw('changed: src/server/Production.ts');
+    expect(check).to.throw('--write');
+    // One command refreshes the digests instead of a manual hunt through the manifest.
+    execFileSync(process.execPath, [helper, '--source', scratch, '--manifest', fixture, '--write'], {stdio: 'pipe'});
+    expect(check).not.to.throw();
     delete manifest.files['src/server/Production.ts'];
     const incomplete = path.join(scratch, 'manifest.json');
     writeFileSync(incomplete, JSON.stringify(manifest));

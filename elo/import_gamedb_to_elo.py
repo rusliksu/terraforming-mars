@@ -1,16 +1,31 @@
 #!/usr/bin/env python3
 """Import completed games from game.db into elo-data.json.
 
-One-time script to populate Elo after reset.
-Reads game_results table, filters bots/incomplete, normalizes names, rebuilds Elo.
+Reads game_results, skips bot/incomplete games, normalizes names and updates Elo.
+
+Modes:
+  full rebuild (default)  drop the existing file and recompute everything from the DB.
+  incremental             keep the existing ratings and counters, apply only games that
+                          are not in elo-data.json yet. A rebuild cannot restore win
+                          history accumulated before the current DB, so use incremental
+                          for a normal refresh. It is idempotent: a second run applies 0
+                          games and writes the same file.
+
+Bot/test games are skipped when every name is <= 2 chars, when a name is a known test
+name, or when a name looks like a bot ("Bot Vega", "Greenbot123"). A shared first place
+is worth a share of a win: two tied leaders get 0.5 each.
 
 Usage (on VPS):
-  python3 import_gamedb_to_elo.py
+  TM_DB_PATH=/path/to/game.db TM_ELO_DIR=/path/to/elo python3 import_gamedb_to_elo.py
+  TM_DB_PATH=... TM_ELO_DIR=... TM_ELO_INCREMENTAL=1 python3 import_gamedb_to_elo.py
+  (or pass --incremental)
 """
 
 import json
 import sqlite3
 import os
+import re
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -136,13 +151,23 @@ def calc_elo_vp(players, elo_db):
     return results
 
 
+BOT_NAME_RE = re.compile(r'(?:^|\W)bot(?:\W|$)|bot\d*$', re.IGNORECASE)
+
+
+def is_bot_name(name):
+    """Bot-ish names: "Bot", "Bot Vega", "Greenbot123", "Yellowbot123"."""
+    return BOT_NAME_RE.search(name or '') is not None
+
+
 def is_bot_game(scores):
-    """Detect bot/test games: all names <= 2 chars, or test names."""
+    """Detect bot/test games: all names <= 2 chars, test names, or bot names."""
     names = [s.get('playerName', '').strip() for s in scores]
     if all(len(n) <= 2 for n in names):
         return True
     test_names = {'testa', 'testb', 'testc', 'test', 'bot'}
     if any(n.lower() in test_names for n in names):
+        return True
+    if any(is_bot_name(n) for n in names):
         return True
     return False
 
@@ -238,6 +263,10 @@ def apply_game_to_elo(game, elo_data):
     has_vp = any(p.get('vp', 0) > 0 for p in players)
     results_vp = calc_elo_vp(players, elo_data['players']) if has_vp else []
 
+    # A shared first place is worth a share of a win: two tied leaders get 0.5 each.
+    first_place_results = [item for item in results if item['place'] == 1]
+    win_credit = (1.0 / len(first_place_results)) if first_place_results else 0.0
+
     for r in results:
         key = r['name']
         if key not in elo_data['players']:
@@ -261,8 +290,8 @@ def apply_game_to_elo(game, elo_data):
         p.setdefault('avgVP', 0)
         p['games'] += 1
         if r['place'] == 1:
-            p['firsts'] += 1
-        p['wins'] = p['firsts']
+            p['firsts'] += win_credit
+        p['wins'] = round(p['firsts'], 2)
         p['placeScoreTotal'] += placement_score(r['place'], len(players))
         p['avgPlace'] = round(p['placeScoreTotal'] / p['games'], 4)
         if r['place'] <= 3:
@@ -348,15 +377,34 @@ def main():
 
     print(f'Total game_results rows: {len(rows)}')
 
-    elo_data = {'players': {}, 'games': []}
+    incremental = '--incremental' in sys.argv[1:] or os.environ.get('TM_ELO_INCREMENTAL') == '1'
+    existing = None
+    if incremental and ELO_PATH.exists():
+        try:
+            existing = json.loads(ELO_PATH.read_text(encoding='utf-8'))
+        except Exception as exc:
+            print(f'Cannot read existing ELO data ({exc}); falling back to full rebuild')
+            existing = None
+    if existing:
+        elo_data = {
+            'players': dict(existing.get('players') or {}),
+            'games': list(existing.get('games') or []),
+        }
+        known_ids = {game.get('gameId') for game in elo_data['games'] if game.get('gameId')}
+        print(f'Incremental mode: {len(known_ids)} games and {len(elo_data["players"])} players already rated')
+    else:
+        elo_data = {'players': {}, 'games': []}
+        known_ids = set()
+        if incremental:
+            print('Incremental mode requested, but no existing ELO data found; full rebuild')
     imported = 0
     preserved_legacy = 0
     skipped_bot = 0
     skipped_no_vp_no_place = 0
     skipped_no_elo = 0
     skipped_few_players = 0
+    skipped_already = 0
     game_entries = []
-    known_ids = set()
 
     for gid, gen, scores_json, completed_ts, options_json, spectator_id in rows:
         scores = json.loads(scores_json)
@@ -364,6 +412,10 @@ def main():
             options = json.loads(options_json or '{}')
         except Exception:
             options = {}
+
+        if gid in known_ids:
+            skipped_already += 1
+            continue
 
         if is_no_elo_game(options):
             skipped_no_elo += 1
@@ -462,6 +514,7 @@ def main():
 
     print(f'\nImported: {imported}')
     print(f'Preserved legacy-only games: {preserved_legacy}')
+    print(f'Skipped already rated: {skipped_already}')
     print(f'Skipped bot/test: {skipped_bot}')
     print(f'Skipped no-ELO games: {skipped_no_elo}')
     print(f'Skipped no VP/no place: {skipped_no_vp_no_place}')

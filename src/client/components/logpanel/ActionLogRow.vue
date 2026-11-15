@@ -17,6 +17,7 @@
                 :src="'/assets/global-parameters/' + summary.effect.parameter + '.png'" alt="" aria-hidden="true">
             </template>
           </span>
+          <span v-if="effectCounter(summary.effect) !== undefined" class="action-log-effect-counter">({{ effectCounter(summary.effect) }})</span>
           <span v-if="summary.oceanCount !== undefined" class="action-log-source" aria-hidden="true">🌊×{{ summary.oceanCount }}</span>
           <span v-if="differentPlayer(summary.effect.player)" class="log-player action-log-target"
             :class="playerColorClass(summary.effect.player, 'bg')">{{ playerName(summary.effect.player) }}</span>
@@ -99,7 +100,9 @@ function effectLabel({effect, oceanCount}: EffectSummary): string {
   }
   const type = effect.kind === 'tr' ? 'TR' : `${effect.resource}${effect.production ? ' production' : ''}`;
   const source = oceanCount === undefined ? '' : ` from ${oceanCount} ocean(s)`;
-  return `${effect.amount > 0 ? '+' : ''}${effect.amount} ${type}${source} · ${playerName(effect.player)}`;
+  const counter = effectCounter(effect);
+  const use = counter === undefined ? '' : ` (use ${counter})`;
+  return `${effect.amount > 0 ? '+' : ''}${effect.amount} ${type}${source}${use} · ${playerName(effect.player)}`;
 }
 
 function effectAmount(effect: LogEffect | LogGlobalEffect): string {
@@ -109,6 +112,13 @@ function effectAmount(effect: LogEffect | LogGlobalEffect): string {
     return `${effect.amount < 0 ? '−' : ''}${number}`;
   }
   return `${effect.amount > 0 ? '+' : ''}${effect.amount}`;
+}
+
+function effectCounter(effect: LogEffect | LogGlobalEffect): string | undefined {
+  if (effect.kind === 'global' || effect.counter === undefined) {
+    return undefined;
+  }
+  return `${effect.counter.current}/${effect.counter.max}`;
 }
 
 function globalIconCount(amount: number): number {
@@ -154,7 +164,7 @@ function oceanBonusEffect(message: LogMessage): EffectSummary | undefined {
 .action-log-global-icon { display: block; width: auto; height: 24px; max-width: 32px; object-fit: contain; }
 .action-log-effect .resource_icon { display: inline-block; width: 21px; height: 21px; background-size: contain; }
 .action-log-effect .action-log-production-box { min-width: 52px; width: auto; height: 29px; padding: 2px 5px; margin: 0; line-height: normal; box-sizing: border-box; color: #fff; }
-.action-log-source { font-size: 0.8em; color: #b8d9f2; }
+.action-log-source, .action-log-effect-counter { font-size: 0.8em; color: #b8d9f2; }
 .action-log-location { border: 1px solid #999; border-radius: 4px; background: #42424a; color: inherit; cursor: pointer; white-space: nowrap; }
 .action-log-location:focus-visible { outline: 2px solid #ffc567; }
 .action-log-incomplete { font-size: 0.8em; color: #bbb; }

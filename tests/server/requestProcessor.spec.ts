@@ -103,6 +103,38 @@ describe('requestProcessor', () => {
     }
   });
 
+  it('routes content-hashed entry assets to the asset handler', async () => {
+    const originalGetInstance = GameLoader.getInstance;
+    const originalProcessRequest = ServeAsset.INSTANCE.processRequest;
+    const handledUrls: string[] = [];
+    (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = (() => {
+      return {} as ReturnType<typeof GameLoader.getInstance>;
+    }) as typeof GameLoader.getInstance;
+    ServeAsset.INSTANCE.processRequest = (async (req, res) => {
+      handledUrls.push(req.url ?? '');
+      res.statusCode = statusCode.ok;
+      res.end();
+    }) as typeof ServeAsset.INSTANCE.processRequest;
+
+    try {
+      for (const url of ['/main.df7dcd2905327f15.js', '/vendors.df7dcd2905327f15.js', '/styles.c97c25aaaefe8fed.css']) {
+        const req = new MockRequest();
+        const res = new MockResponse();
+        req.url = url;
+        req.headers.host = 'tm.knightbyte.win';
+        await processRequest(req, res);
+      }
+      expect(handledUrls).deep.eq([
+        '/main.df7dcd2905327f15.js',
+        '/vendors.df7dcd2905327f15.js',
+        '/styles.c97c25aaaefe8fed.css',
+      ]);
+    } finally {
+      ServeAsset.INSTANCE.processRequest = originalProcessRequest;
+      (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = originalGetInstance;
+    }
+  });
+
   it('does not capture expected application or input errors', async () => {
     const originalGetInstance = GameLoader.getInstance;
     const originalProcessRequest = ServeAsset.INSTANCE.processRequest.bind(ServeAsset.INSTANCE);

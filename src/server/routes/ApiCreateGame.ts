@@ -90,6 +90,46 @@ function maskTelegramIdForLog(telegramID: string): string {
   return `len=${telegramID.length} last4=${telegramID.slice(-4)}`;
 }
 
+/** Best-effort client IP: nginx sets X-Forwarded-For / X-Real-IP in front of the server. */
+export function requestIpForLog(req: Request): string {
+  const header = (value: string | string[] | undefined): string => {
+    if (Array.isArray(value)) {
+      return value[0] ?? '';
+    }
+    return value ?? '';
+  };
+  const forwarded = header(req.headers['x-forwarded-for']).split(',')[0];
+  const real = header(req.headers['x-real-ip']);
+  const socket = req.socket?.remoteAddress ?? '';
+  return (forwarded || real || socket).trim();
+}
+
+/** Keeps the network part of an address so logs stay useful without storing a full IP. */
+export function maskIpForLog(ip: string): string {
+  const value = (ip || '').trim();
+  if (value === '') {
+    return 'unknown';
+  }
+  const v4 = value.startsWith('::ffff:') ? value.slice(7) : value;
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(v4)) {
+    const parts = v4.split('.');
+    return `${parts[0]}.${parts[1]}.x.x`;
+  }
+  if (v4.includes(':')) {
+    return `${v4.split(':').slice(0, 4).join(':')}:xxxx`;
+  }
+  return 'masked';
+}
+
+/** User agents are truncated: only used for attribution, never for routing. */
+export function maskUaForLog(ua: string | string[] | undefined): string {
+  const raw = Array.isArray(ua) ? ua[0] : ua;
+  if (!raw) {
+    return 'none';
+  }
+  return raw.slice(0, 120).replace(/"/g, "'");
+}
+
 type CreateGameRouteDeps = Pick<BotTakeoverManager, 'start' | 'stop'>;
 
 // GAME_QUOTA accepts either a single {limit, per} object, or a JSON array of
@@ -396,6 +436,21 @@ export class ApiCreateGame extends Handler {
           gameReq.seed : Math.random();
         game = Game.newInstance(gameId, players, players[firstPlayerIdx], spectatorId, gameOptions, seed, ctx.gameLoader.saveGame.bind(ctx.gameLoader));
       }
+
+      // One line per created game: who created it (player ids, names, ai/bot seats), from where
+      // (masked IP) and what client (truncated UA). Game creation is the one request that starts
+      // a match, and the socket.io traffic after it never shows up in access logs.
+      console.log(
+        `Game create game=${game.id} name="${game.name}" ` +
+        `clonedFrom=${gameOptions.clonedGamedId ?? 'none'} ` +
+        `turnBased=${turnBasedGame} botGame=${botGame} ` +
+        `players=${players.map((player, index) => {
+          const requested = requestedPlayers[index];
+          const seat = requested?.aiLevel !== undefined ? '@ai:' + requested.aiLevel : (requested?.isBot === true ? '@bot' : '');
+          return `${player.id}:${player.name}${seat}`;
+        }).join(',')} ` +
+        `ip=${maskIpForLog(requestIpForLog(req))} ua="${maskUaForLog(req.headers['user-agent'])}"`,
+      );
 
       const botPlayers = botGame ? players.filter((_player, index) => requestedPlayers[index]?.isBot === true) : [];
       game.setBotPlayerIds(botPlayers.map((player) => player.id));

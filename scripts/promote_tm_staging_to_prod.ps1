@@ -819,7 +819,10 @@ if [ "$previous_current_link_existed" != "1" ] || [ -z "$previous_current_link_t
   echo "Prod promote blocked: prod current must be an existing symlink for exact rollback." >&2
   exit 1
 fi
-test -f "$staging_current/build/main.js"
+test -f "$staging_current/build/asset-manifest.json"
+staging_main_js_name="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["main.js"])' "$staging_current/build/asset-manifest.json")"
+test -n "$staging_main_js_name"
+test -f "$staging_current/build/$staging_main_js_name"
 test -f "$staging_current/build/src/server/server.js"
 test -f "$staging_current/build/src/server/tools/validate_saved_games.js"
 test -f "$staging_current/assets/index.html"

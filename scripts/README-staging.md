@@ -115,6 +115,123 @@ sqlite3 -readonly "file:/home/openclaw/tm-runtime/prod/shared/db/game.db?mode=ro
    WHERE trim(latest.status) = 'running' ORDER BY idle_seconds ASC;"
 ```
 
+## Staging Game Cleanup
+
+Staging accumulates abandoned test games. `scripts/cleanup_tm_games.ps1` lists them and
+deletes explicit ids (or a deliberately bounded bulk selection) with a replayed-and-verified
+backup, using the same latest-save idle rule as the prod promote gate.
+
+```powershell
+# What is running, with seats, phase and idle hours (read-only)
+pwsh -File scripts\cleanup_tm_games.ps1 -Environment staging -List
+
+# Dry run for explicit ids: shows row counts, deletes nothing
+pwsh -File scripts\cleanup_tm_games.ps1 -Environment staging -GameId ga55c39032531
+
+# Delete explicit ids (backup is verified by replay before anything is deleted)
+pwsh -File scripts\cleanup_tm_games.ps1 -Environment staging -GameId ga55c39032531 -Apply
+
+# Bulk: single-seat games idle for 90+ days, at most 400 of them
+pwsh -File scripts\cleanup_tm_games.ps1 -Environment staging -MinIdleDays 90 -AllowBulk -MaxGames 400 -Apply
+```
+
+Guards:
+
+- `prod` requires `-AllowProd`; bulk selection requires `-AllowBulk` on top of `-Apply`;
+- a game whose latest save is newer than `-MinIdleMinutes` (default 60) is treated as active and refused;
+- **a game with 2+ seats is refused** (and skipped in bulk) unless `-AllowMultiplayer` says otherwise:
+  a two-seat staging game can be somebody's real match;
+- **fresh phases (`initial_drafting`, corporation drafting, `prelude`, `ceos`) are refused** unless
+  `-AllowFresh`: a game still picking its opening cards is not abandoned;
+- games with a `history_archives` row are refused via explicit ids and skipped in bulk;
+- bulk selection above `-MaxGames` (default 50) is refused, so the cap is raised on purpose;
+- unknown ids fail before anything is written.
+
+Backup and restore:
+
+- before deleting, every affected row is dumped as `INSERT` statements written by one
+  `sqlite3` process (the earlier build wrote `.mode insert` as text, which was not replayable);
+- the backup is replayed into a scratch database created from the live schema and the per-table
+  row counts must match, otherwise the run stops before deleting (`-SkipBackupVerify` opts out);
+- restore a game exactly as it was:
+
+```bash
+sqlite3 /home/openclaw/tm-runtime/staging/shared/db/game.db < game-cleanup-staging-<stamp>.sql
+```
+
+Deletion runs in one transaction over `history_archives`, `game_results`, `completed_game`,
+`participants` and `games`, and the script re-reads the database afterwards, failing if any row
+is left. The running service keeps already-loaded games in memory, so a deleted game can still
+answer until it is evicted or the service restarts; verify removal from the database, not only
+from the API.
+
+Run log: `2026-11-11` test game `ga55c39032531` (restored after an accidental delete) plus 96
+games idle for 180+ days, then 107 single-seat games idle for 90+ days with the new guards
+(30 multiplayer/fresh games skipped, one seat each restored-verified); running games
+523 -> 321, `PRAGMA quick_check` = ok.
+## Finished Game Compaction
+
+Finished games keep every intermediate save, and those saves dominate the SQLite file.
+`scripts/compact_finished_games.ps1` removes saves older than the final one and keeps the
+final save, participants, results and the completion record. Dry run by default; every
+removed row is backed up and the backup is replayed before deletion.
+
+The verified backup always stays on the VPS in
+`/home/openclaw/tm-runtime/<env>/backups/finished-compaction/finished-compaction-<env>-<stamp>.sql`
+and survives restarts. Add `-DownloadBackup` to also copy it to `-BackupDir` (defaults to `%TEMP%`).
+
+```powershell
+# Dry run for prod: 3 games whose final save is at least 30 days old
+pwsh -File scripts\compact_finished_games.ps1 -Environment prod -AllowProd -MinIdleDays 30 -MaxGames 3 -OutputJson
+
+# Apply on staging for one game (needs -AllowBulk)
+pwsh -File scripts\compact_finished_games.ps1 -Environment staging -MinIdleDays 30 -MaxGames 1 -AllowBulk -Apply
+
+# Mass batch: the verified backup stays on the VPS by default
+pwsh -File scripts\compact_finished_games.ps1 -Environment prod -AllowProd -MinIdleDays 30 -MaxGames 20 -MaxSavesPerRun 6000 -AllowBulk -Apply
+```
+
+Guards:
+
+- `prod` requires `-AllowProd`; deletion requires `-Apply -AllowBulk`;
+- only games listed in `completed_game` are considered, and games with a `history_archives` row are skipped;
+- the final save of every selected game is never deleted;
+- `-MaxGames` (default 5) and `-MaxSavesPerRun` (default 2000) cap a single run;
+- the verified backup is always kept on the VPS; `-KeepBackupRemote` is a legacy no-op,
+  `-DownloadBackup` adds a local copy and `-RemoteBackupDir` overrides the remote directory;
+- restore: `sqlite3 game.db < finished-compaction-<env>-<stamp>.sql`.
+
+Limits:
+
+- SQLite reuses freed pages, so the file does not shrink by itself. Reclaim OS space with a
+  separate `VACUUM` while the server is stopped; plan it as a maintenance window.
+- Deleting rows behind the running service can confuse an already-loaded game until eviction;
+  only finished games whose final save is at least `-MinIdleDays` old are selected.
+
+### Point restore from a full snapshot
+
+When a run's per-run SQL backup is gone, a full database snapshot still keeps the removed rows.
+`scripts/restore_finished_game_history.ps1` extracts the snapshot, validates every game
+(finished, completion record present, only the final save locally, final save id equal to the
+snapshot) and copies the missing rows back in one transaction per game.
+
+```powershell
+# Dry run: what would come back for two compacted games
+pwsh -File scripts\restore_finished_game_history.ps1 -Environment prod -AllowProd -Games g10737534e5cd,g13190060e75d
+
+# Restore them
+pwsh -File scripts\restore_finished_game_history.ps1 -Environment prod -AllowProd -Games g10737534e5cd,g13190060e75d -Apply
+```
+
+- the snapshot defaults to the newest `*-game.db.gz` in `<env>/backups`; `-Snapshot` overrides it;
+- the extracted database lives in `/tmp/tm-restore-history/` and is removed after the run
+  unless `-KeepExtracted` is used;
+- `-MaxRows` (default 5000) caps one game and `-MinFreeGb` (default 24) guards the temp filesystem;
+- `-DatabasePath` with `-AllowCustomDatabase` points the script at a maintenance copy for tests.
+
+2026-11-14 check: 271 compacted games had 101,594 rows (14.83 GB) in the 2026-11-08 snapshot,
+every final save id matched, and sampled rows were byte-identical to the attached archives.
+
 ## Branch Naming
 
 - `main`: your fork's integration branch on `origin`. Only release commits that are intended to live there.
@@ -164,10 +281,13 @@ After resolving and staging an understood conflict, resume the immutable saved
 validation plan with `-Mode Continue`. `-PushCandidate` is a separate opt-in and
 pushes only the exact SHA that passed validation, using a normal non-force push.
 
-The weekly Codex task runs Mondays at 10:00 Moscow time and starts paused. It
-may prepare and validate a candidate, but it never merges or deploys. Activate
-it only after the bootstrap candidate has been merged and one manual sync cycle
-has completed successfully.
+The weekly DSH task (`TM: недельный sync апстрима`) runs Mondays at 10:00
+Moscow time. It prepares and validates a candidate, merges it with a merge
+commit once its CI gate is green, then refreshes the release checkout, deploys
+and verifies that exact `origin/main` on staging. It never squashes the
+candidate and never touches production. Production stays a manual command with
+the pinned staging pair:
+`release_tm_prod.ps1 -ExpectedGitSha <sha> -ExpectedArtifactSha <sha>`.
 
 ## Commands
 

@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {BoardName} from '../../src/common/boards/BoardName';
 import {boardOptions} from '../../src/common/boards/randomBoardOptions';
 import {RandomBoardOption} from '../../src/common/boards/RandomBoardOption';
-import {ApiCreateGame, isTelegramIdValid, normalizeTelegramId} from '../../src/server/routes/ApiCreateGame';
+import {ApiCreateGame, isTelegramIdValid, maskIpForLog, maskUaForLog, normalizeTelegramId} from '../../src/server/routes/ApiCreateGame';
 import {MockRequest, MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
@@ -1251,5 +1251,19 @@ describe('ApiCreateGame', () => {
     await postConfig({...newGameConfigForTest(), boards: []});
     expect(res.statusCode).eq(statusCode.badRequest);
     expect(res.content).contains('Must select at least one board');
+  });
+});
+
+describe('ApiCreateGame creation log masking', () => {
+  it('masks IPv4, IPv6-mapped and unknown addresses', () => {
+    expect(maskIpForLog('58.136.12.34')).to.eq('58.136.x.x');
+    expect(maskIpForLog('::ffff:109.252.1.2')).to.eq('109.252.x.x');
+    expect(maskIpForLog('2001:db8:1:2:3:4:5:6')).to.eq('2001:db8:1:2:xxxx');
+    expect(maskIpForLog('')).to.eq('unknown');
+  });
+
+  it('truncates the user agent and drops quotes', () => {
+    expect(maskUaForLog('Mozilla/5.0 "x" ' + 'y'.repeat(200))).to.have.length(120);
+    expect(maskUaForLog(undefined)).to.eq('none');
   });
 });

@@ -94,7 +94,7 @@ function responsesFor(input: PlayerInput, player: IPlayer): Array<InputResponse>
   }
   if (input instanceof SelectCardToPlay) {
     return input.cards
-      .filter((_card, index) => input.enabled?.[index] !== false)
+      .filter((_card, index) => input.config?.enabled?.[index] !== false)
       .map((card) => ({type: 'projectCard', card: card.name, payment: cardPayment(player, card, input.extras.get(card.name)?.overriddenCost)}));
   }
   if (input instanceof SelectCard && input.title === 'Sell patents') {

@@ -40,7 +40,7 @@ function enabledItems<T>(items: ReadonlyArray<T>, enabled: ReadonlyArray<boolean
 /** False if an option obviously cannot be answered (e.g. "Standard projects" with none affordable). */
 function hasAnyChoice(option: PlayerInput): boolean {
   if (option instanceof SelectCardToPlay) {
-    return enabledItems(option.cards, option.enabled).length > 0;
+    return enabledItems(option.cards, option.config?.enabled).length > 0;
   }
   if (option instanceof SelectCard) {
     return enabledItems(option.cards, option.config.enabled).length >= option.config.min;
@@ -124,7 +124,7 @@ export function randomResponse(input: PlayerInput, player: IPlayer, random: Rand
     return {type: 'option'};
   }
   if (input instanceof SelectCardToPlay) {
-    const card = pickOne(random, enabledItems(input.cards, input.enabled)) as IProjectCard;
+    const card = pickOne(random, enabledItems(input.cards, input.config?.enabled)) as IProjectCard;
     const payment = cardPayment(player, card, input.extras.get(card.name)?.overriddenCost);
     return {type: 'projectCard', card: card.name, payment};
   }

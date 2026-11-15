@@ -4,6 +4,7 @@ import {RandomMAOptionType} from '@/common/ma/RandomMAOptionType';
 import {GameId} from '@/common/Types';
 import {AgendaStyle} from '@/common/turmoil/Types';
 import {NewPlayerModel} from '@/common/game/NewGameConfig';
+import {GoalSettings} from './goals/types';
 import {CustomMA} from '@/common/ma/CustomMA';
 import {Expansion} from '@/common/cards/GameModule';
 import {BoardName} from '@/common/boards/BoardName';
@@ -43,6 +44,7 @@ export type CreateGameModel = {
   includeFanMA: boolean;
   initialDraft: boolean;
   initialDraftOneWay: boolean;
+  goals: GoalSettings;
   modularMA: boolean;
   moonStandardProjectVariant: boolean;
   moonStandardProjectVariant1: boolean;

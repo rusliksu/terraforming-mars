@@ -105,6 +105,7 @@ const TEMPLATE_INPUT = {
 };
 
 const TEMPLATE_EXPECTED: CreateGameModel = {
+  goals: {type: 'board', random: {pool: 'maps', randomness: 'limited'}, selected: {milestones: [], awards: []}},
   customBoardCode: undefined,
   customMoonBoardCode: undefined,
   customVenusSurfaceBoardCode: undefined,

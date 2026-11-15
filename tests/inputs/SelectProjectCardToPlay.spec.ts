@@ -13,6 +13,8 @@ describe('SelectProjectCardToPlay', () => {
   let aquiferPumping: IProjectCard;
   let ioMiningIndustries: IProjectCard;
   let called: boolean;
+  let selectProjectCardToPlay: SelectProjectCardToPlay;
+
   const cb = () => {
     called = true;
     return undefined;
@@ -23,26 +25,28 @@ describe('SelectProjectCardToPlay', () => {
     aquiferPumping = new AquiferPumping();
     ioMiningIndustries = new IoMiningIndustries();
     called = false;
-  });
-
-  it('Simple', () => {
-    const selectProjectCardToPlay = new SelectProjectCardToPlay(
+    selectProjectCardToPlay = new SelectProjectCardToPlay(
       player,
       [aquiferPumping, ioMiningIndustries],
     ).andThen(cb);
+  });
 
+  it('Did not pay enough', () => {
     expect(() => selectProjectCardToPlay.process({
       type: 'projectCard',
       card: CardName.AQUIFER_PUMPING,
       payment: Payment.of({}),
     })).to.throw(/Did not spend enough to pay for card/);
-
+  });
+  it('Spending what you do not have', () => {
     expect(() => selectProjectCardToPlay.process({
       type: 'projectCard',
       card: CardName.AQUIFER_PUMPING,
       payment: Payment.of({megacredits: 18}),
     })).to.throw(/You do not have that many resources to spend/);
+  });
 
+  it('Success', () => {
     player.megaCredits = 20;
     expect(called).is.false;
     expect(player.playedCards.length).eq(0);
@@ -95,5 +99,23 @@ describe('SelectProjectCardToPlay', () => {
 
     const message = player.game.gameLog.find((message) => message.message === '${0} played ${1} [ ${2} ]');
     expect(message?.data[2].value).eq('-14:r:mc: -4:r:heat:');
+  });
+
+
+  it('Cannot play a disabled card', () => {
+    selectProjectCardToPlay = new SelectProjectCardToPlay(
+      player,
+      [aquiferPumping, ioMiningIndustries],
+      {enabled: [false, true]},
+    ).andThen(cb);
+    player.megaCredits = 20;
+    expect(() => selectProjectCardToPlay.process({
+      type: 'projectCard',
+      card: CardName.AQUIFER_PUMPING,
+      payment: Payment.of({megacredits: 18}),
+    })).to.throw(/Unavailable card/);
+    expect(called).is.false;
+    expect(player.megaCredits).eq(20);
+    expect(player.playedCards).has.length(0);
   });
 });

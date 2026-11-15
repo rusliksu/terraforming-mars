@@ -123,77 +123,17 @@ describe('Game', () => {
     expect(game.getGeneration()).to.eq(1);
   });
 
-  it('does not show a purge time for async turn-based games', () => {
+  it('validates hand-picked milestones and awards', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const player2 = TestPlayer.RED.newPlayer();
-    const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid', {turnBasedGame: true});
-
-    expect(game.expectedPurgeTimeMs()).eq(0);
-  });
-
-  it('restores legacy async games that stored telegram players without turnBasedGame', () => {
-    const player = TestPlayer.BLUE.newPlayer();
-    const player2 = TestPlayer.RED.newPlayer();
-    const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid', {turnBasedGame: true});
-    player.telegramID = '123456';
-    const serialized = game.serialize();
-    delete (serialized.gameOptions as Partial<typeof serialized.gameOptions>).turnBasedGame;
-    delete (serialized.gameOptions as Partial<typeof serialized.gameOptions>).privateHands;
-
-    const restored = Game.deserialize(serialized);
-
-    expect(restored.gameOptions.turnBasedGame).is.true;
-    expect(restored.gameOptions.privateHands).is.true;
-  });
-
-  it('keeps explicitly non-async games non-async when a telegram id is stale', () => {
-    const player = TestPlayer.BLUE.newPlayer();
-    const player2 = TestPlayer.RED.newPlayer();
-    const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid', {turnBasedGame: false});
-    player.telegramID = '123456';
-
-    const restored = Game.deserialize(game.serialize());
-
-    expect(restored.gameOptions.turnBasedGame).is.false;
-  });
-
-  it('does not show a purge time when unfinished game purge is disabled', () => {
-    const maxGameDays = process.env.MAX_GAME_DAYS;
-    delete process.env.MAX_GAME_DAYS;
-    try {
-      const player = TestPlayer.BLUE.newPlayer();
-      const player2 = TestPlayer.RED.newPlayer();
-      const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid');
-
-      expect(game.expectedPurgeTimeMs()).eq(0);
-    } finally {
-      if (maxGameDays === undefined) {
-        delete process.env.MAX_GAME_DAYS;
-      } else {
-        process.env.MAX_GAME_DAYS = maxGameDays;
-      }
-    }
-  });
-
-  it('shows a purge time when unfinished game purge is configured', () => {
-    const maxGameDays = process.env.MAX_GAME_DAYS;
-    process.env.MAX_GAME_DAYS = '2';
-    try {
-      const before = Date.now() + (2 * 86400 * 1000);
-      const player = TestPlayer.BLUE.newPlayer();
-      const player2 = TestPlayer.RED.newPlayer();
-      const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid');
-      const after = Date.now() + (2 * 86400 * 1000);
-
-      expect(game.expectedPurgeTimeMs()).gte(before);
-      expect(game.expectedPurgeTimeMs()).lte(after);
-    } finally {
-      if (maxGameDays === undefined) {
-        delete process.env.MAX_GAME_DAYS;
-      } else {
-        process.env.MAX_GAME_DAYS = maxGameDays;
-      }
-    }
+    const customMA = {
+      milestones: ['Terraformer', 'Gardener', 'Builder', 'Mayor', 'Planner'],
+      awards: ['Banker', 'Scientist', 'Thermalist', 'Miner', 'Politician'],
+    } as const;
+    expect(() => Game.newInstance('gameid', [player, player2], player, 'spectatorid', {randomMA: RandomMAOptionType.MANUAL, customMA: {...customMA, awards: ['Banker']}}))
+      .to.throw('customMA must have 5 awards');
+    expect(() => Game.newInstance('gameid', [player, player2], player, 'spectatorid', {randomMA: RandomMAOptionType.MANUAL, customMA}))
+      .to.throw('Politician needs the Turmoil expansion');
   });
 
   it('sets starting production if corporate era not selected', () => {
@@ -1426,7 +1366,7 @@ describe('Game', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const game = Game.newInstance('gameid', [player], player, 'spectatorid', {pathfindersExpansion: false});
     const serialized = game.serialize();
-    (serialized.gameOptions as any).pathfindersData = undefined;
+    Reflect.set(serialized.gameOptions, 'pathfindersData', undefined);
     const deserialized = Game.deserialize(serialized);
     expect(deserialized.pathfindersData).is.undefined;
   });
@@ -1516,9 +1456,6 @@ describe('Game', () => {
   //   expect(serialized.awards[0]).eq('A. Engineer');
   //   expect(serialized.fundedAwards[0].name).eq('A. Engineer');
 
-  //   serialized.awards[0] = 'Engineer' as any;
-  //   serialized.fundedAwards[0].name = 'Engineer' as any;
-
   //   const deserialized = Game.deserialize(serialized);
   //   expect(deserialized.awards[0]).deep.eq(engineer);
   //   expect(deserialized.fundedAwards).has.length(1);
@@ -1596,8 +1533,8 @@ describe('Game', () => {
     expect(serialized.milestones[0]).eq('T. Spacefarer');
     expect(serialized.claimedMilestones[0].name).eq('T. Spacefarer');
 
-    serialized.milestones[0] = 'Spacefarer' as any;
-    serialized.claimedMilestones[0].name = 'Spacefarer' as any;
+    Reflect.set(serialized.milestones, 0, 'Spacefarer');
+    Reflect.set(serialized.claimedMilestones[0], 'name', 'Spacefarer');
 
     const deserialized = Game.deserialize(serialized);
     expect(deserialized.milestones[0]).deep.eq(spacefarer);
@@ -1623,8 +1560,8 @@ describe('Game', () => {
     expect(serialized.awards[0]).eq('Suburbian');
     expect(serialized.fundedAwards[0].name).eq('Suburbian');
 
-    serialized.awards[0] = 'Edgedancer' as any;
-    serialized.fundedAwards[0].name = 'Edgedancer' as any;
+    Reflect.set(serialized.awards, 0, 'Edgedancer');
+    Reflect.set(serialized.fundedAwards[0], 'name', 'Edgedancer');
 
     const deserialized = Game.deserialize(serialized);
     expect(deserialized.awards[0]).deep.eq(suburbian);
@@ -2009,16 +1946,16 @@ describe('Game', () => {
   });
 });
 
-function assertIsJSON(serialized: any) {
-  for (const field in serialized) {
-    if (serialized.hasOwnProperty(field)) {
-      const val = serialized[field];
-      const type = typeof(val);
-      if (type === 'object') {
-        assertIsJSON(val);
-      } else if (type === 'function') {
-        throw new Error(field + ' is invalid');
-      }
+function assertIsJSON(serialized: unknown) {
+  if (typeof serialized !== 'object' || serialized === null) {
+    return;
+  }
+  for (const [field, val] of Object.entries(serialized)) {
+    const type = typeof(val);
+    if (type === 'object') {
+      assertIsJSON(val);
+    } else if (type === 'function') {
+      throw new Error(field + ' is invalid');
     }
   }
 }

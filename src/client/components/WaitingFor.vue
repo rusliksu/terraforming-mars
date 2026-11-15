@@ -359,7 +359,7 @@ export default defineComponent({
         }
         root.screen = 'player-home';
         if (playerView?.game.phase === 'end' && window.location.pathname !== paths.THE_END) {
-          window.location = window.location as any as (string & Location);
+          window.location = window.location as unknown as (string & Location);
         }
         this.savedPlayerView = undefined;
       } else {

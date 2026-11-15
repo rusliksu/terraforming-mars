@@ -70,6 +70,7 @@ import {ProjectCardBinding, useInputPresentation} from '@/client/wrybit/inputs/p
 import {Payment} from '@/common/inputs/Payment';
 import {useSaveSession, withSaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
 import type {MaybePromise, SaveAttempt, SaveOutcome} from '@/client/wrybit/inputs/saveAttempt';
+import {getPreferences} from '@/client/utils/PreferencesManager';
 
 export default defineComponent({
   name: 'SelectProjectCardToPlay',
@@ -150,6 +151,9 @@ export default defineComponent({
     canUseTitaniumRegularly(): boolean {
       return this.tags.includes(Tag.SPACE) ||
           this.playerView.thisPlayer.lastCardPlayed === CardName.LAST_RESORT_INGENUITY;
+    },
+    experimentalUI(): boolean {
+      return getPreferences().experimental_ui;
     },
   },
   watch: {

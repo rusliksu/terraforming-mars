@@ -35,8 +35,8 @@ import {VenusPhase2Expansion} from '../venusPhase2/VenusPhase2Expansion';
 import {CardName} from '../../common/cards/CardName';
 import {AwardScorer} from '../awards/AwardScorer';
 import {PlayerId, SpaceId} from '../../common/Types';
-import {cardsToModel, coloniesToModel} from './ModelUtils';
 import {runId} from '../utils/server-ids';
+import {cardsToModel, coloniesToModel} from './ModelUtils';
 import {toName} from '../../common/utils/utils';
 import {MAX_MILESTONES} from '../../common/constants';
 import {getOceanPlacementContext} from './OceanPlacementContext';
@@ -176,10 +176,10 @@ export class Server {
       game: this.getGameModel(player.game),
       id: player.id,
       color: player.color,
-      runId: runId,
       pickedCorporationCard: player.pickedCorporationCard ? cardsToModel(player, [player.pickedCorporationCard]) : [],
       preludeCardsInHand: cardsToModel(player, player.preludeCardsInHand),
       requestId: player.requestId,
+      runId: runId,
       thisPlayer: thisPlayer,
       waitingFor: player.aiLevel !== undefined ? undefined : this.getWaitingFor(player, waitingFor),
       waitingForId: player.aiLevel !== undefined ? undefined : this.getWaitingForId(waitingFor),

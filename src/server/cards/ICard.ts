@@ -38,8 +38,8 @@ export interface IHasCheckLoops {
   getCheckLoops(): number;
 }
 
-export function isIHasCheckLoops(object: any): object is IHasCheckLoops {
-  return object.getCheckLoops !== undefined;
+export function isIHasCheckLoops(object: unknown): object is IHasCheckLoops {
+  return typeof object === 'object' && object !== null && 'getCheckLoops' in object && typeof object.getCheckLoops === 'function';
 }
 
 /** Defines how ICard.getVictoryPoints works. */
@@ -362,8 +362,10 @@ export function getPlantsOnCardPlayed(player: IPlayer, card: ICard): number {
   return player.tableau.asArray().reduce((total, playedCard) => total + (playedCard.getPlantsOnCardPlayed?.(player, card) ?? 0), 0);
 }
 
-export function isIActionCard(object: any): object is IActionCard {
-  return object !== undefined && object.canAct !== undefined && object.action !== undefined;
+export function isIActionCard(object: unknown): object is IActionCard {
+  return typeof object === 'object' && object !== null &&
+    'canAct' in object && typeof object.canAct === 'function' &&
+    'action' in object && typeof object.action === 'function';
 }
 
 const EFFECT_HOOKS: ReadonlyArray<keyof ICard> = [

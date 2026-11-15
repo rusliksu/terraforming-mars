@@ -77,7 +77,7 @@ export function quickResponse(input: PlayerInput, player: IPlayer): InputRespons
     return {type: 'option'};
   }
   if (input instanceof SelectCardToPlay) {
-    const cards = input.cards.filter((_card, index) => input.enabled?.[index] !== false);
+    const cards = input.cards.filter((_card, index) => input.config?.enabled?.[index] !== false);
     const card = [...cards].sort((a, b) => cardPrior(b.name) - cardPrior(a.name))[0];
     return {type: 'projectCard', card: card.name, payment: cardPayment(player, card, input.extras.get(card.name)?.overriddenCost)};
   }

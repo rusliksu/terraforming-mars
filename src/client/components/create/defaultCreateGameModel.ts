@@ -25,6 +25,7 @@ export function defaultCreateGameModel(): CreateGameModel {
     draftVariant: true,
     initialDraft: false,
     initialDraftOneWay: false,
+    goals: {type: 'board', random: {pool: 'maps', randomness: 'limited'}, selected: {milestones: [], awards: []}},
     randomMA: RandomMAOptionType.NONE,
     modularMA: false,
     noEloGame: false,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace -- The Payment namespace is this fork's public payment API (Payment.of, Payment.EMPTY). */
 import {DATA_VALUE, FLOATERS_VALUE, MICROBES_VALUE, GRAPHENE_VALUE, SEED_VALUE} from '../constants';
 import {SpendableResource, SPENDABLE_RESOURCES} from './Spendable';
 import {comparing, reversed} from '@/common/utils/Ordering';

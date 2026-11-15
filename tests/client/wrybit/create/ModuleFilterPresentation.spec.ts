@@ -16,8 +16,8 @@ describe('source grouped filter with native selection constraints', () => {
       toggle: markRaw(SwitchInput), moduleFilter: markRaw(SourceFilter)};
     const wrapper = mount(NativeFilter, {...globalConfig,
       global: {...globalConfig.global, provide: {[CREATE_CONTROLS as symbol]: computed(() => controls)}},
-      props: {embedded: true, title: 'Fixture', groups: [{key: 'fixture', label: 'Fixture'}],
-        itemsByGroup: {fixture: ['original', 'replacement', 'requires-expansion']},
+      props: {embedded: true, title: 'Fixture', groups: [{key: 'base', label: 'Fixture'}],
+        itemsByGroup: {base: ['original', 'replacement', 'requires-expansion']},
         selected: [], selectable: ['replacement'], replacements: new Map([['original', 'replacement']])},
       slots: {item: ({itemName}: {itemName: string}) => h('span', itemName)}});
     try {

@@ -2,8 +2,8 @@
 // listed and sorted by these tags. See `customBoardCodec.ts` for the opaque `code` format.
 export type MapLibraryEntryId = `m${string}`;
 
-export function isMapLibraryEntryId(object: string): object is MapLibraryEntryId {
-  return object?.charAt?.(0) === 'm';
+export function isMapLibraryEntryId(object: unknown): object is MapLibraryEntryId {
+  return typeof object === 'string' && object.charAt(0) === 'm';
 }
 
 export type MapLibraryOrigin = 'official' | 'fanmade';

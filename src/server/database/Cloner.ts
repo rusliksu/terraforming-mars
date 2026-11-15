@@ -48,8 +48,8 @@ export class Cloner {
     return game;
   }
 
-  private static replacePlayerIds(obj: any, oldPlayerIds:Array<PlayerId>, newPlayerIds: Array<PlayerId>) {
-    if (obj === undefined || obj === null) {
+  private static replacePlayerIds(obj: unknown, oldPlayerIds:Array<PlayerId>, newPlayerIds: Array<PlayerId>) {
+    if (typeof obj !== 'object' || obj === null) {
       return;
     }
     const keys = Object.entries(obj);
@@ -62,13 +62,13 @@ export class Cloner {
         'customCorporationsList', 'lastCardPlayed', 'actionsThisGeneration', 'pendingInitialActions',
         'pickedCorporationCard', 'standardProjectsThisGeneration', 'cardsPlayedThisGeneration', 'highOrbitDeck'].includes(key) ||
         (key === 'card' && typeof val === 'string') ||
-        (key === 'value' && [LogMessageDataType.CARD, LogMessageDataType.CARDS].includes(obj.type))) {
+        (key === 'value' && [LogMessageDataType.CARD, LogMessageDataType.CARDS].includes((obj as {type: LogMessageDataType}).type))) {
         return;
       }
       if (isPlayerId(val)) {
         const idx = oldPlayerIds.indexOf(val);
         if (idx > -1) {
-          obj[key] = newPlayerIds[idx];
+          Reflect.set(obj, key, newPlayerIds[idx]);
         }
       } else if (typeof val === 'object') {
         Cloner.replacePlayerIds(val, oldPlayerIds, newPlayerIds);

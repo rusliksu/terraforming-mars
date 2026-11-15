@@ -14,7 +14,7 @@ import {LogEffect, LogMessage} from '../common/logs/LogMessage';
 import {Phase} from '../common/Phase';
 import {IPlayer} from './IPlayer';
 import {PlayerId, GameId, SpectatorId, SpaceId, isGameId, ParticipantId} from '../common/Types';
-import {AndThen, DeferredAction} from './deferredActions/DeferredAction';
+import {AndThen, IDeferredAction} from './deferredActions/DeferredAction';
 import {Priority} from './deferredActions/Priority';
 import {DeferredActionsQueue} from './deferredActions/DeferredActionsQueue';
 import {AdditionalResearch, SerializedGame} from './SerializedGame';
@@ -235,7 +235,7 @@ export interface IGame extends Logger {
   isSoloMode() :boolean;
   // Retrieve a player by its id
   getPlayerById(id: PlayerId): IPlayer;
-  defer<T>(action: DeferredAction<T>, priority?: Priority): AndThen<T>;
+  defer<T>(action: IDeferredAction<T>, priority?: Priority): AndThen<T>;
   milestoneClaimed(milestone: IMilestone): boolean;
   /** Returns true if Mars is fully terraformed, meaning the game should end with this generation. */
   marsIsTerraformed(): boolean;
@@ -388,6 +388,9 @@ export interface IGame extends Logger {
   getActionCount(): number;
 }
 
-export function isIGame(object: any): object is IGame {
-  return object !== undefined && object.hasOwnProperty('id') && isGameId(object.id);
+export function isIGame(object: unknown): object is IGame {
+  if (typeof object !== 'object' || object === null) {
+    return false;
+  }
+  return Object.hasOwn(object, 'id') && isGameId((object as {id?: unknown}).id);
 }

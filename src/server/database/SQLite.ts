@@ -106,7 +106,7 @@ export class SQLite implements IDatabase {
 
   public async getPlayerCount(gameId: GameId): Promise<number> {
     const sql = 'SELECT players FROM games WHERE save_id = 0 AND game_id = ? LIMIT 1';
-    const row = await this.asyncGet(sql, [gameId]);
+    const row = await this.asyncGet<{players: number}>(sql, [gameId]);
     if (row === undefined) {
       throw new Error(`bad game id ${gameId}`);
     }
@@ -115,7 +115,7 @@ export class SQLite implements IDatabase {
 
   public async getGameIds(): Promise<Array<GameId>> {
     const sql = 'SELECT distinct game_id game_id FROM games';
-    const rows = await this.asyncAll(sql, []);
+    const rows = await this.asyncAll<{game_id: GameId}>(sql, []);
     return rows.map((row) => row.game_id);
   }
 
@@ -132,7 +132,7 @@ export class SQLite implements IDatabase {
 
   public async getGame(gameId: GameId): Promise<SerializedGame> {
     // Retrieve last save from database
-    const row: { game: any; } = await this.asyncGet('SELECT game game FROM games WHERE game_id = ? ORDER BY save_id DESC LIMIT 1', [gameId]);
+    const row = await this.asyncGet<{game: string}>('SELECT game game FROM games WHERE game_id = ? ORDER BY save_id DESC LIMIT 1', [gameId]);
     if (row === undefined) {
       throw new Error(`bad game id ${gameId}`);
     }
@@ -148,7 +148,7 @@ export class SQLite implements IDatabase {
       throw new Error(`id ${participantId} is neither a player id or spectator id`);
     }
 
-    const row: { game_id: any; } = await this.asyncGet(sql, [participantId]);
+    const row = await this.asyncGet<{game_id: GameId}>(sql, [participantId]);
     if (row === undefined) {
       throw new Error(`No game id found for participant id ${participantId}`);
     }
@@ -181,7 +181,7 @@ export class SQLite implements IDatabase {
     // Purge unfinished games older than MAX_GAME_DAYS days. If this .env variable is not present, unfinished games will not be purged.
     if (maxGameDays !== undefined) {
       const dateToSeconds = daysAgoToSeconds(maxGameDays, 0);
-      const selectResult = await this.asyncAll(
+      const selectResult = await this.asyncAll<{game_id: GameId}>(
         `SELECT latest.game_id game_id
         FROM games latest
         JOIN (
@@ -316,7 +316,7 @@ export class SQLite implements IDatabase {
   }
 
   public async getParticipants(): Promise<Array<GameIdLedger>> {
-    const rows = await this.asyncAll('SELECT game_id, participant FROM participants');
+    const rows = await this.asyncAll<{game_id: GameId, participant: ParticipantId}>('SELECT game_id, participant FROM participants');
     const multimap = new MultiMap<GameId, ParticipantId>();
     rows.forEach((row) => multimap.set(row.game_id, row.participant));
     const result: Array<GameIdLedger> = [];
@@ -341,7 +341,7 @@ export class SQLite implements IDatabase {
   }
 
   async getSessions(): Promise<Array<Session>> {
-    const selectResult = await this.asyncAll('SELECT session_id, data, expiration_time FROM session where expiration_time > ?', [Date.now() / 1000]);
+    const selectResult = await this.asyncAll<{session_id: SessionId, data: string, expiration_time: number}>('SELECT session_id, data, expiration_time FROM session where expiration_time > ?', [Date.now() / 1000]);
     return selectResult.map((row) => {
       return {
         id: row.session_id,
@@ -428,7 +428,7 @@ export class SQLite implements IDatabase {
     };
   }
 
-  protected asyncRun(sql: string, params?: any): Promise<BetterSqlite3.RunResult> {
+  protected asyncRun(sql: string, params?: unknown): Promise<BetterSqlite3.RunResult> {
     try {
       const stmt = this.db.prepare(sql);
       const result = params !== undefined ? stmt.run(params) : stmt.run();
@@ -438,28 +438,28 @@ export class SQLite implements IDatabase {
     }
   }
 
-  protected asyncGet(sql: string, params?: any): Promise<any> {
+  protected asyncGet<T>(sql: string, params?: unknown): Promise<T | undefined> {
     try {
       const stmt = this.db.prepare(sql);
       const row = params !== undefined ? stmt.get(params) : stmt.get();
-      return Promise.resolve(row);
+      return Promise.resolve(row as T | undefined);
     } catch (err) {
       return Promise.reject(err);
     }
   }
 
-  protected asyncAll(sql: string, params?: any): Promise<Array<any>> {
+  protected asyncAll<T>(sql: string, params?: unknown): Promise<Array<T>> {
     try {
       const stmt = this.db.prepare(sql);
       const rows = params !== undefined ? stmt.all(params) : stmt.all();
-      return Promise.resolve(rows as Array<any>);
+      return Promise.resolve(rows as Array<T>);
     } catch (err) {
       return Promise.reject(err);
     }
   }
 
   // Run the given SQL but do not return errors.
-  protected async runQuietly(sql: string, params: any): Promise<void> {
+  protected async runQuietly(sql: string, params: unknown): Promise<void> {
     try {
       await this.asyncRun(sql, params);
     } catch (err) {

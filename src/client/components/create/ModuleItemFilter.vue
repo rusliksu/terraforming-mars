@@ -50,8 +50,11 @@ import {translateText as translate} from '@/client/directives/i18n';
 import {useCreateControls} from '@/client/wrybit/create/presentation';
 import type {ModuleFilterBinding} from '@/client/wrybit/create/moduleFilter';
 import PopupPanel from '../common/PopupPanel.vue';
+import {GameModule} from '@/common/cards/GameModule';
+import {expansionIconClass} from '@/client/utils/expansionIcon';
+import {translateText} from '@/client/directives/i18n';
 
-type Group = {key: string; label: string};
+type Group = {key: GameModule; label: string};
 
 const props = defineProps<{
   embedded?: boolean;
@@ -153,23 +156,19 @@ function watchSelect(key: string, enabled: boolean) {
   enabled ? selectAll(key) : selectNone(key);
 }
 
+/** True when the filter is empty, or the name or its translation contains it. */
 function include(name: string): boolean {
   const normalized = filterText.value.toLocaleUpperCase();
-  return normalized.length === 0 || name.toLocaleUpperCase().includes(normalized);
+  return normalized.length === 0 ||
+    name.toLocaleUpperCase().includes(normalized) ||
+    translateText(name).toLocaleUpperCase().includes(normalized);
 }
 
-function icon(module: string | undefined): string | undefined {
+function icon(module: GameModule | undefined): string | undefined {
   if (module === undefined) {
     return undefined;
   }
-  let suffix = module;
-  if (module === 'colonies') {
-    suffix = 'colony';
-  }
-  if (module === 'moon') {
-    suffix = 'themoon';
-  }
-  return `create-game-expansion-icon expansion-icon-${suffix}`;
+  return `create-game-expansion-icon ${expansionIconClass(module)}`;
 }
 
 function showGroup(key: string) {

@@ -77,6 +77,11 @@ const pluginRules = {
   'no-throw-literal': 'error',
   '@typescript-eslint/prefer-for-of': 'error',
   '@typescript-eslint/no-non-null-assertion': 'error',
+  '@typescript-eslint/no-namespace': 'error',
+  // Custom fork: upstream enforces this after removing its own `any` usages. The custom sources
+  // (wrybit, fan modules, legacy helpers and tests) still have several hundred. Keep it visible as a
+  // warning until that cleanup lands instead of blocking every upstream sync.
+  '@typescript-eslint/no-explicit-any': 'warn',
   ...vueEssentialRules,
   // Buggy under eslint-plugin-vue 10.8 + ESLint 10 — emits spurious "clear" errors.
   // Project doesn't use template-scoped eslint-disable comments.

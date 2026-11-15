@@ -167,6 +167,7 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.SPECTATOR, ServeApp.INSTANCE],
     [paths.STATS, ServeApp.INSTANCE],
     ['styles.css', ServeAsset.INSTANCE],
+    ['sw.js', ServeAsset.INSTANCE],
     [paths.THE_END, ServeApp.INSTANCE],
   ],
 );

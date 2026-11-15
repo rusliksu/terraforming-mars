@@ -589,7 +589,7 @@
     "src/common/input/PlayerInputType.ts": "13c1ae6e5aa7751097fdab35a909da74320ccc76b7b33e511e7d22e99dd79071",
     "src/common/inputs/AresGlobalParametersResponse.ts": "7f4baea12f059c56edf127e2a36bc98a97c727aba86d0c272ebe17558fa622fa",
     "src/common/inputs/InputResponse.ts": "0877fdea298f85ec305db5a66337c870c51dd0d94c1e4cd622aa039579010d9a",
-    "src/common/inputs/Payment.ts": "7b2dd14e965a0e92c8f0ff9bb82597e1a26247c10afb6b569be3cb1b5ff6a124",
+    "src/common/inputs/Payment.ts": "df3117691e0d5a69269770aba467424d2972ac9d92f0c9fb926e2334f7a0e69d",
     "src/common/inputs/SelectInitialCards.ts": "56a0d1016e55d12b205417f353846d9bdca7cfe8c22d2763935e52ebcc2a8f1a",
     "src/common/inputs/Spendable.ts": "a2e731e86d1c2371c3633dc4f9b76115149da5f52580afe04c38c6bb8a11b7c2",
     "src/common/logs/ActionLog.ts": "120199ed8d75a40a5e20b3b67f35b0baa478379d0b8dbf8d2bdcd857b144e253",
@@ -3085,7 +3085,7 @@
     "src/server/venusPhase2/PlaceFloaterArrayTile.ts": "db638fbb4ba977f42968f1fa710af1d3f84417b6168c1632723f8847ddc734f2",
     "src/server/venusPhase2/PlaceGasMineTile.ts": "ea13abdb952d18a6a5ccc0e7a086dde8c0935f23e2e262d22e08e92e0c2313f8",
     "src/server/venusPhase2/SerializedVenusPhase2Data.ts": "36d3b76ffdef3cc51b8f2e64d3d3ae05bcd1a4837fe8ddd7cf423cf0d07f674e",
-    "src/server/venusPhase2/VenusPhase2Data.ts": "9bc97e6d57d91dd43f67d2d3c99de6f909c8f9f071bb2bbcd136d0c45ecee530",
+    "src/server/venusPhase2/VenusPhase2Data.ts": "7f1d568c89173546fc00f30822ab4c0b0e761dca12479b33310d405ec4aed786",
     "src/server/venusPhase2/VenusPhase2Expansion.ts": "fcd3460a2cc6b89fe04c18ad7d762b688ac4c10cab5313dca43b72788ed12961",
     "src/server/venusPhase2/VenusSurfaceBoard.ts": "6f2f1468339d3cd76e2e312bd8011e13564872380d8b0828da2259c76d5458e7"
   },

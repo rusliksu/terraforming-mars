@@ -649,6 +649,7 @@ try {
     $gateHarness = @"
 set -euo pipefail
 prod_current=$gateRootBash
+staging_current=$gateRootBash
 game_db_path=$gateRootBash/unused.db
 ignored_realtime_game_ids_csv="`$1"
 realtime_game_stale_days="`${2:-10}"

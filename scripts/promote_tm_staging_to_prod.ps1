@@ -12,6 +12,8 @@ param(
     [int]$RealtimeGameStaleDays = 10,
     [ValidateRange(30, 900)]
     [int]$ValidationTimeoutSeconds = 120,
+    # Node runtime that matches the staged release dependencies (native modules are ABI-bound).
+    [string]$NodeBinDir = "/opt/node26/bin",
     [switch]$DryRun
 )
 
@@ -77,6 +79,13 @@ $promoteRunToken = New-TmReleaseRunToken
 
 $remoteScript = @'
 set -euo pipefail
+
+node_bin_dir="__NODE_BIN_DIR__"
+if [ -n "$node_bin_dir" ]; then
+  export PATH="$node_bin_dir:$PATH"
+fi
+command -v node >/dev/null 2>&1 || { echo "node not found on PATH (node_bin_dir=$node_bin_dir)" >&2; exit 1; }
+node_version="$(node -v)"
 
 staging_root="/home/openclaw/tm-runtime/staging"
 staging_current="$staging_root/current"
@@ -288,10 +297,14 @@ assert_dependency_sha() {
   local expected_sha="$1"
   local package_lock_path="$2"
   local actual_sha
+  local expected_lock_sha
 
-  if ! [[ "$expected_sha" =~ ^[0-9a-f]{64}$ ]]; then
+  # The deploy script appends the Node runtime to the dependency key ("<lock sha>-<runtime tag>")
+  # because native modules are compiled per ABI. Compare the lock hash part only.
+  if ! [[ "$expected_sha" =~ ^[0-9a-f]{64}(-[a-z0-9-]+)?$ ]]; then
     return 47
   fi
+  expected_lock_sha="${expected_sha%%-*}"
   if ! actual_sha="$(python3 - "$package_lock_path" <<'PY'
 import hashlib
 import pathlib
@@ -307,7 +320,7 @@ PY
   )"; then
     return 47
   fi
-  if [ "$actual_sha" != "$expected_sha" ]; then
+  if [ "$actual_sha" != "$expected_lock_sha" ]; then
     return 47
   fi
   return 0
@@ -437,7 +450,9 @@ assert_no_realtime_games_sqlite() {
 
   set +e
   gate_output="$({
-    cd "$prod_current"
+    # Read the game database with the staged release modules: they are installed for the
+    # selected Node runtime, while the current prod release may still be on the previous ABI.
+    cd "$staging_current"
     node - "$game_db_path" "$ignored_realtime_game_ids_csv" "$realtime_game_stale_days" <<'NODE'
 'use strict';
 
@@ -1072,6 +1087,8 @@ echo "artifact_sha=$served_artifact_sha"
 echo "git_sha=$served_git_sha"
 echo "dependency_sha=$expected_dependency_sha"
 echo "dependencies_dir=$deps_dir"
+echo "node_version=$node_version"
+echo "node_bin_dir=$node_bin_dir"
 
 cleanup_work_root
 '@
@@ -1088,6 +1105,7 @@ $remoteScript = $remoteScript.Replace("__EXPECTED_GIT_SHA__", $expectedGitShaLow
 $remoteScript = $remoteScript.Replace("__EXPECTED_ARTIFACT_SHA__", $expectedArtifactShaLower)
 $remoteScript = $remoteScript.Replace("__EXPECTED_RELEASE_BASELINE_B64__", $ExpectedReleaseBaselineBase64)
 $remoteScript = $remoteScript.Replace("__IGNORED_REALTIME_GAME_IDS_CSV__", $ignoredRealtimeGameIdsCsv)
+$remoteScript = $remoteScript.Replace("__NODE_BIN_DIR__", $NodeBinDir)
 $remoteScript = $remoteScript.Replace("__REALTIME_GAME_STALE_DAYS__", $RealtimeGameStaleDays.ToString([Globalization.CultureInfo]::InvariantCulture))
 $remoteScript = $remoteScript.Replace("__VALIDATION_TIMEOUT_SECONDS__", $ValidationTimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
 $remoteScript = $remoteScript.Replace("__RUN_TOKEN__", $promoteRunToken)

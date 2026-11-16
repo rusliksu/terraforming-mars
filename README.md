@@ -39,6 +39,8 @@ Fork of [terraforming-mars/terraforming-mars](https://github.com/terraforming-ma
 
 ## Setup
 
+Requires **Node.js 26.x** — pinned in `.nvmrc`, enforced by `engines` in `package.json`. The npm bundled with Node 26 is enough; `npm ci` installs native modules for the current Node ABI.
+
 ```bash
 git clone https://github.com/rusliksu/terraforming-mars.git
 cd terraforming-mars

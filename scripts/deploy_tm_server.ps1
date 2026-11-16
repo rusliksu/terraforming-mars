@@ -12,7 +12,10 @@ param(
     [switch]$AllowPrimaryWorkingTree,
     [switch]$AllowDirectProdDeploy,
     [switch]$ForceRedeploy,
-    [switch]$DryRun
+    [switch]$DryRun,
+    # Node runtime used to install dependencies and to run the release on the VPS.
+    # Staging runs the side-by-side Node 26 from /opt; prod keeps the system Node until switched.
+    [string]$NodeBinDir
 )
 
 $ErrorActionPreference = "Stop"
@@ -416,7 +419,12 @@ try {
         throw "Failed to create payload archive."
     }
     $artifactSha256 = (Get-FileHash -LiteralPath $payloadArchivePath -Algorithm SHA256).Hash.ToLowerInvariant()
-    $dependencySha256 = Get-NormalizedFileSha256 -Path $packageLockPath
+    if ([string]::IsNullOrWhiteSpace($NodeBinDir)) {
+    $NodeBinDir = if ($Environment -eq 'staging') { '/opt/node26/bin' } else { '/usr/bin' }
+}
+# Native dependencies are compiled per Node ABI, so the runtime is part of the deps cache key.
+$nodeRuntimeTag = ($NodeBinDir.TrimEnd('/') -replace '[^A-Za-z0-9]+', '-').Trim('-')
+$dependencySha256 = (Get-NormalizedFileSha256 -Path $packageLockPath) + '-' + $nodeRuntimeTag
 
     $releaseManifest = [ordered]@{
         schemaVersion = 1
@@ -445,6 +453,13 @@ try {
 
 $remoteScript = @'
 set -euo pipefail
+
+node_bin_dir="__NODE_BIN_DIR__"
+if [ -n "$node_bin_dir" ]; then
+  export PATH="$node_bin_dir:$PATH"
+fi
+command -v node >/dev/null 2>&1 || { echo "node not found on PATH (node_bin_dir=$node_bin_dir)" >&2; exit 1; }
+node_version="$(node -v)"
 
 archive="__ARCHIVE__"
 runtime_root="__RUNTIME_ROOT__"
@@ -916,6 +931,8 @@ echo "release_dir=$new_release_dir"
 echo "previous_current=$previous_current"
 echo "health_url=$health_url"
 echo "dependency_sha=$dependency_sha"
+echo "node_version=$node_version"
+echo "node_bin_dir=$node_bin_dir"
 echo "dependencies_dir=$deps_dir"
 if [ -n "$elo_service" ]; then
 echo "elo_service=$elo_service"
@@ -945,6 +962,7 @@ $remoteScript = $remoteScript.Replace("__SOURCE_TREE_CLEAN__", $(if ([string]::I
 $remoteScript = $remoteScript.Replace("__EXPECTED_RELEASE_BASELINE_B64__", $ExpectedReleaseBaselineBase64)
 $remoteScript = $remoteScript.Replace("__RUN_TOKEN__", $runToken)
 $remoteScript = $remoteScript.Replace("__ARCHIVE_BASE__", $archiveBase)
+$remoteScript = $remoteScript.Replace("__NODE_BIN_DIR__", $NodeBinDir)
 $remoteScript = $remoteScript.Replace("__ENV__", $Environment)
 
 Write-Host "Environment : $Environment"

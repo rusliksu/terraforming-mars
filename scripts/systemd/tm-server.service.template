@@ -16,7 +16,7 @@ Environment=SHADOW_LOG=1
 Environment=SHADOW_LOG_DIR=__SHADOW_LOG_DIR__
 Environment=SHADOW_LOG_FILE_PREFIX=input
 ExecStartPre=-/usr/bin/fuser -k __PROD_PORT__/tcp
-ExecStart=/usr/bin/node build/src/server/server.js
+ExecStart=__NODE_BIN__/node build/src/server/server.js
 Restart=always
 RestartSec=5
 

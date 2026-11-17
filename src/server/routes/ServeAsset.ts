@@ -1,3 +1,4 @@
+import {randomUUID} from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import * as responses from '../server/responses';
@@ -20,6 +21,15 @@ type ErrnoLikeError = Error & { code?: string };
 type AssetManifest = {[logicalName: string]: string};
 const ASSET_MANIFEST_PATH = 'build/asset-manifest.json';
 const MANIFEST_ASSET_NAMES = ['main.js', 'vendors.js', 'styles.css'];
+
+// Development builds have no release.json. A per-process boot id keeps their asset
+// version unique so a ?v=dev URL cannot stick in an immutable browser cache across
+// restarts.
+export const BOOT_ID = randomUUID().replace(/-/g, '').slice(0, 12);
+
+export function devAssetVersion(bootId: string): string {
+  return `dev-${bootId}`;
+}
 
 export class FileAPI {
   public static readonly INSTANCE: FileAPI = new FileAPI();
@@ -202,17 +212,23 @@ export class ServeAsset extends Handler {
 
     try {
       const releaseJson = JSON.parse((await this.fileApi.readFile('assets/release.json')).toString('utf8'));
-      this.assetVersion = this.sanitizeAssetVersion(
-        releaseJson.artifactSha256 ?? releaseJson.gitSha ?? releaseJson.packagedAtUtc ?? 'dev');
+      const releaseVersion = releaseJson.artifactSha256 ?? releaseJson.gitSha ?? releaseJson.packagedAtUtc;
+      this.assetVersion = releaseVersion === undefined || releaseVersion === null ?
+        this.devVersion() :
+        this.sanitizeAssetVersion(releaseVersion);
     } catch (_err) {
-      this.assetVersion = 'dev';
+      this.assetVersion = this.devVersion();
     }
     return this.assetVersion;
   }
 
+  private devVersion(): string {
+    return devAssetVersion(BOOT_ID);
+  }
+
   private sanitizeAssetVersion(value: unknown): string {
     const version = String(value).replace(/[^A-Za-z0-9._-]/g, '').slice(0, 64);
-    return version === '' ? 'dev' : version;
+    return version === '' ? this.devVersion() : version;
   }
 
   private withAssetVersion(html: string, version: string): string {

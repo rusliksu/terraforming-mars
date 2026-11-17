@@ -1,6 +1,8 @@
 import {expect} from 'chai';
+import {execFileSync} from 'child_process';
 import fs from 'fs';
-import {FileAPI, ServeAsset} from '../../src/server/routes/ServeAsset';
+import path from 'path';
+import {BOOT_ID, FileAPI, ServeAsset, devAssetVersion} from '../../src/server/routes/ServeAsset';
 import {resolveEloAssetPath} from '../../src/server/elo/EloPaths';
 import {MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
@@ -34,6 +36,25 @@ class MissingFileApiMock extends FileApiMock {
     const err = new Error('missing') as Error & { code?: string };
     err.code = 'ENOENT';
     return Promise.reject(err);
+  }
+}
+
+class MissingReleaseFileApiMock extends FileApiMock {
+  public override readFile(path: string): Promise<Buffer> {
+    this.counts.readFile++;
+    if (path === 'assets/index.html') {
+      return Promise.resolve(Buffer.from([
+        '<link rel="stylesheet" href="styles.css?v=old" />',
+        '<script src="vendors.js"></script>',
+        '<script src="main.js"></script>',
+      ].join('\n')));
+    }
+    if (path === 'assets/release.json') {
+      const err = new Error('missing') as Error & { code?: string };
+      err.code = 'ENOENT';
+      return Promise.reject(err);
+    }
+    return super.readFile(path);
   }
 }
 
@@ -160,6 +181,35 @@ describe('ServeAsset', () => {
     expect(res.content).contains(`main.js?v=${version}`);
     expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
   });
+
+  it('index.html cache-busts with a per-process dev version when release.json is missing', async () => {
+    instance = new ServeAsset(undefined, false, new MissingReleaseFileApiMock());
+    scaffolding.url = '/assets/index.html';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+
+    const version = `dev-${BOOT_ID}`;
+    expect(BOOT_ID).to.match(/^[0-9a-f]{12}$/);
+    expect(res.content).contains(`styles.css?v=${version}`);
+    expect(res.content).contains(`vendors.js?v=${version}`);
+    expect(res.content).contains(`main.js?v=${version}`);
+    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
+  });
+
+  it('dev asset version uses the boot id', () => {
+    expect(devAssetVersion('boot-a')).eq('dev-boot-a');
+    expect(devAssetVersion('boot-a')).not.eq(devAssetVersion('boot-b'));
+  });
+
+  it('dev asset version changes between process boots', () => {
+    const repoRoot = path.resolve(__dirname, '../..');
+    const readBootId = () => execFileSync(process.execPath, [
+      '--import=tsx',
+      '-e',
+      "import('./src/server/routes/ServeAsset.ts').then((module) => process.stdout.write(module.BOOT_ID))",
+    ], {cwd: repoRoot, encoding: 'utf8', timeout: 60000});
+    expect(readBootId()).not.eq(readBootId());
+  }).timeout(30000);
 
   it('index.html points at content-hashed assets when the manifest exists', async () => {
     instance = new ServeAsset(undefined, false, new ManifestFileApiMock());

@@ -1,3 +1,4 @@
+import {randomBytes} from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import * as responses from '../server/responses';
@@ -20,6 +21,10 @@ type ErrnoLikeError = Error & { code?: string };
 type AssetManifest = {[logicalName: string]: string};
 const ASSET_MANIFEST_PATH = 'build/asset-manifest.json';
 const MANIFEST_ASSET_NAMES = ['main.js', 'vendors.js', 'styles.css'];
+
+// Browsers cache build/*.js aggressively. Without release metadata the version must
+// still change on every boot, or a restarted server keeps serving a stale bundle.
+const DEV_ASSET_VERSION = `dev-${randomBytes(4).toString('hex')}`;
 
 export class FileAPI {
   public static readonly INSTANCE: FileAPI = new FileAPI();
@@ -203,16 +208,16 @@ export class ServeAsset extends Handler {
     try {
       const releaseJson = JSON.parse((await this.fileApi.readFile('assets/release.json')).toString('utf8'));
       this.assetVersion = this.sanitizeAssetVersion(
-        releaseJson.artifactSha256 ?? releaseJson.gitSha ?? releaseJson.packagedAtUtc ?? 'dev');
+        releaseJson.artifactSha256 ?? releaseJson.gitSha ?? releaseJson.packagedAtUtc ?? '');
     } catch (_err) {
-      this.assetVersion = 'dev';
+      this.assetVersion = DEV_ASSET_VERSION;
     }
     return this.assetVersion;
   }
 
   private sanitizeAssetVersion(value: unknown): string {
     const version = String(value).replace(/[^A-Za-z0-9._-]/g, '').slice(0, 64);
-    return version === '' ? 'dev' : version;
+    return version === '' ? DEV_ASSET_VERSION : version;
   }
 
   private withAssetVersion(html: string, version: string): string {

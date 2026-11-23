@@ -1,7 +1,7 @@
 {
-  "event_count": 4,
-  "last_event_id": "01M842CEX7YVPXQAE2BZ9AWN11",
-  "materialized_at": "2026-11-23T11:24:13.095736+00:00",
+  "event_count": 5,
+  "last_event_id": "01M842CG2M8XK6X22WPQSZ0A4M",
+  "materialized_at": "2026-11-23T11:24:14.292592+00:00",
   "mission_number": "",
   "mission_slug": "undo-step-journal-persistence-01M8426K",
   "mission_type": "software-dev",
@@ -14,7 +14,7 @@
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 4
+    "planned": 5
   },
   "work_packages": {
     "WP01": {
@@ -44,6 +44,13 @@
       "lane": "planned",
       "last_event_id": "01M842CEX7YVPXQAE2BZ9AWN11",
       "last_transition_at": "2026-11-23T11:24:13.095736+00:00"
+    },
+    "WP05": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M842CG2M8XK6X22WPQSZ0A4M",
+      "last_transition_at": "2026-11-23T11:24:14.292592+00:00"
     }
   }
 }

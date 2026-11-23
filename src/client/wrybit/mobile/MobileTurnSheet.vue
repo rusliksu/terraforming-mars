@@ -31,7 +31,7 @@
         <div v-if="menu === undefined" class="mb-sheet-group">
           <span class="mb-section-label">{{ $t('Waiting for other players') }}</span>
           <div class="mb-waiting-list">
-            <span v-for="player in waitingPlayers" :key="player.color" :class="['mb-waiting-player', 'player_bg_color_' + player.color]">{{ player.name }}</span>
+            <span v-for="player in waitingPlayers" :key="player.color" :class="['mb-waiting-player', 'player-bg-color-' + player.color]">{{ player.name }}</span>
           </div>
         </div>
         <template v-else-if="confirming === undefined">

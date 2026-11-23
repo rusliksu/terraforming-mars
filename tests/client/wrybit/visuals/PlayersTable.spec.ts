@@ -24,7 +24,7 @@ describe('Wrybit player table with our public data', () => {
     try {
       expect(wrapper.findAll('.players-table-goods')).has.length(7);
       expect(wrapper.get('.players-table-goods--coordination [data-test="stock"]').text()).eq('5');
-      expect(wrapper.get('.players-table-goods--steel [data-test="protection"]').classes()).contains('shield_icon_half');
+      expect(wrapper.get('.players-table-goods--steel [data-test="protection"]').classes()).contains('shield-icon-half');
       expect(wrapper.get('[data-test="tag-galactic"]').text()).contains('2');
       // An unplayed tag stays visible with an empty counter, matching the classic player bar.
       expect(wrapper.get('[data-test="tag-animal"]').text()).contains('·');
@@ -59,7 +59,7 @@ describe('Wrybit player table with our public data', () => {
       // reserved identities; the table switches only the text colour for the light personas.
       const rowClasses = wrapper.get('.players-table-row--player').classes();
       expect(rowClasses).contains('players-table-row--turquoise');
-      expect(rowClasses).contains('player_translucent_bg_color_turquoise');
+      expect(rowClasses).contains('player-translucent-bg-color-turquoise');
       const refreshed = {...player, conglomeratesData: {...player.conglomeratesData, coordination: 8},
         conditionalDiscounts: [], tags: {...player.tags, [Tag.GALACTIC]: 3}};
       await wrapper.setProps({rows: [{...row, player: refreshed}], playerView: {...playerView, players: [refreshed]}});
@@ -91,7 +91,7 @@ describe('Wrybit player table with our public data', () => {
     const good = {type: 'steel' as const, count: 12, production: 4, value: 2, resourceProtection: 'half' as const, productionProtection: 'on' as const};
     const wrapper = mount(PlayersTableGoods, {...globalConfig, props: {good, color: 'red'}});
     try {
-      expect(wrapper.get('[data-test="protection"]').classes()).contains('shield_icon_half');
+      expect(wrapper.get('[data-test="protection"]').classes()).contains('shield-icon-half');
       expect(wrapper.find('[data-test="production-protection"]').exists()).is.true;
       await wrapper.setProps({good: {...good, resourceProtection: 'off'}});
       expect(wrapper.find('[data-test="protection"]').exists()).is.false;

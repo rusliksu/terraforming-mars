@@ -1,20 +1,20 @@
 <template>
-  <div v-show="isVisible()" class="other_player_panel">
-    <div :class="'player_translucent_bg_color_' + player.color" class="other_player_header">
-      <div class="player_name">{{ player.name }} <span v-i18n>played cards</span></div>
+  <div v-show="isVisible()" class="other-player_panel">
+    <div :class="'player-translucent-bg-color-' + player.color" class="other-player-header">
+      <div class="player-name">{{ player.name }} <span v-i18n>played cards</span></div>
       <AppButton size="big" type="close" @click="hideMe" :disableOnServerBusy="false" align="right" />
     </div>
-    <div class="other_player_cont menu">
+    <div class="other-player-cont menu">
       <CardFilterBar v-if="player.tableau.length > 1" :cards="player.tableau" :filter="playedCardFilter" :context="filterContext">
         <template #sort="{compact}">
           <CardSortMenu :modelValue="playedCardsSortOrder" :compact="compact" @update:modelValue="setPlayedSortOrder" />
         </template>
       </CardFilterBar>
-      <div v-if="player.tableau.length > 0" class="player_home_block">
+      <div v-if="player.tableau.length > 0" class="player-home-block">
         <CardFilterEmptyHint v-if="nothingShown" @reset="resetCardFilter(playedCardFilter)" />
         <PlayedCardsGroups :player="player" :visibility="visibilityOf" :sortOrder="playedCardsSortOrder" />
       </div>
-      <div v-if="player.selfReplicatingRobotsCards.length > 0" class="player_home_block">
+      <div v-if="player.selfReplicatingRobotsCards.length > 0" class="player-home-block">
         <span v-i18n>Self-replicating Robots cards</span>
         <div>
           <div v-for="card in player.selfReplicatingRobotsCards" :key="card.name" class="cardbox">

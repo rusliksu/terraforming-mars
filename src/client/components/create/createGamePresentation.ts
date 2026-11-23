@@ -60,6 +60,7 @@ export function projectCreateModel(owner: CreateGameModel): CreateModelView {
     showCorporationList: owner.showCorporationList,
     showIncludedCards: owner.showIncludedCards,
     showOtherPlayersVP: owner.showOtherPlayersVP,
+    showVP: owner.showVP,
     showPreludesList: owner.showPreludesList,
     showTimers: owner.showTimers,
     shuffleMapOption: owner.shuffleMapOption,

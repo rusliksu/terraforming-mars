@@ -49,7 +49,7 @@ describe('More Parties: party swap', () => {
     // revealedDelegate the same way -- empty the deck so that draw is always undefined (a no-op)
     // and doesn't trigger a second, uncontrolled swap on top of the one each test sets up via
     // fakeEvent()/comingGlobalEvent.
-    turmoil.globalEventDealer.deck.length = 0;
+    turmoil.globalEventDealer.deck.drawPile.length = 0;
     turmoil.delegateReserve.add(player2, 5);
   });
 
@@ -134,7 +134,7 @@ describe('More Parties: party swap', () => {
     try {
       const [noMoonGame] = testGame(2, {turmoilExtension: true, morePartiesExpansion: true});
       const noMoonTurmoil = Turmoil.getTurmoil(noMoonGame);
-      noMoonTurmoil.globalEventDealer.deck.length = 0;
+      noMoonTurmoil.globalEventDealer.deck.drawPile.length = 0;
       noMoonTurmoil.comingGlobalEvent = fakeEvent(PartyName.SPOME);
 
       noMoonTurmoil.runTurmoilPhase(noMoonGame);

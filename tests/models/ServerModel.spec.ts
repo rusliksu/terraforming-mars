@@ -151,7 +151,7 @@ describe('ServerModel', () => {
   let game: IGame;
 
   function createTestGame(showOtherPlayersVP: boolean, undoStepOption = false) {
-    [game, player, player2] = testGame(2, {showOtherPlayersVP, undoStepOption});
+    [game, player, player2] = testGame(2, {showVP: showOtherPlayersVP ? 'all' : 'yours', undoStepOption});
     // Claim milestone
     const milestone = new Mayor();
 
@@ -393,8 +393,8 @@ describe('ServerModel', () => {
     expect(model.preludes).deep.eq({drawPile: game.preludeDeck.drawPile.length, discardPile: 1});
     expect(model.ceos).is.undefined;
     expect(model.globalEvents).deep.eq({
-      drawPile: game.turmoil!.globalEventDealer.deck.length,
-      discardPile: game.turmoil!.globalEventDealer.discards.length,
+      drawPile: game.turmoil!.globalEventDealer.deck.drawPile.length,
+      discardPile: game.turmoil!.globalEventDealer.deck.discardPile.length,
     });
   });
 

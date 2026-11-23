@@ -11,10 +11,10 @@
         </header>
         <div class="setup-column-body">
           <PresentationHost :hosts="section.host" />
-          <div v-if="section.key === 'corporation' && binding.aridorColonies !== undefined" class="player_home_colony_cont">
+          <div v-if="section.key === 'corporation' && binding.aridorColonies !== undefined" class="player-home-colony-cont">
             <div v-i18n>These are the colony tiles Aridor may choose from:</div>
             <div class="discarded-colonies-for-aridor">
-              <div v-for="colony in binding.aridorColonies" :key="colony.name" class="player_home_colony small_colony">
+              <div v-for="colony in binding.aridorColonies" :key="colony.name" class="player-home-colony small-colony">
                 <Colony :colony="colony" :active="colony.isActive" />
               </div>
             </div>

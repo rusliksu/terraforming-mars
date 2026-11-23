@@ -119,6 +119,7 @@ describe('ApiGame', () => {
           'requiresMoonTrackCompletion': false,
           'requiresVenusTrackCompletion': false,
           'showOtherPlayersVP': false,
+          'showVP': 'yours',
           'showTimers': true,
           'shuffleMapOption': false,
           'solarPhaseOption': false,

@@ -9,7 +9,7 @@
   @mb-top-height: 52px;
   @mb-nav-height: 68px; // source mobile.less geometry; viewport owner remains WP05
 
-  @choice-tile-width: 248px; // Outer width of a project card: 240px plus 2 × 4px border (.filterDiv in cards.less)
+  @choice-tile-width: 248px; // Outer width of a project card: 240px plus 2 × 4px border (.filter-div in cards.less)
   @choice-column-gap: 16px; // Card gap in tab boxes (@or-tab-panel-card-gap in or_options_tabs.less)
   @choice-row-gap: (@selection-tab-offset + 6px); // the check-mark flag of the selected tile sits above
   @choice-panel-padding: 16px; // Padding of the tab box (tab_panel_footer.less)
@@ -191,9 +191,9 @@
   // CardIntroBlock) and the footer. For this the turn screen fills the height between status bar and footer
   // (padding of #player-home.mb-home--turn in mobile.less); every wrapper down to the block becomes a column
   // that fills the free space. Excluded are selections with their own layout in mobile.less:
-  // milestones/awards and standard projects (.mb-choice-area), the card carousel (payments_cont)
+  // milestones/awards and standard projects (.mb-choice-area), the card carousel (payments-cont)
   // and the initial selection
-  @mobile-choice: ~".choice-block:not(.ma-options, .payments_cont, .setup-column-body *)";
+  @mobile-choice: ~".choice-block:not(.ma-options, .payments-cont, .setup-column-body *)";
 
   html.tm-mobile & {
     .mb-screen--turn:has(@{mobile-choice}) {

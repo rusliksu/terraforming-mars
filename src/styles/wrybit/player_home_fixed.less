@@ -123,8 +123,8 @@
     }
 
     // Actions or hand cards fill the rest; the idle action block is collapsed below
-    > .player_home_block--actions,
-    > .player_home_block--hand {
+    > .player-home-block--actions,
+    > .player-home-block--hand {
       flex: 1 1 0;
       min-height: @player-home-fixed-panel-min-height;
       display: flex;
@@ -133,7 +133,7 @@
     }
 
     // Drafted cards (draft phase) limited so the tab box below keeps its space
-    > .player_home_block--hand:not(#shortkey-hand) {
+    > .player-home-block--hand:not(#shortkey-hand) {
       flex: 0 1 auto;
       min-height: 0;
       max-height: 35%;
@@ -143,20 +143,20 @@
 
   // Not this player's turn: the action block holds only the "not your turn" line.
   // It must not claim half of the column; the hand cards fill the rest instead.
-  .player-home--fixed:not(.player-home--acting) .player-home-columns__main > .player_home_block--actions {
+  .player-home--fixed:not(.player-home--acting) .player-home-columns__main > .player-home-block--actions {
     flex: 0 1 auto;
     min-height: 0;
   }
 
   // Spectator: the log on the left below the player table fills the rest like the tab box for players
-  .player-home--fixed .player-home-columns__main > .player_home_block--spectator-log {
+  .player-home--fixed .player-home-columns__main > .player-home-block--spectator-log {
     flex: 1 1 0;
     min-height: @player-home-fixed-panel-min-height;
     margin-bottom: 0;
   }
 
   // Start phase: starting card selection fills the rest like the action menu
-  .player-home--fixed .player-home-columns__main > .player_home_block--setup {
+  .player-home--fixed .player-home-columns__main > .player-home-block--setup {
     flex: 1 1 0;
     min-height: @player-home-fixed-panel-min-height;
     display: flex;
@@ -189,7 +189,7 @@
   }
 
   // Chain down to the tab box: WaitingFor wrapper → wf-root → input (OrOptions / WaitingForTabs)
-  .player-home--fixed .player_home_block--actions {
+  .player-home--fixed .player-home-block--actions {
     > div,
     .wf-root,
     .wf-root > .wf-options {

@@ -2,7 +2,7 @@
   <div v-if="players.length > 0" class="or-tab or-tab--status" role="status">
     <span aria-hidden="true">⌛</span>
     <span v-if="parallel" v-i18n>Waiting for other players</span>
-    <span v-for="player in players" :key="player.color" class="log-player" :class="'player_bg_color_' + player.color">{{ player.name }}</span>
+    <span v-for="player in players" :key="player.color" class="log-player" :class="'player-bg-color-' + player.color">{{ player.name }}</span>
     <span v-if="!parallel">{{ $t(players.length === 1 ? 'is taking their turn' : 'are taking their turn') }}</span>
   </div>
 </template>

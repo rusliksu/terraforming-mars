@@ -68,7 +68,7 @@
 
 // Rows: the icons are the information players scan first, so keep them close to their natural size.
 .players-table-row {
-  .resource_icon {
+  .resource-icon {
     zoom: 1;
   }
 
@@ -239,7 +239,7 @@ each(@players, {
   min-width: 36px;
   color: #fff;
 
-  .resource_icon {
+  .resource-icon {
     zoom: 0.55;
     flex: none;
   }
@@ -626,18 +626,18 @@ each(@players, {
 }
 
 // Green shield with gradient (light from the top left like the player cubes): the shield graphic only serves
-// as a mask, the colour comes from the gradient. Overrides shield_icon (resources.less: image + invert)
+// as a mask, the colour comes from the gradient. Overrides shield-icon (resources.less: image + invert)
 .players-table-protection {
   flex: none;
   position: static;
   width: 18px;
   height: 18px;
   background: linear-gradient(135deg, #d6f7b4 0%, #7ad048 40%, #3c9a24 75%, #1f6512 100%);
-  filter: none; // shield_icon inverts the graphic, here the gradient decides the colour
+  filter: none; // shield-icon inverts the graphic, here the gradient decides the colour
   mask: url(./assets/misc/shield-icon.png) center / contain no-repeat;
   -webkit-mask: url(./assets/misc/shield-icon.png) center / contain no-repeat;
 
-  &.shield_icon_half {
+  &.shield-icon-half {
     mask-image: url(./assets/misc/half-shield-icon.png);
     -webkit-mask-image: url(./assets/misc/half-shield-icon.png);
   }

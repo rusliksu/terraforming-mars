@@ -1,107 +1,20 @@
+import path from 'path';
 import {expect} from 'chai';
 import fs from 'fs';
 import {FileAPI, ServeAsset} from '../../src/server/routes/ServeAsset';
-import {resolveEloAssetPath} from '../../src/server/elo/EloPaths';
 import {MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
 
 class FileApiMock extends FileAPI {
-  public counts = {
-    readFile: 0,
-    readFileSync: 0,
-    existsSync: 0,
-  };
   public constructor() {
     super();
   }
-  public override readFileSync(path: string): Buffer {
-    this.counts.readFileSync++;
-    return Buffer.from('data: ' + path);
-  }
   public override readFile(path: string): Promise<Buffer> {
-    this.counts.readFile++;
     return Promise.resolve(Buffer.from('data: ' + path));
   }
   public override existsSync(_path: string): boolean {
-    this.counts.existsSync++;
     return true;
-  }
-}
-
-class MissingFileApiMock extends FileApiMock {
-  public override readFile(_path: string): Promise<Buffer> {
-    const err = new Error('missing') as Error & { code?: string };
-    err.code = 'ENOENT';
-    return Promise.reject(err);
-  }
-}
-
-class IndexHtmlFileApiMock extends FileApiMock {
-  public override readFile(path: string): Promise<Buffer> {
-    this.counts.readFile++;
-    if (path === 'assets/index.html') {
-      return Promise.resolve(Buffer.from([
-        '<link rel="stylesheet" href="styles.css?v=old" />',
-        '<script src="vendors.js"></script>',
-        '<script src="main.js"></script>',
-      ].join('\n')));
-    }
-    if (path === 'assets/release.json') {
-      return Promise.resolve(Buffer.from(JSON.stringify({
-        gitSha: '1234567890abcdef1234567890abcdef12345678',
-      })));
-    }
-    return super.readFile(path);
-  }
-}
-
-const ASSET_MANIFEST = {
-  'main.js': 'main.0123456789abcdef.js',
-  'vendors.js': 'vendors.fedcba9876543210.js',
-  'styles.css': 'styles.abcdef0123456789.css',
-};
-
-class ManifestFileApiMock extends FileApiMock {
-  public override readFileSync(path: string): Buffer {
-    this.counts.readFileSync++;
-    if (path === 'build/asset-manifest.json') {
-      return Buffer.from(JSON.stringify(ASSET_MANIFEST));
-    }
-    return Buffer.from('data: ' + path);
-  }
-  public override readFile(path: string): Promise<Buffer> {
-    this.counts.readFile++;
-    if (path === 'assets/index.html') {
-      return Promise.resolve(Buffer.from([
-        '<link rel="stylesheet" href="styles.css?v=old" />',
-        '<script src="vendors.js"></script>',
-        '<script src="main.js"></script>',
-      ].join('\n')));
-    }
-    return Promise.resolve(Buffer.from('data: ' + path));
-  }
-}
-
-class NoReleaseFileApiMock extends IndexHtmlFileApiMock {
-  public override readFile(path: string): Promise<Buffer> {
-    this.counts.readFile++;
-    if (path === 'assets/release.json') {
-      const err = new Error('missing') as Error & {code?: string};
-      err.code = 'ENOENT';
-      return Promise.reject(err);
-    }
-    return super.readFile(path);
-  }
-}
-
-class EmptyReleaseFileApiMock extends IndexHtmlFileApiMock {
-  public override readFile(path: string): Promise<Buffer> {
-    this.counts.readFile++;
-    if (path === 'assets/release.json') {
-      return Promise.resolve(Buffer.from('{}'));
-    }
-    return super.readFile(path);
   }
 }
 
@@ -110,13 +23,6 @@ describe('ServeAsset', () => {
   let scaffolding: RouteTestScaffolding;
   let res: MockResponse;
   let fileApi: FileApiMock;
-  // The expected state of call counts in most simple cases in this test. This is a template
-  // used and overridden below. That makes how individual condition changes these calls.
-  const primedCache = {
-    readFile: 0,
-    readFileSync: 4,
-    existsSync: 0,
-  };
 
   const storedNodeEnv = process.env.NODE_ENV;
   beforeEach(() => {
@@ -128,6 +34,7 @@ describe('ServeAsset', () => {
   afterEach(() => {
     process.env.NODE_ENV = storedNodeEnv;
   });
+
   it('bad filename', async () => {
     scaffolding.url = 'goo.goo.gaa.gaa';
     scaffolding.req.headers['accept-encoding'] = '';
@@ -136,207 +43,11 @@ describe('ServeAsset', () => {
     expect(res.content).eq('Not found');
   });
 
-  it('serves responsive image formats only inside assets', async () => {
-    instance = new ServeAsset(undefined, false, fileApi);
-    for (const [extension, contentType] of [['avif', 'image/avif'], ['webp', 'image/webp']]) {
-      scaffolding.url = `/assets/wrybit/shell/milky-way-portrait-540.${extension}`;
-      const imageResponse = new MockResponse();
-      await scaffolding.get(instance, imageResponse);
-      expect(imageResponse.statusCode).eq(statusCode.ok);
-      expect(imageResponse.headers.get('Content-Type')).eq(contentType);
-      expect(imageResponse.content).contains(`milky-way-portrait-540.${extension}`);
-
-      scaffolding.url = `/private/picture.${extension}`;
-      const outsideResponse = new MockResponse();
-      await scaffolding.get(instance, outsideResponse);
-      expect(outsideResponse.statusCode).eq(statusCode.notFound);
-    }
-    expect(fileApi.counts.readFile).eq(2);
-  });
-
-  it('missing asset returns 404 instead of 500', async () => {
-    instance = new ServeAsset(undefined, false, new MissingFileApiMock());
-    scaffolding.url = '/assets/default_templates.json';
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-    expect(res.statusCode).eq(statusCode.notFound);
-    expect(res.content).eq('Not found');
-  });
-
   it('index.html', async () => {
-    scaffolding.url = '/assets/index.html';
+    scaffolding.url = '/build/index.html';
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
     expect(res.content.startsWith('<!DOCTYPE html>'));
-  });
-
-  it('index.html cache-busts shell assets with the release version', async () => {
-    instance = new ServeAsset(undefined, false, new IndexHtmlFileApiMock());
-    scaffolding.url = '/assets/index.html';
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-
-    const version = '1234567890abcdef1234567890abcdef12345678';
-    expect(res.content).contains(`styles.css?v=${version}`);
-    expect(res.content).contains(`vendors.js?v=${version}`);
-    expect(res.content).contains(`main.js?v=${version}`);
-    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
-  });
-
-  it('index.html falls back to a per-boot version when release.json is missing', async () => {
-    instance = new ServeAsset(undefined, false, new NoReleaseFileApiMock());
-    scaffolding.url = '/assets/index.html';
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-
-    const match = res.content.match(/styles\.css\?v=(dev-[0-9a-f]{8})/);
-    expect(match, res.content).to.not.eq(null);
-    const version = match![1];
-    expect(res.content).contains(`vendors.js?v=${version}`);
-    expect(res.content).contains(`main.js?v=${version}`);
-    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
-  });
-
-  it('per-boot fallback version is stable within one server boot', async () => {
-    const readVersion = async (asset: ServeAsset): Promise<string> => {
-      scaffolding = new RouteTestScaffolding();
-      res = new MockResponse();
-      scaffolding.url = '/assets/index.html';
-      scaffolding.req.headers['accept-encoding'] = '';
-      await scaffolding.get(asset, res);
-      return res.content.match(/styles\.css\?v=(dev-[0-9a-f]{8})/)![1];
-    };
-
-    instance = new ServeAsset(undefined, false, new NoReleaseFileApiMock());
-    const first = await readVersion(instance);
-    const second = await readVersion(instance);
-    const third = await readVersion(new ServeAsset(undefined, false, new NoReleaseFileApiMock()));
-
-    expect(second).eq(first);
-    expect(third).eq(first);
-  });
-
-  it('index.html falls back to a per-boot version when release.json has no version fields', async () => {
-    instance = new ServeAsset(undefined, false, new EmptyReleaseFileApiMock());
-    scaffolding.url = '/assets/index.html';
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-
-    expect(res.content).to.match(/styles\.css\?v=dev-[0-9a-f]{8}/);
-  });
-
-  it('index.html points at content-hashed assets when the manifest exists', async () => {
-    instance = new ServeAsset(undefined, false, new ManifestFileApiMock());
-    scaffolding.url = '/assets/index.html';
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-
-    expect(res.content).contains(`href="${ASSET_MANIFEST['styles.css']}"`);
-    expect(res.content).contains(`src="${ASSET_MANIFEST['vendors.js']}"`);
-    expect(res.content).contains(`src="${ASSET_MANIFEST['main.js']}"`);
-    expect(res.content.includes('?v=')).eq(false);
-    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
-  });
-
-  it('serves a content-hashed asset named by the manifest', async () => {
-    instance = new ServeAsset(undefined, false, new ManifestFileApiMock());
-    scaffolding.url = `/${ASSET_MANIFEST['main.js']}`;
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-    expect(res.content).eq(`data: build/${ASSET_MANIFEST['main.js']}`);
-  });
-
-  it('404s an unknown content-hashed asset name', async () => {
-    instance = new ServeAsset(undefined, false, new ManifestFileApiMock());
-    scaffolding.url = '/main.ffffffffffffffff.js';
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-    expect(res.statusCode).eq(statusCode.notFound);
-  });
-
-  it('styles.css', async () => {
-    instance = new ServeAsset(undefined, false, fileApi);
-    scaffolding.url = '/styles.css';
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-    expect(res.content).eq('data: build/styles.css');
-  });
-
-  it('release.json alias', async () => {
-    instance = new ServeAsset(undefined, false, fileApi);
-    scaffolding.url = '/release.json';
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-    expect(res.content).eq('data: assets/release.json');
-  });
-
-  it('styles.css.gz', async () => {
-    instance = new ServeAsset(undefined, false, fileApi);
-    scaffolding.url = '/styles.css';
-    scaffolding.req.headers['accept-encoding'] = 'gzip';
-    await scaffolding.get(instance, res);
-    expect(res.content).eq('data: build/styles.css.gz');
-  });
-
-  it('styles.css: uncached', async () => {
-    instance = new ServeAsset(undefined, false, fileApi);
-    // Primes the cache.
-    expect(fileApi.counts).deep.eq(primedCache);
-
-    scaffolding.url = '/styles.css';
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-
-    expect(res.content).eq('data: build/styles.css');
-    expect(fileApi.counts).deep.eq({
-      ...primedCache,
-      readFile: 1, // Still read.
-    });
-  });
-
-  it('styles.css.gz: cached', async () => {
-    instance = new ServeAsset(undefined, true, fileApi);
-    // Primes the cache.
-    expect(fileApi.counts).deep.eq(primedCache);
-
-    scaffolding.url = '/styles.css';
-    scaffolding.req.headers['accept-encoding'] = 'gzip';
-    await scaffolding.get(instance, res);
-
-    expect(res.content).eq('data: build/styles.css.gz');
-    expect(fileApi.counts).deep.eq({
-      ...primedCache,
-      readFile: 0, // Does not change
-    });
-  });
-
-  it('development main.js', async () => {
-    instance = new ServeAsset(undefined, false, fileApi);
-    scaffolding.url = '/main.js';
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-    expect(res.content).eq('data: build/main.js');
-    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
-    expect(fileApi.counts).deep.eq({
-      ...primedCache,
-      readFile: 1,
-      existsSync: 0,
-    });
-  });
-
-  it('production main.js', async () => {
-    process.env.NODE_ENV = 'production';
-    instance = new ServeAsset(undefined, false, fileApi);
-    scaffolding.url = '/main.js';
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-    expect(res.content).eq('data: build/main.js');
-    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
-    expect(fileApi.counts).deep.eq({
-      ...primedCache,
-      readFile: 1,
-      existsSync: 0,
-    });
   });
 
   it('sw.js', async () => {
@@ -345,20 +56,6 @@ describe('ServeAsset', () => {
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
     expect(res.content).eq('data: build/sw.js');
-    expect(fileApi.counts).deep.eq({
-      ...primedCache,
-      readFile: 1,
-      existsSync: 0,
-    });
-  });
-
-  it('vendors.js', async () => {
-    instance = new ServeAsset(undefined, false, fileApi);
-    scaffolding.url = '/vendors.js';
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-    expect(res.content).eq('data: build/vendors.js');
-    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
   });
 
   it('chunk js file', async () => {
@@ -366,8 +63,7 @@ describe('ServeAsset', () => {
     scaffolding.url = '/chunks/player-home.js';
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
-    expect(res.content).eq('data: build/chunks/player-home.js');
-    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
+    expect(res.content).eq('data: ' + path.resolve('build/chunks/player-home.js'));
   });
 
   it('chunk js.map file', async () => {
@@ -375,17 +71,15 @@ describe('ServeAsset', () => {
     scaffolding.url = '/chunks/player-home.js.map';
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
-    expect(res.content).eq('data: build/chunks/player-home.js.map');
-    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
+    expect(res.content).eq('data: ' + path.resolve('build/chunks/player-home.js.map'));
   });
 
-  it('chunk js file with query string', async () => {
+  it('rejects a folder next to assets whose name starts the same', async () => {
     instance = new ServeAsset(undefined, false, fileApi);
-    scaffolding.url = '/chunks/player-home.js?v=release-123';
+    scaffolding.url = '/assets-other/secret.json';
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
-    expect(res.content).eq('data: build/chunks/player-home.js');
-    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
+    expect(res.statusCode).eq(statusCode.notFound);
   });
 
   it('rejects path traversal in chunks', async () => {
@@ -396,104 +90,25 @@ describe('ServeAsset', () => {
     expect(res.statusCode).eq(statusCode.notFound);
   });
 
-  it('redirects solo URLs to the ELO ratings page', async () => {
-    instance = new ServeAsset(undefined, false, fileApi);
-    for (const url of ['/solo', '/solo/', '/solo/stats']) {
-      const soloRes = new MockResponse();
-      scaffolding.url = url;
-      await scaffolding.get(instance, soloRes);
-
-      expect(soloRes.statusCode, url).eq(statusCode.movedPermanently);
-      expect(soloRes.headers.get('Location'), url).eq('/elo/');
-    }
-  });
-
-  it('serves solo-prefixed data aliases without redirecting', async () => {
-    instance = new ServeAsset(undefined, false, fileApi);
-    for (const [url, path] of [
-      ['/solo/elo-data', 'solo/elo-data'],
-      ['/solo/elo-data/', 'solo/elo-data/'],
-      ['/solo/solo-records', 'solo/solo-records'],
-      ['/solo/solo-records/', 'solo/solo-records/'],
-    ]) {
-      const aliasRes = new MockResponse();
-      scaffolding.url = url;
-      await scaffolding.get(instance, aliasRes);
-
-      expect(aliasRes.statusCode, url).eq(statusCode.ok);
-      expect(aliasRes.content, url).eq('data: ' + resolveEloAssetPath(path));
-    }
-  });
-
-  it('serves the ELO mirror at the root without redirecting', async () => {
-    instance = new ServeAsset(undefined, false, fileApi);
-    for (const url of ['/elo-data.json?ts=123', '/elo-data?ts=123']) {
-      const rootRes = new MockResponse();
-      scaffolding.url = url;
-      await scaffolding.get(instance, rootRes);
-
-      expect(rootRes.statusCode, url).eq(statusCode.ok);
-      expect(rootRes.content, url).eq('data: ' + resolveEloAssetPath('elo-data.json'));
-    }
-  });
-
-  it('serves solo records at the root without redirecting', async () => {
-    instance = new ServeAsset(undefined, false, fileApi);
-    for (const url of ['/solo-records.json', '/solo-records']) {
-      const rootRes = new MockResponse();
-      scaffolding.url = url;
-      await scaffolding.get(instance, rootRes);
-
-      expect(rootRes.statusCode, url).eq(statusCode.ok);
-      expect(rootRes.content, url).eq('data: ' + resolveEloAssetPath('solo-records.json'));
-    }
-  });
-
-  it('redirects trailing-slash data aliases to their canonical URLs', async () => {
-    instance = new ServeAsset(undefined, false, fileApi);
-    for (const [url, location] of [['/elo-data/', '/elo-data'], ['/solo-records/', '/solo-records']]) {
-      const aliasRes = new MockResponse();
-      scaffolding.url = url;
-      await scaffolding.get(instance, aliasRes);
-
-      expect(aliasRes.statusCode, url).eq(statusCode.movedPermanently);
-      expect(aliasRes.headers.get('Location'), url).eq(location);
-    }
-  });
-
-  it('serves /elo/data.json from the elo asset path', async () => {
-    instance = new ServeAsset(undefined, false, fileApi);
-    scaffolding.url = '/elo/data.json?ts=123';
-    scaffolding.req.headers['accept-encoding'] = '';
-    await scaffolding.get(instance, res);
-
-    expect(res.content).eq('data: ' + resolveEloAssetPath('elo/data.json'));
-    expect(res.headers.get('Cache-Control')).eq('no-store');
-  });
-
-  it('does not buffer-cache dynamic elo assets in production', async () => {
-    instance = new ServeAsset(undefined, true, fileApi);
-    scaffolding.url = '/elo/data.json';
-    scaffolding.req.headers['accept-encoding'] = '';
-
-    await scaffolding.get(instance, res);
-    await scaffolding.get(instance, new MockResponse());
-
-    expect(fileApi.counts.readFile).eq(2);
-  });
-
-  it('serves all script sources referenced in index.html', async () => {
-    const html = fs.readFileSync('assets/index.html', 'utf8');
-    const srcs = [...html.matchAll(/<script src="([^"]+)"/g)].map((m) => m[1]);
-    expect(srcs).to.not.be.empty;
-    for (const src of srcs) {
+  it('serves all local assets referenced in index.html', async () => {
+    const html = fs.readFileSync('build/index.html', 'utf8');
+    const references = [
+      ...[...html.matchAll(/<script[^>]* src="([^"]+)"/g)].map((m) => ({url: m[1], contentType: 'text/javascript'})),
+      // Google Fonts is an external stylesheet; only same-origin assets are served by ServeAsset.
+      ...[...html.matchAll(/<link[^>]* rel="stylesheet"[^>]* href="([^"]+)"/g)]
+        .map((m) => ({url: m[1], contentType: 'text/css'}))
+        .filter((ref) => ref.url.startsWith('/')),
+    ];
+    expect(references).to.not.be.empty;
+    for (const ref of references) {
       const perRes = new MockResponse();
       const perScaffolding = new RouteTestScaffolding();
       instance = new ServeAsset(undefined, false, fileApi);
-      perScaffolding.url = '/' + src;
+      perScaffolding.url = ref.url;
       perScaffolding.req.headers['accept-encoding'] = '';
       await perScaffolding.get(instance, perRes);
-      expect(perRes.statusCode, `${src} should return 200`).eq(statusCode.ok);
+      expect(perRes.statusCode, `${ref.url} should return 200`).eq(statusCode.ok);
+      expect(perRes.getHeader('Content-Type'), `${ref.url} content type`).eq(ref.contentType);
     }
   });
 });

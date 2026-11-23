@@ -24,10 +24,10 @@
 
     <HomeColumns>
       <template #board>
-        <div class="player_home_block player-home-columns__mars">
+        <div class="player-home-block player-home-columns__mars">
           <GameBoardView ref="gameBoardView" :game="game" :tileView="tileView" :players="spectator.players"
             @toggleTileView="cycleTileView()" />
-          <div v-if="game.phase === 'end'" class="player_home_block">
+          <div v-if="game.phase === 'end'" class="player-home-block">
             <a :href="'the-end?id=' + spectator.id" v-i18n>Go to game results</a>
           </div>
         </div>
@@ -35,11 +35,11 @@
 
       <template #main>
         <a class="hotkey-target"></a>
-        <PlayersOverview class="player_home_block player_home_block--players nofloat" :playerView="spectator"
+        <PlayersOverview class="player-home-block player-home-block--players nofloat" :playerView="spectator"
           id="shortkey-playersoverview" />
         <RowResizeHandle kind="players" />
         <a class="hotkey-target"></a>
-        <div class="player_home_block nofloat player-home-columns__log player_home_block--spectator-log">
+        <div class="player-home-block nofloat player-home-columns__log player-home-block--spectator-log">
           <LogPanel :viewModel="spectator" :milestonesAwards="true" @space-clicked="onSpaceClicked" />
         </div>
       </template>

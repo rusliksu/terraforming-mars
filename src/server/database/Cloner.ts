@@ -7,7 +7,7 @@ import {IPlayer} from '../IPlayer';
 import {PlayerId} from '../../common/Types';
 import {SerializedGame} from '../SerializedGame';
 import {SerializedPlayer} from '../SerializedPlayer';
-import {toID} from '../../common/utils/utils';
+import {isObject, toID} from '../../common/utils/utils';
 import {AutomaGameSetup} from '../automa/AutomaGameSetup';
 
 export class Cloner {
@@ -49,7 +49,7 @@ export class Cloner {
   }
 
   private static replacePlayerIds(obj: unknown, oldPlayerIds:Array<PlayerId>, newPlayerIds: Array<PlayerId>) {
-    if (typeof obj !== 'object' || obj === null) {
+    if (!isObject(obj)) {
       return;
     }
     const keys = Object.entries(obj);

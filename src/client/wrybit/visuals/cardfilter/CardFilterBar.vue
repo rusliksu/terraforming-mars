@@ -33,7 +33,7 @@
           <span v-if="chip.dotClass !== undefined" class="card-filter-chip__dot" :class="chip.dotClass"></span>
           <span v-if="chip.iconClass !== undefined" class="card-filter-icon" :class="chip.iconClass"></span>
           <span v-if="chip.text !== undefined">{{ chip.text }}</span>
-          <i v-if="chip.megacredits" class="resource_icon resource_icon--megacredits"></i>
+          <i v-if="chip.megacredits" class="resource-icon resource-icon--megacredits"></i>
           <span class="card-filter-chip__remove" aria-hidden="true">×</span>
         </button>
       </template>

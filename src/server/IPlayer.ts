@@ -38,6 +38,7 @@ import {From} from './logs/From';
 import {Tag} from '../common/cards/Tag';
 import {SelectStandardProjectToPlay} from './inputs/SelectStandardProjectToPlay';
 import {EarlyGameStats} from './game/EarlyGameStats';
+import {isObject} from '@/common/utils/utils';
 
 /**
  * Represents additional costs a player must pay to execute an action.
@@ -76,6 +77,8 @@ export interface IPlayer {
   preludeHandicap: number;
 
   readonly game: IGame;
+  /** True for the player MarsBot plays as. */
+  readonly isMarsBot: boolean;
   tags: Tags;
   colonies: Colonies;
   readonly production: Production;
@@ -436,9 +439,7 @@ export interface IPlayer {
 }
 
 export function isIPlayer(object: unknown): object is IPlayer {
-  if (typeof object !== 'object' || object === null) {
-    return false;
-  }
-  const candidate = object as {id?: unknown, game?: unknown};
-  return Object.hasOwn(object, 'id') && isPlayerId(candidate.id) && isIGame(candidate.game);
+  return isObject(object) &&
+    'id' in object && isPlayerId(object.id) &&
+    'game' in object && isIGame(object.game);
 }

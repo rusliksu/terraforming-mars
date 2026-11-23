@@ -1,5 +1,5 @@
 <template>
-  <div class="card-container filterDiv hover-hide-res wrybit-card" :class="[cardClasses, {'card-life-found': lifeFound}]">
+  <div class="card-container filter-div hover-hide-res wrybit-card" :class="[cardClasses, {'card-life-found': lifeFound}]">
     <!-- Action used this generation: the player's cube lies on the card like at the table, seen from above,
            at a random angle per card -->
     <span v-if="showPlayerCube" class="card-player-cube"><PlayerCube :color="cubeColor" view="top" :size="22" :spin="cubeSpin" /></span>

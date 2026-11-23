@@ -1,9 +1,9 @@
 <template>
-  <div class="payments_type input-group" :data-test="unit">
-    <i class="resource_icon payments_type_icon" :class="iconClass" @click="$emit('plus')" :title="$t('Pay with ' + description)"></i>
+  <div class="payments-type input-group" :data-test="unit">
+    <i class="resource-icon payments-type-icon" :class="iconClass" @click="$emit('plus')" :title="$t('Pay with ' + description)"></i>
     <AppButton type="minus" @click="$emit('minus')" />
     <input
-      class="form-input form-inline payments_input"
+      class="form-input form-inline payments-input"
       :value="count"
       @input="onInput"
     >

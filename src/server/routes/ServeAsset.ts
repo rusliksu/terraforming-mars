@@ -1,4 +1,3 @@
-import {randomBytes} from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import * as responses from '../server/responses';
@@ -14,17 +13,15 @@ import {isDynamicEloAssetPath, resolveEloAssetPath} from '../elo/EloPaths';
 import {RouteError} from './RouteError';
 
 type Encoding = 'gzip' | 'br';
-type ErrnoLikeError = Error & { code?: string };
 
-// Map of logical asset name ("main.js") to the content-hashed file name ("main.<hash>.js")
-// written by scripts/emit-asset-manifest.js.
-type AssetManifest = {[logicalName: string]: string};
-const ASSET_MANIFEST_PATH = 'build/asset-manifest.json';
-const MANIFEST_ASSET_NAMES = ['main.js', 'vendors.js', 'styles.css'];
-
-// Browsers cache build/*.js aggressively. Without release metadata the version must
-// still change on every boot, or a restarted server keeps serving a stale bundle.
-const DEV_ASSET_VERSION = `dev-${randomBytes(4).toString('hex')}`;
+// Served as they are, under exactly this path
+const FIXED_FILES: ReadonlyArray<string> = [
+  'build/index.html',
+  'assets/Prototype.ttf',
+  'assets/Prototype-ru.ttf',
+  'assets/Prototype-pl.ttf',
+  'assets/futureforces.ttf',
+];
 
 export class FileAPI {
   public static readonly INSTANCE: FileAPI = new FileAPI();
@@ -52,8 +49,7 @@ export class FileAPI {
 export class ServeAsset extends Handler {
   public static readonly INSTANCE: ServeAsset = new ServeAsset();
   private readonly cache = new BufferCache();
-  private assetVersion: string | undefined;
-  private assetManifest: AssetManifest | undefined;
+  private readonly existsCache = new Map<string, boolean>();
 
   // Public for tests
   public constructor(private cacheAgeSeconds: string | number = process.env.ASSET_CACHE_MAX_AGE || 0,
@@ -61,17 +57,6 @@ export class ServeAsset extends Handler {
     private cacheAssets: boolean = isProduction(),
     private fileApi: FileAPI = FileAPI.INSTANCE) {
     super();
-    this.assetManifest = this.readAssetManifestSync();
-    // Prime the cache with the stylesheet and its compressed copies. A missing file is not
-    // fatal here: the request itself reports a 404, and tests/dev can run without a build.
-    const stylesFile = `build/${this.assetManifest?.['styles.css'] ?? 'styles.css'}`;
-    for (const file of [stylesFile, `${stylesFile}.gz`, `${stylesFile}.br`]) {
-      try {
-        this.cache.set(file, fileApi.readFileSync(file));
-      } catch (_err) {
-        // Ignore missing files here; see the comment above.
-      }
-    }
   }
 
   public override async get(req: Request, res: Response, _ctx: Context): Promise<void> {
@@ -127,11 +112,6 @@ export class ServeAsset extends Handler {
 
     const file = toFile.file;
 
-    if (file === 'assets/index.html') {
-      await this.serveIndexHtml(res);
-      return;
-    }
-
     // asset caching
     const buffer = (this.cacheAssets && !dynamicEloAsset) ? this.cache.get(file) : undefined;
     if (buffer !== undefined) {
@@ -139,17 +119,10 @@ export class ServeAsset extends Handler {
         responses.notModified(res);
         return;
       }
-      res.setHeader('ETag', buffer.hash);
-    }
-
-    if (dynamicEloAsset) {
-      res.setHeader('Cache-Control', 'no-store');
-    } else if (this.shouldRevalidateScriptAsset(path)) {
-      // Chunk names are stable across releases, so stale client-side script caching can
-      // otherwise mix an old UI with a newer server contract.
-      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-    } else if (buffer !== undefined) {
       res.setHeader('Cache-Control', 'must-revalidate');
+      res.setHeader('ETag', buffer.hash);
+    } else if (dynamicEloAsset) {
+      res.setHeader('Cache-Control', 'no-store');
     } else if (this.cacheAssets === false) {
       res.setHeader('Cache-Control', 'max-age=' + this.cacheAgeSeconds);
     }
@@ -170,143 +143,45 @@ export class ServeAsset extends Handler {
     }
 
     try {
-      const data = await this.fileApi.readFile(file);
-      res.setHeader('Content-Length', data.length);
-      res.end(data);
+      const raw = await this.fileApi.readFile(file);
       if (this.cacheAssets === true && !dynamicEloAsset) {
-        this.cache.set(file, data);
+        this.cache.set(file, raw);
       }
+      res.setHeader('Content-Length', raw.length);
+      res.end(raw);
     } catch (err) {
-      const error = err as ErrnoLikeError;
-      if (error.code === 'ENOENT') {
-        responses.notFound(req, res);
-        return;
+      if ((err as {code?: string}).code === 'ENOENT') {
+        throw RouteError.notFound();
       }
       console.log(err);
       throw RouteError.internalServerError('Cannot serve ' + path);
     }
   }
 
-  private async serveIndexHtml(res: Response): Promise<void> {
-    const template = (await this.fileApi.readFile('assets/index.html')).toString('utf8');
-    const manifest = this.assetManifest;
-    const html = manifest !== undefined ?
-      this.withAssetManifest(template, manifest) :
-      this.withAssetVersion(template, await this.getAssetVersion());
-    const data = Buffer.from(html);
-    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Content-Length', data.length);
-    res.end(data);
-  }
-
-  private async getAssetVersion(): Promise<string> {
-    if (this.assetVersion !== undefined) {
-      return this.assetVersion;
+  private exists(file: string): boolean {
+    const cached = this.existsCache.get(file);
+    if (cached !== undefined) {
+      return cached;
     }
-
-    try {
-      const releaseJson = JSON.parse((await this.fileApi.readFile('assets/release.json')).toString('utf8'));
-      this.assetVersion = this.sanitizeAssetVersion(
-        releaseJson.artifactSha256 ?? releaseJson.gitSha ?? releaseJson.packagedAtUtc ?? '');
-    } catch (_err) {
-      this.assetVersion = DEV_ASSET_VERSION;
-    }
-    return this.assetVersion;
+    const exists = this.fileApi.existsSync(file);
+    this.existsCache.set(file, exists);
+    return exists;
   }
 
-  private sanitizeAssetVersion(value: unknown): string {
-    const version = String(value).replace(/[^A-Za-z0-9._-]/g, '').slice(0, 64);
-    return version === '' ? DEV_ASSET_VERSION : version;
-  }
-
-  private withAssetVersion(html: string, version: string): string {
-    const suffix = `?v=${version}`;
-    return html
-      .replace(/styles\.css(?:\?v=[^"]*)?/g, `styles.css${suffix}`)
-      .replace(/vendors\.js(?:\?v=[^"]*)?/g, `vendors.js${suffix}`)
-      .replace(/main\.js(?:\?v=[^"]*)?/g, `main.js${suffix}`);
-  }
-
-  private readAssetManifestSync(): AssetManifest | undefined {
-    try {
-      const parsed: unknown = JSON.parse(this.fileApi.readFileSync(ASSET_MANIFEST_PATH).toString('utf8'));
-      if (parsed === null || typeof parsed !== 'object') {
-        return undefined;
-      }
-      const manifest: AssetManifest = {};
-      for (const logicalName of MANIFEST_ASSET_NAMES) {
-        const value = (parsed as Record<string, unknown>)[logicalName];
-        if (typeof value === 'string' && value !== '' && !value.startsWith('/') && !value.includes('..')) {
-          manifest[logicalName] = value;
-        }
-      }
-      if (manifest['main.js'] === undefined || manifest['styles.css'] === undefined) {
-        return undefined;
-      }
-      return manifest;
-    } catch (_err) {
-      return undefined;
-    }
-  }
-
-  private withAssetManifest(html: string, manifest: AssetManifest): string {
-    return html
-      .replace(/styles\.css(?:\?v=[^"]*)?/g, manifest['styles.css'] ?? 'styles.css')
-      .replace(/vendors\.js(?:\?v=[^"]*)?/g, manifest['vendors.js'] ?? 'vendors.js')
-      .replace(/main\.js(?:\?v=[^"]*)?/g, manifest['main.js'] ?? 'main.js');
-  }
-
-  // Returns the hashed url name when urlPath addresses a content-hashed manifest asset.
-  private manifestAssetPath(urlPath: string): string | undefined {
-    const manifest = this.assetManifest;
-    if (manifest === undefined) {
-      return undefined;
-    }
-    for (const logicalName of MANIFEST_ASSET_NAMES) {
-      const hashedName = manifest[logicalName];
-      if (hashedName !== undefined && (urlPath === hashedName || urlPath === `${hashedName}.map`)) {
-        return hashedName;
-      }
-    }
-    return undefined;
-  }
-
-  private toHashedFile(urlPath: string, encodings: Set<Encoding>): { file?: string, encoding?: Encoding } {
-    const file = `build/${urlPath}`;
-    if (isProduction()) {
-      if (encodings.has('br')) {
-        return {file: file + '.br', encoding: 'br'};
-      }
-      if (encodings.has('gzip')) {
-        return {file: file + '.gz', encoding: 'gzip'};
-      }
-    }
-    return {file, encoding: undefined};
-  }
-
-  private toMainFile(urlPath: string, encodings: Set<Encoding>): { file?: string, encoding?: Encoding } {
-    const file = `build/${urlPath}`;
-
+  private toMainFile(file: string, encodings: Set<Encoding>): { file?: string, encoding?: Encoding } {
     // Only serve compressed versions in production. Development mode serves
     // uncompressed versions because they can be hot-swapped.
     if (isProduction()) {
-      if (encodings.has('br')) {
+      if (encodings.has('br') && this.exists(file + '.br')) {
         return {file: file + '.br', encoding: 'br'};
-      } else if (encodings.has('gzip')) {
+      } else if (encodings.has('gzip') && this.exists(file + '.gz')) {
         return {file: file + '.gz', encoding: 'gzip'};
       }
     }
 
-    // Fallback on uncompressed file if in development or no compressed
-    // file exists.
+    // Fallback on uncompressed file in development or when the compression
+    // step skipped this file (source maps, for example).
     return {file, encoding: undefined};
-  }
-
-  private toServiceWorkerFile(urlPath: string): { file?: string, encoding?: Encoding } {
-    return {
-      file: `build/${urlPath}`,
-    };
   }
 
   private toFile(urlPath: string, encodings: Set<Encoding>): { file?: string, encoding?: Encoding } {
@@ -314,93 +189,62 @@ export class ServeAsset extends Handler {
     if (eloAsset !== undefined) {
       return {file: eloAsset};
     }
-
-    if (this.manifestAssetPath(urlPath) !== undefined) {
-      return this.toHashedFile(urlPath, encodings);
+    const fixedFile = FIXED_FILES.find((file) => file === urlPath);
+    if (fixedFile !== undefined) {
+      return {file: fixedFile};
     }
-
     switch (urlPath) {
-    case 'elo/':
-    case 'elo/index.html':
-      return {file: 'elo/index.html'};
-
-    case 'assets/index.html':
-    case 'assets/Prototype.ttf':
-    case 'assets/Prototype-ru.ttf':
-    case 'assets/Prototype-pl.ttf':
-    case 'assets/futureforces.ttf':
-      return {file: urlPath};
-
-    case 'styles.css':
-      if (encodings.has('br')) {
-        return {file: 'build/styles.css.br', encoding: 'br'};
-      }
-      if (encodings.has('gzip')) {
-        return {file: 'build/styles.css.gz', encoding: 'gzip'};
-      }
-      return {file: 'build/styles.css'};
-
-    case 'release.json':
-      return {file: 'assets/release.json'};
-
-    case 'main.js':
-    case 'main.js.map':
-    case 'vendors.js':
-    case 'vendors.js.map':
-      return this.toMainFile(urlPath, encodings);
-
     // sw.js is empty. Although not confirmed, it seems sw.js is necessary
     // for mobile notifications. If confirmed that it is not necessary, this
     // can be removed.
     case 'sw.js':
     case '/sw.js':
-      return this.toServiceWorkerFile(urlPath);
+      return {file: 'build/sw.js'};
 
     case 'favicon.ico':
       return {file: 'assets/favicon.ico'};
 
     default:
-      // Serve JS chunks produced by webpack code splitting.
+      // The hashed entry file and stylesheet emitted by Vite (named in build/index.html).
+      if (/^main-[A-Za-z0-9_-]+\.js(\.map)?$/.test(urlPath)) {
+        return this.toMainFile(`build/${urlPath}`, encodings);
+      }
+      if (/^client-[A-Za-z0-9_-]+\.css(\.map)?$/.test(urlPath)) {
+        return this.toMainFile(`build/${urlPath}`, encodings);
+      }
+      // Serve JS chunks produced by the Vite build.
       if (urlPath.startsWith('chunks/')) {
         const chunksRoot = path.resolve('./build/chunks');
         const resolvedFile = path.resolve(path.normalize('build/' + urlPath));
-        if (resolvedFile.startsWith(chunksRoot)) {
+        // With the separator: a sibling such as build/chunks-other is not inside
+        if (resolvedFile.startsWith(chunksRoot + path.sep)) {
           if (urlPath.endsWith('.js') || urlPath.endsWith('.js.map')) {
-            return this.toMainFile(urlPath, encodings);
+            return this.toMainFile(resolvedFile, encodings);
           }
         }
       }
 
-      if (urlPath.endsWith('.png') || urlPath.endsWith('.jpg') || urlPath.endsWith('.json') || urlPath.endsWith('.svg') ||
-          urlPath.endsWith('.avif') || urlPath.endsWith('.webp')) {
+      if (urlPath.endsWith('.png') || urlPath.endsWith('.jpg') || urlPath.endsWith('.json') || urlPath.endsWith('.svg')) {
+        // Images referenced from component CSS are emitted by Vite (hashed) into build/assets and
+        // take precedence over the original file in the assets directory.
+        if (urlPath.startsWith('assets/')) {
+          const buildAssetsRoot = path.resolve('./build/assets');
+          const buildFile = path.resolve(path.normalize('build/' + urlPath));
+          if (buildFile.startsWith(buildAssetsRoot + path.sep) && this.exists(buildFile)) {
+            return {file: buildFile};
+          }
+        }
         const assetsRoot = path.resolve('./assets');
         const resolvedFile = path.resolve(path.normalize(urlPath));
 
         // Only allow assets inside of assets directory
-        if (resolvedFile.startsWith(assetsRoot)) {
+        if (resolvedFile.startsWith(assetsRoot + path.sep)) {
           return {file: resolvedFile};
         }
       }
     }
 
     return {};
-  }
-
-  private shouldRevalidateScriptAsset(urlPath: string): boolean {
-    // Content-hashed files never need revalidation: a new build changes the file name.
-    if (this.manifestAssetPath(urlPath) !== undefined) {
-      return false;
-    }
-    switch (urlPath) {
-    case 'main.js':
-    case 'main.js.map':
-    case 'vendors.js':
-    case 'vendors.js.map':
-      return true;
-    default:
-      return urlPath.startsWith('chunks/') &&
-        (urlPath.endsWith('.js') || urlPath.endsWith('.js.map'));
-    }
   }
 
   private supportedEncodings(req: Request): Set<Encoding> {

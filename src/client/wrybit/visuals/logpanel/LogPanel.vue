@@ -54,7 +54,7 @@
     <div class="log-player-filters" v-if="viewModel.players.length > 1" v-show="!showsMilestonesAwards">
       <button type="button" class="log-player-filter" :aria-pressed="selectedPlayerColor === undefined" @click="selectedPlayerColor = undefined" v-i18n>All</button>
       <button v-for="player in viewModel.players" :key="player.color" type="button"
-        :class="['log-player-filter', 'player_bg_color_' + player.color]" :aria-pressed="selectedPlayerColor === player.color"
+        :class="['log-player-filter', 'player-bg-color-' + player.color]" :aria-pressed="selectedPlayerColor === player.color"
         @click="selectedPlayerColor = player.color">{{ player.name }}</button>
     </div>
     <LogMessageInspector ref="messageInspector" :viewModel="viewModel" @pinnedClosed="drawnCardsClosed" />

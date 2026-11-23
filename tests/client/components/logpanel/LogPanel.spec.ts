@@ -236,9 +236,9 @@ describe('LogPanel', () => {
       },
     });
 
-    expect(wrapper.find('[data-test="log-player-filter-blue"]').classes()).contains('player_bg_color_blue');
-    expect(wrapper.find('[data-test="log-player-filter-red"]').classes()).contains('player_bg_color_red');
-    expect(wrapper.find('[data-test="log-player-filter-all"]').classes()).does.not.contain('player_bg_color_blue');
+    expect(wrapper.find('[data-test="log-player-filter-blue"]').classes()).contains('player-bg-color-blue');
+    expect(wrapper.find('[data-test="log-player-filter-red"]').classes()).contains('player-bg-color-red');
+    expect(wrapper.find('[data-test="log-player-filter-all"]').classes()).does.not.contain('player-bg-color-blue');
     expect(wrapper.find('.log-panel').element.nextElementSibling).eq(wrapper.find('.log-player-filters').element);
   });
 

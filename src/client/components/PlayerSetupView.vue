@@ -1,5 +1,5 @@
 <template>
-  <div class="player_home_block player_home_block--setup nofloat">
+  <div class="player-home-block player-home-block--setup nofloat">
     <template v-if="isInitialDraftingPhase">
       <div v-for="card in playerView.dealtCorporationCards" :key="card.name" class="cardbox">
         <Card :card="card" />
@@ -17,7 +17,7 @@
         <Card :card="card" />
       </div>
     </template>
-    <div class="player_home_block player_home_block--hand" v-if="playerView.draftedCards.length > 0">
+    <div class="player-home-block player-home-block--hand" v-if="playerView.draftedCards.length > 0">
       <DynamicTitle title="Drafted Cards" :color="thisPlayer.color" />
       <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox">
         <Card :card="card" />
@@ -52,24 +52,24 @@
     <InputHost v-if="game.phase !== 'end'">
       <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor" />
     </InputHost>
-    <div class="player_home_block nofloat" v-if="isInitialDraftingPhase">
+    <div class="player-home-block nofloat" v-if="isInitialDraftingPhase">
       <LogPanel :viewModel="playerView" :color="thisPlayer.color" :step="game.step" />
     </div>
 
     <DynamicTitle title="Game details" :color="thisPlayer.color" />
 
-    <div class="player_home_block" v-if="playerView.players.length > 1">
+    <div class="player-home-block" v-if="playerView.players.length > 1">
       <Milestones :showScores="true" :milestones="game.milestones" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates" />
       <Awards :show-scores="true" :awards="game.awards" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates" />
     </div>
 
-    <div class="player_home_block player_home_block--turnorder nofloat" v-if="playerView.players.length>1">
+    <div class="player-home-block player-home-block--turnorder nofloat" v-if="playerView.players.length>1">
       <DynamicTitle title="Turn order" :color="thisPlayer.color" />
-      <div class="player_item" v-for="(p, idx) in playerView.players" :key="idx">
-        <div class="player_name_cont" :class="getPlayerCssForTurnOrder(p, true)">
-          <span class="player_number">{{ idx+1 }}.</span><span class="player_name" :class="getPlayerCssForTurnOrder(p, false)" href="#">{{ p.name }}</span>
+      <div class="player-item" v-for="(p, idx) in playerView.players" :key="idx">
+        <div class="player-name-cont" :class="getPlayerCssForTurnOrder(p, true)">
+          <span class="player-number">{{ idx+1 }}.</span><span class="player-name" :class="getPlayerCssForTurnOrder(p, false)" href="#">{{ p.name }}</span>
         </div>
-        <div class="player_separator" v-if="idx !== playerView.players.length - 1">⟶</div>
+        <div class="player-separator" v-if="idx !== playerView.players.length - 1">⟶</div>
       </div>
     </div>
 
@@ -97,7 +97,7 @@
 
         <PlanetaryTracks v-if="game.gameOptions.expansions.pathfinders" :tracks="game.pathfinders" :gameOptions="game.gameOptions" />
 
-        <a name="moonBoard" class="player_home_anchor"></a>
+        <a name="moonBoard" class="player-home-anchor"></a>
         <MoonBoard v-if="game.moon !== undefined" :model="game.moon" :tileView="tileView" />
         <VenusSurfaceBoard v-if="game.venusPhase2" :model="game.venusPhase2" :tileView="tileView" :venusScaleLevel="game.venusScaleLevel"
           :altVenusBoard="game.gameOptions.altVenusBoard"
@@ -180,10 +180,10 @@ export default defineComponent({
       player: PublicPlayerModel,
       highlightActive: boolean,
     ): string => {
-      const classes = ['highlighter_box'];
+      const classes = ['highlighter-box'];
       if (highlightActive) {
         if (player.needsToDraft || (player.needsToDraft === undefined && player.isActive)) {
-          classes.push('player_is_active');
+          classes.push('player-is-active');
         }
         classes.push(playerColorClass(player.color, 'bg'));
       }

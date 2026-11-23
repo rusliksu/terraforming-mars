@@ -29,7 +29,7 @@ import {VenusPhase2Data} from './venusPhase2/VenusPhase2Data';
 import {SeededRandom} from '../common/utils/Random';
 import {PathfindersData} from './pathfinders/PathfindersData';
 import {GameOptions} from './game/GameOptions';
-import {CorporationDeck, PreludeDeck, ProjectDeck, CeoDeck} from './cards/Deck';
+import {CorporationDeck, PreludeDeck, ProjectDeck, CeoDeck} from '@/server/cards/Decks';
 import {Tag} from '../common/cards/Tag';
 import {Tile} from './Tile';
 import {Logger} from './logs/Logger';
@@ -44,6 +44,7 @@ import type {EngineRuntime} from './engine/EngineRuntime';
 import type {ActionReplayState} from './game/ActionReplay';
 import {GlobalParameterTracks} from '@/server/boards/GlobalParameterTracks';
 import {Resource} from '@/common/Resource';
+import {isObject} from '@/common/utils/utils';
 
 export interface Score {
   corporation: String;
@@ -389,8 +390,5 @@ export interface IGame extends Logger {
 }
 
 export function isIGame(object: unknown): object is IGame {
-  if (typeof object !== 'object' || object === null) {
-    return false;
-  }
-  return Object.hasOwn(object, 'id') && isGameId((object as {id?: unknown}).id);
+  return isObject(object) && 'id' in object && isGameId(object.id);
 }

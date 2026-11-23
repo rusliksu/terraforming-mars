@@ -133,7 +133,7 @@ h2 {
   text-shadow: -1px -1px 6px #aaa4;
 }
 
-.filterDiv {
+.filter-div {
   font-size: 17px !important;
 }
 
@@ -152,339 +152,327 @@ h2 {
 // normal backgrounds
 each(@players, {
   @c: ~"player_@{value}";
-  .player_bg_color_@{value} {
+  .player-bg-color-@{value} {
     background-color: @@c;
   }
 })
 
-.player_bg_color_gold {
+.player-bg-color-gold {
   background-color: @player_gold;
   color: #000000;
 }
 
-.player_bg_color_emerald {
+.player-bg-color-emerald {
   background-color: @player_emerald;
   color: #001b13;
 }
 
-.player_bg_color_ginger {
+.player-bg-color-ginger {
   background-color: @player_ginger;
   color: #1f0900;
 }
 
-.player_bg_color_hydro {
+.player-bg-color-hydro {
   background-color: @player_hydro;
   color: #fff5f5;
 }
 
-.player_bg_color_pearl {
+.player-bg-color-pearl {
   background-color: @player_pearl;
   color: #102027;
 }
 
-.player_bg_color_antistress {
+.player-bg-color-antistress {
   background-color: @player_antistress;
   color: #d9e7ff;
 }
 
-.player_bg_color_gambit {
+.player-bg-color-gambit {
   background-color: @player_gambit;
   color: #071a2c;
 }
 
-.player_bg_color_turquoise {
+.player-bg-color-turquoise {
   background-color: @player_turquoise;
   color: #fff2f5;
 }
 
-.player_bg_color_vanger {
+.player-bg-color-vanger {
   background-color: @player_vanger;
   color: #001f00;
 }
 
-.player_bg_color_serge {
+.player-bg-color-serge {
   background-color: @player_serge;
   color: #fff2f5;
 }
 
-.player_bg_color_credicor {
+.player-bg-color-credicor {
   background-color: @player_credicor;
   background-image: url(./assets/credicor-pattern.svg);
   background-size: 96px 96px;
   color: #f1edf7;
 }
 
-.player_bg_color_saturn {
+.player-bg-color-saturn {
   background-color: @player_saturn;
   color: #201607;
 }
 
-.player_bg_color_saturnrings {
+.player-bg-color-saturnrings {
   background-color: @player_saturnrings;
   color: #1d170d;
 }
 
-.player_bg_color_titan {
+.player-bg-color-titan {
   background-color: @player_titan;
   color: #1f1000;
 }
 
-.player_bg_color_saturnstorm {
+.player-bg-color-saturnstorm {
   background-color: @player_saturnstorm;
   color: #ffe5e8;
 }
 
-.player_bg_color_catseye {
+.player-bg-color-catseye {
   background-color: @player_catseye;
   color: #182000;
 }
 
-.player_bg_color_rigatone {
+.player-bg-color-rigatone {
   background: @player_rigatone_surface_gradient;
   color: #fff4e8;
 }
 
-.player_bg_color_rigatone2 {
+.player-bg-color-rigatone2 {
   .player_rigatone2_bg();
 }
 
 // backgrounds with opacity
 each(@players, {
   @c: ~"player_@{value}";
-  .player_translucent_bg_color_@{value} {
+  .player-translucent-bg-color-@{value} {
     background: rgba(@@c, 0.7);
   }
 })
 
-.player_translucent_bg_color_gold {
+.player-translucent-bg-color-gold {
   .player_gold_bg_translucent();
   color: #000000;
 }
 
-.player_translucent_bg_color_emerald {
+.player-translucent-bg-color-emerald {
   .player_emerald_bg_translucent();
 }
 
-.player_translucent_bg_color_ginger {
+.player-translucent-bg-color-ginger {
   .player_ginger_bg_translucent();
 }
 
-.player_translucent_bg_color_hydro {
+.player-translucent-bg-color-hydro {
   .player_hydro_bg_translucent();
 }
 
-.player_translucent_bg_color_pearl {
+.player-translucent-bg-color-pearl {
   .player_pearl_bg_translucent();
   color: #102027;
 }
 
-.player_translucent_bg_color_antistress {
+.player-translucent-bg-color-antistress {
   .player_antistress_bg_translucent();
 }
 
-.player_translucent_bg_color_gambit {
+.player-translucent-bg-color-gambit {
   .player_gambit_bg_translucent();
 }
 
-.player_translucent_bg_color_turquoise {
+.player-translucent-bg-color-turquoise {
   .player_turquoise_bg_translucent();
 }
 
-.player_translucent_bg_color_vanger {
+.player-translucent-bg-color-vanger {
   .player_vanger_bg_translucent();
   color: #001f00;
 }
 
-.player_translucent_bg_color_serge {
+.player-translucent-bg-color-serge {
   .player_serge_bg_translucent();
 }
 
-.player_translucent_bg_color_credicor {
+.player-translucent-bg-color-credicor {
   .player_credicor_bg_translucent();
 }
 
-.player_translucent_bg_color_saturn {
+.player-translucent-bg-color-saturn {
   .player_saturn_bg_translucent();
 }
 
-.player_translucent_bg_color_saturnrings {
+.player-translucent-bg-color-saturnrings {
   .player_saturnrings_bg_translucent();
 }
 
-.player_translucent_bg_color_titan {
+.player-translucent-bg-color-titan {
   .player_titan_bg_translucent();
 }
 
-.player_translucent_bg_color_saturnstorm {
+.player-translucent-bg-color-saturnstorm {
   .player_saturnstorm_bg_translucent();
 }
 
-.player_translucent_bg_color_catseye {
+.player-translucent-bg-color-catseye {
   .player_catseye_bg_translucent();
 }
 
-.player_translucent_bg_color_rigatone {
+.player-translucent-bg-color-rigatone {
   .player_rigatone_bg_translucent();
 }
 
-.player_translucent_bg_color_rigatone2 {
+.player-translucent-bg-color-rigatone2 {
   .player_rigatone2_bg();
 }
 
-.player_bg_color_gold.log-player,
-.player_translucent_bg_color_gold .player-info-name,
-.player_translucent_bg_color_gold .player_name,
-.player_translucent_bg_color_gold .game-end-name-and-elo,
-.player_translucent_bg_color_gold .game-end-name-and-elo a,
-.player_translucent_bg_color_gold .player-name {
+.player-bg-color-gold.log-player,
+.player-translucent-bg-color-gold .player-info-name,
+.player-translucent-bg-color-gold .game-end-name-and-elo,
+.player-translucent-bg-color-gold .game-end-name-and-elo a,
+.player-translucent-bg-color-gold .player-name {
   color: #000000;
 }
 
-.player_bg_color_gold.log-player,
-.player_translucent_bg_color_gold td,
-.player_translucent_bg_color_gold .game-end-name-and-elo,
-.player_translucent_bg_color_gold .game-end-name-and-elo a {
+.player-bg-color-gold.log-player,
+.player-translucent-bg-color-gold td,
+.player-translucent-bg-color-gold .game-end-name-and-elo,
+.player-translucent-bg-color-gold .game-end-name-and-elo a {
   text-shadow: none;
 }
 
-.player_bg_color_emerald.log-player,
-.player_translucent_bg_color_emerald .player-info-name,
-.player_translucent_bg_color_emerald .player_name,
-.player_translucent_bg_color_emerald .game-end-name-and-elo,
-.player_translucent_bg_color_emerald .game-end-name-and-elo a,
-.player_translucent_bg_color_emerald .player-name {
+.player-bg-color-emerald.log-player,
+.player-translucent-bg-color-emerald .player-info-name,
+.player-translucent-bg-color-emerald .game-end-name-and-elo,
+.player-translucent-bg-color-emerald .game-end-name-and-elo a,
+.player-translucent-bg-color-emerald .player-name {
   color: #d7fff0;
 }
 
-.player_bg_color_ginger.log-player,
-.player_translucent_bg_color_ginger .player-info-name,
-.player_translucent_bg_color_ginger .player_name,
-.player_translucent_bg_color_ginger .game-end-name-and-elo,
-.player_translucent_bg_color_ginger .game-end-name-and-elo a,
-.player_translucent_bg_color_ginger .player-name {
+.player-bg-color-ginger.log-player,
+.player-translucent-bg-color-ginger .player-info-name,
+.player-translucent-bg-color-ginger .game-end-name-and-elo,
+.player-translucent-bg-color-ginger .game-end-name-and-elo a,
+.player-translucent-bg-color-ginger .player-name {
   color: #ffe1c8;
 }
 
-.player_bg_color_hydro.log-player,
-.player_translucent_bg_color_hydro .player-info-name,
-.player_translucent_bg_color_hydro .player_name,
-.player_translucent_bg_color_hydro .game-end-name-and-elo,
-.player_translucent_bg_color_hydro .game-end-name-and-elo a,
-.player_translucent_bg_color_hydro .player-name {
+.player-bg-color-hydro.log-player,
+.player-translucent-bg-color-hydro .player-info-name,
+.player-translucent-bg-color-hydro .game-end-name-and-elo,
+.player-translucent-bg-color-hydro .game-end-name-and-elo a,
+.player-translucent-bg-color-hydro .player-name {
   color: #fff5f5;
 }
 
-.player_bg_color_pearl.log-player,
-.player_translucent_bg_color_pearl .player-info-details,
-.player_translucent_bg_color_pearl .player-info-name,
-.player_translucent_bg_color_pearl .player-info-corp,
-.player_translucent_bg_color_pearl .player_name,
-.player_translucent_bg_color_pearl .game-end-name-and-elo,
-.player_translucent_bg_color_pearl .game-end-name-and-elo a,
-.player_translucent_bg_color_pearl .player-name {
+.player-bg-color-pearl.log-player,
+.player-translucent-bg-color-pearl .player-info-details,
+.player-translucent-bg-color-pearl .player-info-name,
+.player-translucent-bg-color-pearl .player-info-corp,
+.player-translucent-bg-color-pearl .game-end-name-and-elo,
+.player-translucent-bg-color-pearl .game-end-name-and-elo a,
+.player-translucent-bg-color-pearl .player-name {
   color: #000000;
 }
 
-.player_bg_color_pearl.log-player,
-.player_translucent_bg_color_pearl .player-info-name,
-.player_translucent_bg_color_pearl .player-info-corp,
-.player_translucent_bg_color_pearl td,
-.player_translucent_bg_color_pearl .game-end-name-and-elo,
-.player_translucent_bg_color_pearl .game-end-name-and-elo a {
+.player-bg-color-pearl.log-player,
+.player-translucent-bg-color-pearl .player-info-name,
+.player-translucent-bg-color-pearl .player-info-corp,
+.player-translucent-bg-color-pearl td,
+.player-translucent-bg-color-pearl .game-end-name-and-elo,
+.player-translucent-bg-color-pearl .game-end-name-and-elo a {
   text-shadow: none;
 }
 
-.player_translucent_bg_color_pearl .resource_item .resource_item_stock_count {
+.player-translucent-bg-color-pearl .resource-item .resource-item-stock-count {
   color: #ffffff;
   text-shadow: 0 2px 2px black;
 }
 
-.player_translucent_bg_color_pearl .resource_item .resource_item_prod_count {
+.player-translucent-bg-color-pearl .resource-item .resource-item-prod-count {
   color: #bb8760;
   text-shadow: 0 0 1px black;
 }
 
-.player_translucent_bg_color_pearl .tag-count-display {
+.player-translucent-bg-color-pearl .tag-count-display {
   color: #ffffff;
   text-shadow: 0 2px 2px black;
 }
 
-.player_translucent_bg_color_pearl .resource_item,
-.player_translucent_bg_color_pearl .resource_item.resource_item--energy:after {
+.player-translucent-bg-color-pearl .resource-item,
+.player-translucent-bg-color-pearl .resource-item.resource-item--energy:after {
   background: linear-gradient(rgba(0, 0, 0, 0.88) 20%, rgba(0, 0, 0, 0.45) 50%);
 }
 
-.player_bg_color_antistress.log-player,
-.player_translucent_bg_color_antistress .player-info-name,
-.player_translucent_bg_color_antistress .player_name,
-.player_translucent_bg_color_antistress .game-end-name-and-elo,
-.player_translucent_bg_color_antistress .game-end-name-and-elo a,
-.player_translucent_bg_color_antistress .player-name {
+.player-bg-color-antistress.log-player,
+.player-translucent-bg-color-antistress .player-info-name,
+.player-translucent-bg-color-antistress .game-end-name-and-elo,
+.player-translucent-bg-color-antistress .game-end-name-and-elo a,
+.player-translucent-bg-color-antistress .player-name {
   color: #d9e7ff;
 }
 
-.player_bg_color_gambit.log-player,
-.player_translucent_bg_color_gambit .player-info-name,
-.player_translucent_bg_color_gambit .player_name,
-.player_translucent_bg_color_gambit .game-end-name-and-elo,
-.player_translucent_bg_color_gambit .game-end-name-and-elo a,
-.player_translucent_bg_color_gambit .player-name {
+.player-bg-color-gambit.log-player,
+.player-translucent-bg-color-gambit .player-info-name,
+.player-translucent-bg-color-gambit .game-end-name-and-elo,
+.player-translucent-bg-color-gambit .game-end-name-and-elo a,
+.player-translucent-bg-color-gambit .player-name {
   color: #f2f9ff;
 }
 
-.player_bg_color_turquoise.log-player,
-.player_translucent_bg_color_turquoise .player-info-name,
-.player_translucent_bg_color_turquoise .player_name,
-.player_translucent_bg_color_turquoise .game-end-name-and-elo,
-.player_translucent_bg_color_turquoise .game-end-name-and-elo a,
-.player_translucent_bg_color_turquoise .player-name {
+.player-bg-color-turquoise.log-player,
+.player-translucent-bg-color-turquoise .player-info-name,
+.player-translucent-bg-color-turquoise .game-end-name-and-elo,
+.player-translucent-bg-color-turquoise .game-end-name-and-elo a,
+.player-translucent-bg-color-turquoise .player-name {
   color: #fff2f5;
 }
 
-.player_bg_color_vanger.log-player,
-.player_translucent_bg_color_vanger .player-info-name,
-.player_translucent_bg_color_vanger .player-info-corp,
-.player_translucent_bg_color_vanger .player_name,
-.player_translucent_bg_color_vanger .game-end-name-and-elo,
-.player_translucent_bg_color_vanger .game-end-name-and-elo a,
-.player_translucent_bg_color_vanger .player-name {
+.player-bg-color-vanger.log-player,
+.player-translucent-bg-color-vanger .player-info-name,
+.player-translucent-bg-color-vanger .player-info-corp,
+.player-translucent-bg-color-vanger .game-end-name-and-elo,
+.player-translucent-bg-color-vanger .game-end-name-and-elo a,
+.player-translucent-bg-color-vanger .player-name {
   color: #001f00;
 }
 
-.player_bg_color_vanger.log-player,
-.player_translucent_bg_color_vanger .player-info-corp,
-.player_translucent_bg_color_vanger td,
-.player_translucent_bg_color_vanger .game-end-name-and-elo,
-.player_translucent_bg_color_vanger .game-end-name-and-elo a {
+.player-bg-color-vanger.log-player,
+.player-translucent-bg-color-vanger .player-info-corp,
+.player-translucent-bg-color-vanger td,
+.player-translucent-bg-color-vanger .game-end-name-and-elo,
+.player-translucent-bg-color-vanger .game-end-name-and-elo a {
   text-shadow: none;
 }
 
-.player_bg_color_serge.log-player,
-.player_translucent_bg_color_serge .player-info-name,
-.player_translucent_bg_color_serge .player_name,
-.player_translucent_bg_color_serge .game-end-name-and-elo,
-.player_translucent_bg_color_serge .game-end-name-and-elo a,
-.player_translucent_bg_color_serge .player-name {
+.player-bg-color-serge.log-player,
+.player-translucent-bg-color-serge .player-info-name,
+.player-translucent-bg-color-serge .game-end-name-and-elo,
+.player-translucent-bg-color-serge .game-end-name-and-elo a,
+.player-translucent-bg-color-serge .player-name {
   color: #fff2f5;
 }
 
-.player_bg_color_credicor.log-player,
-.player_translucent_bg_color_credicor .player-info-name,
-.player_translucent_bg_color_credicor .player_name,
-.player_translucent_bg_color_credicor .game-end-name-and-elo,
-.player_translucent_bg_color_credicor .game-end-name-and-elo a,
-.player_translucent_bg_color_credicor .player-name {
+.player-bg-color-credicor.log-player,
+.player-translucent-bg-color-credicor .player-info-name,
+.player-translucent-bg-color-credicor .game-end-name-and-elo,
+.player-translucent-bg-color-credicor .game-end-name-and-elo a,
+.player-translucent-bg-color-credicor .player-name {
   color: #f1edf7;
 }
 
-.player_translucent_bg_color_credicor .player-info-details .player-info-name {
+.player-translucent-bg-color-credicor .player-info-details .player-info-name {
   font-size: 18px;
 }
 
-.player_translucent_bg_color_credicor .player-persona-title::before,
-.player_translucent_bg_color_credicor .player_name::before,
-.player_translucent_bg_color_credicor .game-end-name-and-elo a::before,
-.player_translucent_bg_color_credicor .player-name::before {
+.player-translucent-bg-color-credicor .player-persona-title::before,
+.player-translucent-bg-color-credicor .game-end-name-and-elo a::before,
+.player-translucent-bg-color-credicor .player-name::before {
   content: "";
   display: inline-block;
   width: 1em;
@@ -502,63 +490,57 @@ each(@players, {
   letter-spacing: 0.04em;
 }
 
-.player_translucent_bg_color_credicor .player-persona-title + span .player-info-corp {
+.player-translucent-bg-color-credicor .player-persona-title + span .player-info-corp {
   font-size: 14px;
   line-height: 14px;
   height: 14px;
 }
 
-.player_bg_color_saturn.log-player,
-.player_translucent_bg_color_saturn .player-info-name,
-.player_translucent_bg_color_saturn .player_name,
-.player_translucent_bg_color_saturn .game-end-name-and-elo,
-.player_translucent_bg_color_saturn .game-end-name-and-elo a,
-.player_translucent_bg_color_saturn .player-name {
+.player-bg-color-saturn.log-player,
+.player-translucent-bg-color-saturn .player-info-name,
+.player-translucent-bg-color-saturn .game-end-name-and-elo,
+.player-translucent-bg-color-saturn .game-end-name-and-elo a,
+.player-translucent-bg-color-saturn .player-name {
   color: #2b1d08;
 }
 
-.player_bg_color_saturnrings.log-player,
-.player_translucent_bg_color_saturnrings .player-info-name,
-.player_translucent_bg_color_saturnrings .player_name,
-.player_translucent_bg_color_saturnrings .game-end-name-and-elo,
-.player_translucent_bg_color_saturnrings .game-end-name-and-elo a,
-.player_translucent_bg_color_saturnrings .player-name {
+.player-bg-color-saturnrings.log-player,
+.player-translucent-bg-color-saturnrings .player-info-name,
+.player-translucent-bg-color-saturnrings .game-end-name-and-elo,
+.player-translucent-bg-color-saturnrings .game-end-name-and-elo a,
+.player-translucent-bg-color-saturnrings .player-name {
   color: #241a0b;
 }
 
-.player_bg_color_titan.log-player,
-.player_translucent_bg_color_titan .player-info-name,
-.player_translucent_bg_color_titan .player_name,
-.player_translucent_bg_color_titan .game-end-name-and-elo,
-.player_translucent_bg_color_titan .game-end-name-and-elo a,
-.player_translucent_bg_color_titan .player-name {
+.player-bg-color-titan.log-player,
+.player-translucent-bg-color-titan .player-info-name,
+.player-translucent-bg-color-titan .game-end-name-and-elo,
+.player-translucent-bg-color-titan .game-end-name-and-elo a,
+.player-translucent-bg-color-titan .player-name {
   color: #ffe4b2;
 }
 
-.player_bg_color_saturnstorm.log-player,
-.player_translucent_bg_color_saturnstorm .player-info-name,
-.player_translucent_bg_color_saturnstorm .player_name,
-.player_translucent_bg_color_saturnstorm .game-end-name-and-elo,
-.player_translucent_bg_color_saturnstorm .game-end-name-and-elo a,
-.player_translucent_bg_color_saturnstorm .player-name {
+.player-bg-color-saturnstorm.log-player,
+.player-translucent-bg-color-saturnstorm .player-info-name,
+.player-translucent-bg-color-saturnstorm .game-end-name-and-elo,
+.player-translucent-bg-color-saturnstorm .game-end-name-and-elo a,
+.player-translucent-bg-color-saturnstorm .player-name {
   color: #ffe5e8;
 }
 
-.player_bg_color_catseye.log-player,
-.player_translucent_bg_color_catseye .player-info-name,
-.player_translucent_bg_color_catseye .player_name,
-.player_translucent_bg_color_catseye .game-end-name-and-elo,
-.player_translucent_bg_color_catseye .game-end-name-and-elo a,
-.player_translucent_bg_color_catseye .player-name {
+.player-bg-color-catseye.log-player,
+.player-translucent-bg-color-catseye .player-info-name,
+.player-translucent-bg-color-catseye .game-end-name-and-elo,
+.player-translucent-bg-color-catseye .game-end-name-and-elo a,
+.player-translucent-bg-color-catseye .player-name {
   color: #f6ffd0;
 }
 
-.player_bg_color_rigatone.log-player,
-.player_translucent_bg_color_rigatone .player-info-name,
-.player_translucent_bg_color_rigatone .player_name,
-.player_translucent_bg_color_rigatone .game-end-name-and-elo,
-.player_translucent_bg_color_rigatone .game-end-name-and-elo a,
-.player_translucent_bg_color_rigatone .player-name {
+.player-bg-color-rigatone.log-player,
+.player-translucent-bg-color-rigatone .player-info-name,
+.player-translucent-bg-color-rigatone .game-end-name-and-elo,
+.player-translucent-bg-color-rigatone .game-end-name-and-elo a,
+.player-translucent-bg-color-rigatone .player-name {
   color: #fff4e8;
 }
 

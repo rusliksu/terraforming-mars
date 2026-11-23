@@ -58,7 +58,7 @@ describe('More Parties expansion', () => {
       const turmoil = Turmoil.getTurmoil(game);
       expect(turmoil.comingGlobalEvent?.name).to.eq(GlobalEventName.ENERGY_ECONOMICS);
       expect(turmoil.distantGlobalEvent?.name).to.eq(GlobalEventName.REVOLUTION);
-      expect(turmoil.globalEventDealer.discards.map(toName)).to.include(GlobalEventName.LONELINESS_IN_A_CROWD);
+      expect(turmoil.globalEventDealer.deck.discardPile.map(toName)).to.include(GlobalEventName.LONELINESS_IN_A_CROWD);
       expect(turmoil.parties).to.have.length(6);
       expect(turmoil.getPartyByName(PartyName.EMPOWER).delegates.multiplicity('NEUTRAL')).to.eq(1);
       expect(turmoil.getPartyByName(PartyName.UNITY).delegates.multiplicity('NEUTRAL')).to.eq(1);
@@ -119,7 +119,7 @@ describe('More Parties expansion', () => {
     const originalNames = turmoil.parties.map((p) => p.name).sort();
 
     const serialized = JSON.parse(JSON.stringify(turmoil.serialize()));
-    const reloaded = Turmoil.deserialize(serialized, [...game.players], game.gameOptions);
+    const reloaded = Turmoil.deserialize(serialized, [...game.players], game.gameOptions, game.rng);
 
     expect(reloaded.parties.map((p) => p.name).sort()).to.deep.eq(originalNames);
   });

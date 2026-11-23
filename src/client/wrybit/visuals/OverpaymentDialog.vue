@@ -1,13 +1,13 @@
 <template>
   <DialogFrame :title="$t('Pay too much?')" :width="460" class="overpayment-dialog" @close="emit('dismiss')">
     <template #icon>
-      <i class="resource_icon resource_icon--megacredits overpayment-dialog__title-icon"></i>
+      <i class="resource-icon resource-icon--megacredits overpayment-dialog__title-icon"></i>
     </template>
 
     <!-- Key figure first: how much is lost and for what -->
     <div class="overpayment-dialog__hero">
       <span class="overpayment-dialog__excess" data-test="excess">
-        +{{ excess }}<i class="resource_icon resource_icon--megacredits"></i>
+        +{{ excess }}<i class="resource-icon resource-icon--megacredits"></i>
       </span>
       <span class="overpayment-dialog__hero-text">
         <span class="overpayment-dialog__hero-label" v-i18n>too much</span>
@@ -25,7 +25,7 @@
       <div class="overpayment-dialog__bar">
         <span v-for="part in parts" :key="part.unit" class="overpayment-dialog__segment"
           :class="'overpayment-dialog__segment--' + part.unit" :style="{flexGrow: part.value}" :data-test="'segment-' + part.unit">
-          <i class="resource_icon" :class="iconClass(part.unit)"></i>
+          <i class="resource-icon" :class="iconClass(part.unit)"></i>
         </span>
         <span class="overpayment-dialog__lost" :style="{left: costPercent + '%'}"></span>
         <span class="overpayment-dialog__cost-line" :style="{left: costPercent + '%'}"></span>
@@ -40,10 +40,10 @@
       <!-- Legend under the bar: count × rate = value, in the order of the segments -->
       <ul class="overpayment-dialog__legend">
         <li v-for="part in parts" :key="part.unit" class="overpayment-dialog__legend-row">
-          <i class="resource_icon overpayment-dialog__legend-icon" :class="iconClass(part.unit)"></i>
+          <i class="resource-icon overpayment-dialog__legend-icon" :class="iconClass(part.unit)"></i>
           <span class="overpayment-dialog__legend-calc">{{ part.count }} × {{ part.rate }}</span>
           <span class="overpayment-dialog__legend-value">= {{ part.value }}</span>
-          <i class="resource_icon overpayment-dialog__legend-icon resource_icon--megacredits"></i>
+          <i class="resource-icon overpayment-dialog__legend-icon resource-icon--megacredits"></i>
         </li>
       </ul>
     </div>
@@ -57,7 +57,7 @@
       <button type="button" class="btn btn-tone-success overpayment-dialog__accept" data-test="accept" @click="emit('accept')">
         <span v-i18n>Yes, pay anyway</span>
         <span class="overpayment-dialog__accept-excess" data-test="accept-excess">
-          <span class="overpayment-dialog__accept-figure"><span class="overpayment-dialog__accept-value">+{{ excess }}</span><i class="resource_icon resource_icon--megacredits"></i></span>
+          <span class="overpayment-dialog__accept-figure"><span class="overpayment-dialog__accept-value">+{{ excess }}</span><i class="resource-icon resource-icon--megacredits"></i></span>
         </span>
       </button>
     </template>

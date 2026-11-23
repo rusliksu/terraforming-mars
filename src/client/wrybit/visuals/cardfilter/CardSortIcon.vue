@@ -4,7 +4,7 @@
     <circle cx="9" cy="6" r="1.7" /><circle cx="15" cy="6" r="1.7" /><circle cx="9" cy="12" r="1.7" />
     <circle cx="15" cy="12" r="1.7" /><circle cx="9" cy="18" r="1.7" /><circle cx="15" cy="18" r="1.7" />
   </svg>
-  <i v-else-if="sortKey === 'cost'" class="card-sort-icon resource_icon resource_icon--megacredits" aria-hidden="true"></i>
+  <i v-else-if="sortKey === 'cost'" class="card-sort-icon resource-icon resource-icon--megacredits" aria-hidden="true"></i>
   <span v-else-if="sortKey === 'type'" class="card-sort-icon card-sort-icon--types" aria-hidden="true">
     <i class="background-color-active"></i><i class="background-color-automated"></i><i class="background-color-events"></i>
   </span>

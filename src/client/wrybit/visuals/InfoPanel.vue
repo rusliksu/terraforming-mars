@@ -1,5 +1,5 @@
 <template>
-  <DialogFrame :title="$t('Game info')" :width="760" class="info_panel" @close="emit('close')">
+  <DialogFrame :title="$t('Game info')" :width="760" class="info-panel" @close="emit('close')">
     <template #icon>
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9" /><path d="M12 11v6" stroke-linecap="round" /><circle cx="12" cy="7.5" r="1.1" fill="currentColor" stroke="none" /></svg>
     </template>

@@ -42,7 +42,7 @@ describe('HelpIconology', () => {
     });
     expect(wrapper.text()).to.contain('Not on Cards');
     expect(wrapper.find('.tag-corruption-count').exists()).to.be.true;
-    expect(wrapper.find('.resource_icon--coordination').exists()).to.be.true;
+    expect(wrapper.find('.resource-icon--coordination').exists()).to.be.true;
   });
 
   it('has a Fan Tiles section with lunar and Venus: Phase 2 tiles', () => {

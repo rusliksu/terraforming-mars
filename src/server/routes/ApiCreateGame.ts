@@ -389,7 +389,7 @@ export class ApiCreateGame extends Handler {
         removeNegativeGlobalEventsOption: gameReq.removeNegativeGlobalEventsOption,
         requiresMoonTrackCompletion: gameReq.requiresMoonTrackCompletion,
         requiresVenusTrackCompletion: gameReq.requiresVenusTrackCompletion,
-        showOtherPlayersVP: gameReq.showOtherPlayersVP,
+        showVP: gameReq.showVP,
         showTimers: gameReq.showTimers,
         shuffleMapOption: gameReq.shuffleMapOption,
         solarPhaseOption: gameReq.solarPhaseOption,
@@ -422,7 +422,7 @@ export class ApiCreateGame extends Handler {
         }
       };
       try {
-        validateCustomMA(gameOptions.customMA, gameOptions.randomMA, gameOptions.venusNextExtension);
+        validateCustomMA(gameOptions.customMA, gameOptions.randomMA);
         validateCustomMAExpansions(gameOptions.customMA, gameOptions.expansions);
       } catch (e) {
         throw RouteError.badRequest(e instanceof Error ? e.message : String(e));

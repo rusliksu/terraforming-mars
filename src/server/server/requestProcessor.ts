@@ -148,12 +148,8 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_MAP_LIBRARY, ApiMapLibrary.INSTANCE],
     [paths.API_MAP_LIBRARY_REVIEW, ApiMapLibraryReview.INSTANCE],
     [paths.API_LOGOUT, ApiLogout.INSTANCE],
-    ['main.js', ServeAsset.INSTANCE],
-    ['main.js.map', ServeAsset.INSTANCE],
     ['release.json', ServeAsset.INSTANCE],
     ['sw.js', ServeAsset.INSTANCE],
-    ['vendors.js', ServeAsset.INSTANCE],
-    ['vendors.js.map', ServeAsset.INSTANCE],
     [paths.AUTH_DISCORD_CALLBACK, DiscordAuth.INSTANCE],
     [paths.NEW_GAME, ServeApp.INSTANCE],
     [paths.PLAYER, ServeApp.INSTANCE],
@@ -166,7 +162,6 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.REPLAY, ServeApp.INSTANCE],
     [paths.SPECTATOR, ServeApp.INSTANCE],
     [paths.STATS, ServeApp.INSTANCE],
-    ['styles.css', ServeAsset.INSTANCE],
     ['sw.js', ServeAsset.INSTANCE],
     [paths.THE_END, ServeApp.INSTANCE],
   ],
@@ -183,9 +178,11 @@ function getHandler(pathname: string): IHandler | undefined {
   if (pathname.startsWith('chunks/')) {
     return ServeAsset.INSTANCE;
   }
-  // Content-hashed entry files emitted by scripts/emit-asset-manifest.js.
-  if (/^(main|vendors)\.[0-9a-f]{16}\.js(?:\.map)?$/.test(pathname) ||
-      /^styles\.[0-9a-f]{16}\.css$/.test(pathname)) {
+  // Hashed Vite entry and component stylesheet (build/index.html points at them).
+  if (/^main-[A-Za-z0-9_-]+\.js(\.map)?$/.test(pathname)) {
+    return ServeAsset.INSTANCE;
+  }
+  if (/^client-[A-Za-z0-9_-]+\.css(\.map)?$/.test(pathname)) {
     return ServeAsset.INSTANCE;
   }
   // Dynamic ELO snapshots are public assets, but they are not under /assets/:
@@ -197,6 +194,16 @@ function getHandler(pathname: string): IHandler | undefined {
     return ServeAsset.INSTANCE;
   }
   return undefined;
+}
+
+// Metrics labels must survive a deploy: strip the Vite content hash from build files.
+// assets/ stays aggregated as before; chunks keep their logical name.
+export function metricsPathOf(pathname: string): string {
+  if (pathname.startsWith('assets/')) {
+    return 'assets/';
+  }
+  // Remove the hash part from the name, eg: main-A1b2C3d4.js => main.js
+  return pathname.replace(/-[A-Za-z0-9_-]{8}(?=\.(?:js|css)(?:\.map)?$)/, '');
 }
 
 function getAuthenticatedUser(req: Request): { user: DiscordUser | undefined; sessionid: SessionId | undefined } {
@@ -252,8 +259,7 @@ export async function processRequest(
     requestRoute = url.pathname;
     const handler = getHandler(pathname);
     if (handler !== undefined) {
-      // No need to report every asset. Summarize.
-      metricsPathname = pathname.startsWith('assets/') ? 'assets/' : pathname;
+      metricsPathname = metricsPathOf(pathname);
       const {user, sessionid} = getAuthenticatedUser(req);
       const sessionManager = SessionManager.getInstance();
       const ctx: Context = {

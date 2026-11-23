@@ -15,18 +15,18 @@
           data-test="team-score"
         >{{ team.score }}</span>
       </div>
-      <div v-if="showScores" class="ma-scores player_home_block--milestones-and-awards-scores">
+      <div v-if="showScores" class="ma-scores player-home-block--milestones-and-awards-scores">
         <template v-for="score in sortedScores" :key="score.color">
           <p
             v-if="playerSymbol(score.color).length > 0"
             class="ma-score"
-            :class="`player_bg_color_${score.color}`"
+            :class="`player-bg-color-${score.color}`"
             v-text="playerSymbol(score.color)"
             data-test="player-score"
           ></p>
           <p
             class="ma-score"
-            :class="`player_bg_color_${score.color}`"
+            :class="`player-bg-color-${score.color}`"
             v-text="score.score"
             data-test="player-score"
           ></p>

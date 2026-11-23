@@ -1,5 +1,5 @@
 <template>
-  <div class="player_home_block player_home_block--setup nofloat">
+  <div class="player-home-block player-home-block--setup nofloat">
     <CardListSection v-for="section in dealtSections" :key="section.title" :title="section.title" :cards="section.cards" />
     <CardListSection v-if="cardPresentation === undefined || showsDraftedCardsBlock(playerView)" title="Drafted Cards" :cards="playerView.draftedCards" />
     <div v-if="playerView.pickedCorporationCard.length === 1" class="setup-picked">

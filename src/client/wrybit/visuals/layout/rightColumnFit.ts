@@ -74,7 +74,7 @@ function contentBox(element: Element): {left: number; right: number; width: numb
   return {left, right, width: Math.max(0, right - left)};
 }
 
-const MILESTONES_SELECTOR = '.player_home_block--milestones-and-awards';
+const MILESTONES_SELECTOR = '.player-home-block--milestones-and-awards';
 const MARS_BLOCK_SELECTOR = '.player-home-columns__mars';
 // The box of the board tabs (BoardTabs.vue) carries the card frame and padding – Mars must fit inside it
 const BOARD_TABS_PANEL_SELECTOR = '.board-tabs-panel';

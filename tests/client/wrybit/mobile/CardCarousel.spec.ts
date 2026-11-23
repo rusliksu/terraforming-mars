@@ -6,9 +6,9 @@ function rect(left: number, width: number): DOMRect {
 }
 
 function buildCarousel(): {root: HTMLElement, list: HTMLElement, labels: Array<HTMLElement>, radios: Array<HTMLInputElement>} {
-  document.body.innerHTML = '<div class="mb-screen--turn"><div class="payments_cont"></div></div>';
+  document.body.innerHTML = '<div class="mb-screen--turn"><div class="payments-cont"></div></div>';
   const root = document.querySelector<HTMLElement>('.mb-screen--turn') as HTMLElement;
-  const list = root.querySelector<HTMLElement>('.payments_cont') as HTMLElement;
+  const list = root.querySelector<HTMLElement>('.payments-cont') as HTMLElement;
   const labels: Array<HTMLElement> = [];
   const radios: Array<HTMLInputElement> = [];
   for (let index = 0; index < 3; index++) {

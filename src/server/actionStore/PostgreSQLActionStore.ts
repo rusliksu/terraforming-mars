@@ -314,7 +314,7 @@ export class PostgreSQLActionStore implements IActionStore {
       'SELECT * FROM action_intent WHERE game_id = $1 AND action_id = $2',
       [validated.gameId, validated.actionId],
     );
-    if (existing.rowCount > 0) {
+    if ((existing.rowCount ?? 0) > 0) {
       const existingIntent = rowToIntent(existing.rows[0]);
       if (!isSameIntentContent(existingIntent, validated)) {
         throw new ActionIdConflictError(

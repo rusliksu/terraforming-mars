@@ -8,7 +8,7 @@
         <button type="button" class="btn" :disabled="position >= dialog.targets.length - 1" data-test="ai-next" @click="step(1)" v-i18n>Next</button>
       </div>
       <div class="ai-decision-dialog__line" data-test="ai-decision-line">
-        <span class="ai-decision-dialog__color" :class="'player_bg_color_' + dialog.target.color">{{ colorName }}</span>
+        <span class="ai-decision-dialog__color" :class="'player-bg-color-' + dialog.target.color">{{ colorName }}</span>
         <span>{{ lineText }}</span>
       </div>
       <div v-if="cardOptions.length > 0" class="ai-decision-dialog__cards" data-test="ai-decision-cards">

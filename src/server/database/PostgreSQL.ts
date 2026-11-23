@@ -13,6 +13,7 @@ import {databaseMetrics, withDatabaseMetrics} from './MetricsDelegate';
 import {ThrottledCache} from './ThrottledCache';
 import {Clock} from '@/common/Timer';
 import {parseInterned} from './parseInterned';
+import {POSTGRES_REPLAY_JOURNAL_DDL} from './ReplayJournal';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {compressToBrotli, decompressFromBrotli} from './compression';
 import {assertSaveIdWithinLimit} from './HistoryLimits';
@@ -180,6 +181,9 @@ export class PostgreSQL implements IDatabase {
     CREATE INDEX IF NOT EXISTS custom_card_library_idx_created_time on custom_card_library(created_time);
     `;
     await this.client.query(sql);
+    for (const statement of POSTGRES_REPLAY_JOURNAL_DDL) {
+      await this.client.query(statement);
+    }
 
     // games.game_compressed is already in the CREATE TABLE above for fresh databases;
     // this covers databases where the table already existed without it.

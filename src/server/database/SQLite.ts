@@ -12,6 +12,7 @@ import {MultiMap} from 'mnemonist';
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
 import {assertSaveIdWithinLimit, resolveMaxSavesPerGame} from './HistoryLimits';
+import {SQLITE_REPLAY_JOURNAL_DDL} from './ReplayJournal';
 import {ArchiveLocation, SQLiteArchiveRetention} from '@/server/archive/SQLiteArchiveRetention';
 import {MapLibraryEntry, MapLibraryEntryId, MapLibraryStatus} from '../../common/boards/MapLibraryEntry';
 import {CustomCardLibraryEntry, CustomCardEntryId, CustomCardStatus} from '../../common/cards/CustomCardLibraryEntry';
@@ -102,6 +103,10 @@ export class SQLite implements IDatabase {
         created_time timestamp not null default (strftime('%s', 'now')),
         PRIMARY KEY (id)
       )`);
+
+    for (const statement of SQLITE_REPLAY_JOURNAL_DDL) {
+      await this.asyncRun(statement);
+    }
   }
 
   public async getPlayerCount(gameId: GameId): Promise<number> {

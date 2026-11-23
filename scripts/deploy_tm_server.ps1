@@ -753,12 +753,12 @@ rm -rf "$release_root"
 mkdir -p "$release_unpack_dir"
 tar -xzf "$archive" -C "$release_unpack_dir"
 
-test -f "$release_unpack_dir/build/asset-manifest.json"
-main_js_name="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["main.js"])' "$release_unpack_dir/build/asset-manifest.json")"
-test -n "$main_js_name"
-test -f "$release_unpack_dir/build/$main_js_name"
+test -f "$release_unpack_dir/build/index.html"
+for hashed_asset in $(grep -oE '(src|href)="/[^"]+\.(js|css)"' "$release_unpack_dir/build/index.html" | sed -E 's/^.*="\///; s/"$//'); do
+  test -f "$release_unpack_dir/build/$hashed_asset"
+done
 test -f "$release_unpack_dir/build/src/server/server.js"
-test -f "$release_unpack_dir/assets/index.html"
+test -f "$release_unpack_dir/assets/Prototype.ttf"
 test -f "$release_unpack_dir/elo/index.html"
 test -f "$release_unpack_dir/elo/elo-api.js"
 test -f "$release_unpack_dir/package.json"

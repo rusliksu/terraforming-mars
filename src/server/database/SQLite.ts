@@ -275,7 +275,7 @@ export class SQLite implements IDatabase {
 
   /** Writes or clears the replay journal of a step-undo game. */
   private async saveReplayJournal(game: IGame): Promise<void> {
-    if (game.gameOptions.undoStepOption !== true || !isReplayJournalEnabled()) {
+    if (game.gameOptions?.undoStepOption !== true || !isReplayJournalEnabled()) {
       return;
     }
     const state = game.actionReplayState;

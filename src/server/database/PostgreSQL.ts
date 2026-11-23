@@ -524,7 +524,7 @@ export class PostgreSQL implements IDatabase {
 
   /** Writes or clears the replay journal inside the caller's open transaction. */
   private async saveReplayJournal(game: IGame): Promise<void> {
-    if (game.gameOptions.undoStepOption !== true || !isReplayJournalEnabled()) {
+    if (game.gameOptions?.undoStepOption !== true || !isReplayJournalEnabled()) {
       return;
     }
     const state = game.actionReplayState;

@@ -16,6 +16,7 @@ import {parseInterned} from './parseInterned';
 import {
   isReplayJournalEnabled,
   POSTGRES_REPLAY_JOURNAL_DDL,
+  POSTGRES_REPLAY_JOURNAL_MIGRATIONS,
   postgresReplaceReplayJournalStatements,
   ReplayJournalHeadRow,
   ReplayJournalEntryRow,
@@ -192,7 +193,7 @@ export class PostgreSQL implements IDatabase {
     CREATE INDEX IF NOT EXISTS custom_card_library_idx_created_time on custom_card_library(created_time);
     `;
     await this.pool.query(sql);
-    for (const statement of POSTGRES_REPLAY_JOURNAL_DDL) {
+    for (const statement of [...POSTGRES_REPLAY_JOURNAL_DDL, ...POSTGRES_REPLAY_JOURNAL_MIGRATIONS]) {
       await this.pool.query(statement);
     }
 
@@ -563,7 +564,7 @@ export class PostgreSQL implements IDatabase {
     if (!isReplayJournalEnabled()) {
       return undefined;
     }
-    const headResult = await this.pool.query('SELECT game_id, root_save_id, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at FROM game_action_replay_head WHERE game_id = $1', [gameId]);
+    const headResult = await this.pool.query('SELECT game_id, root_save_id, root_json, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at FROM game_action_replay_head WHERE game_id = $1', [gameId]);
     if (headResult.rows.length === 0) {
       return undefined;
     }

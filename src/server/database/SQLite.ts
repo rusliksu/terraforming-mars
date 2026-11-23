@@ -20,6 +20,7 @@ import {
   ReplayJournalSnapshot,
   snapshotFromActionReplayState,
   SQLITE_REPLAY_JOURNAL_DDL,
+  SQLITE_REPLAY_JOURNAL_MIGRATIONS,
   sqliteReplaceReplayJournalStatements,
 } from './ReplayJournal';
 import {ArchiveLocation, SQLiteArchiveRetention} from '@/server/archive/SQLiteArchiveRetention';
@@ -115,6 +116,13 @@ export class SQLite implements IDatabase {
 
     for (const statement of SQLITE_REPLAY_JOURNAL_DDL) {
       await this.asyncRun(statement);
+    }
+    for (const statement of SQLITE_REPLAY_JOURNAL_MIGRATIONS) {
+      try {
+        await this.asyncRun(statement);
+      } catch (_error) {
+        // The column already exists on databases created with it.
+      }
     }
   }
 
@@ -317,7 +325,7 @@ export class SQLite implements IDatabase {
     if (!isReplayJournalEnabled()) {
       return undefined;
     }
-    const head = await this.asyncGet<ReplayJournalHeadRow>('SELECT game_id, root_save_id, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at FROM game_action_replay_head WHERE game_id = ?', [gameId]);
+    const head = await this.asyncGet<ReplayJournalHeadRow>('SELECT game_id, root_save_id, root_json, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at FROM game_action_replay_head WHERE game_id = ?', [gameId]);
     if (head === undefined) {
       return undefined;
     }

@@ -14,7 +14,6 @@ import {CacheConfig} from './CacheConfig';
 import {databaseMetrics} from './MetricsDelegate';
 import {restoreActionReplayState} from './ReplayJournal';
 import {promptFingerprintForPlayer} from '../game/ActionReplay';
-import {SerializedGame} from '../SerializedGame';
 import {Clock} from '../../common/Timer';
 import {EloSyncService} from '../elo/EloSyncService';
 import {appendCanceledLogMessages} from '../logs/appendCanceledLogMessages';
@@ -290,19 +289,13 @@ export class GameLoader implements IGameLoader {
     if (journal === undefined) {
       return;
     }
-    let rootSnapshot: SerializedGame | undefined;
-    try {
-      rootSnapshot = await database.getGameVersion(game.id, journal.rootSaveId);
-    } catch (_error) {
-      rootSnapshot = undefined;
-    }
     let fingerprint = '';
     try {
       fingerprint = promptFingerprintForPlayer(game, journal.currentActorId);
     } catch (_error) {
       fingerprint = '';
     }
-    const result = restoreActionReplayState(journal, rootSnapshot, fingerprint);
+    const result = restoreActionReplayState(journal, fingerprint);
     if (result.kind === 'restored') {
       game.actionReplayState = result.state;
       this.countReplayJournal('replayJournalRestored');

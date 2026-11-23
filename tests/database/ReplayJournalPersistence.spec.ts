@@ -88,8 +88,7 @@ describe('Replay journal restart persistence', () => {
     // Serialization drops deferred actions, so the loaded prompt is not guaranteed to rebuild to the
     // same fingerprint; the live fingerprint recorded before the restart is the stable reference here.
     const fingerprint = promptFingerprintForPlayer(game, journal!.currentActorId);
-    const rootSnapshot = await restarted.getGameVersion(game.id, journal!.rootSaveId);
-    const restored = restoreActionReplayState(journal!, rootSnapshot, fingerprint);
+    const restored = restoreActionReplayState(journal!, fingerprint);
     expect(restored.kind).to.equal('restored');
     if (restored.kind === 'restored') {
       expect(restored.state.entries.length).to.equal(2);
@@ -105,8 +104,7 @@ describe('Replay journal restart persistence', () => {
 
     const restarted = await openDatabase();
     const journal = await restarted.readReplayJournal(game.id);
-    const rootSnapshot = await restarted.getGameVersion(game.id, journal!.rootSaveId);
-    const restored = restoreActionReplayState(journal!, rootSnapshot, 'different-prompt');
+    const restored = restoreActionReplayState(journal!, 'different-prompt');
     expect(restored).to.deep.equal({kind: 'dropped', reason: 'fingerprint'});
   });
 
@@ -117,16 +115,8 @@ describe('Replay journal restart persistence', () => {
     await db.saveGame(game);
 
     const restarted = await openDatabase();
-    restarted.exec(`DELETE FROM games WHERE game_id = '${game.id}' AND save_id = 0`);
-    const journal = await restarted.readReplayJournal(game.id);
-    let rootSnapshot;
-    try {
-      rootSnapshot = await restarted.getGameVersion(game.id, journal!.rootSaveId);
-    } catch {
-      rootSnapshot = undefined;
-    }
-    const restored = restoreActionReplayState(journal!, rootSnapshot, 'any');
-    expect(restored).to.deep.equal({kind: 'dropped', reason: 'missing_root'});
+    restarted.exec(`UPDATE game_action_replay_head SET root_json = NULL WHERE game_id = '${game.id}'`);
+    expect(await restarted.readReplayJournal(game.id)).to.be.undefined;
   });
 
   it('keeps only the newest 32 entries and survives two restarts', async () => {

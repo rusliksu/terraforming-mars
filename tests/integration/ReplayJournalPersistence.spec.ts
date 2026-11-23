@@ -78,9 +78,8 @@ function withJournal(game: IGame, actorId: string, entryCount: number): void {
     expect(journal).to.not.be.undefined;
     expect(journal!.entries.length).to.equal(2);
 
-    const rootSnapshot = await restarted.getGameVersion(gameId, journal!.rootSaveId);
     const fingerprint = promptFingerprintForPlayer(game, journal!.currentActorId);
-    const restored = restoreActionReplayState(journal!, rootSnapshot, fingerprint);
+    const restored = restoreActionReplayState(journal!, fingerprint);
     expect(restored.kind).to.equal('restored');
     await restarted.close();
   });
@@ -94,17 +93,10 @@ function withJournal(game: IGame, actorId: string, entryCount: number): void {
     expect(again!.entries.length).to.equal(32);
   });
 
-  it('drops the journal when the root save is gone', async () => {
+  it('drops the journal when the stored root snapshot is unusable', async () => {
     await seedJournal(1);
-    await database.queryForTest('DELETE FROM games WHERE game_id = $1 AND save_id = 0', [gameId]);
-    const journal = await database.readReplayJournal(gameId);
-    let rootSnapshot;
-    try {
-      rootSnapshot = await database.getGameVersion(gameId, journal!.rootSaveId);
-    } catch {
-      rootSnapshot = undefined;
-    }
-    expect(restoreActionReplayState(journal!, rootSnapshot, 'any')).to.deep.equal({kind: 'dropped', reason: 'missing_root'});
+    await database.queryForTest('UPDATE game_action_replay_head SET root_json = NULL WHERE game_id = $1', [gameId]);
+    expect(await database.readReplayJournal(gameId)).to.be.undefined;
   });
 
   it('leaves the journal untouched when a save is rejected', async () => {
@@ -136,8 +128,7 @@ function withJournal(game: IGame, actorId: string, entryCount: number): void {
   it('drops the journal when the prompt has moved on', async () => {
     await seedJournal(1);
     const journal = await database.readReplayJournal(gameId);
-    const rootSnapshot = await database.getGameVersion(gameId, journal!.rootSaveId);
-    expect(restoreActionReplayState(journal!, rootSnapshot, 'other-prompt')).to.deep.equal({kind: 'dropped', reason: 'fingerprint'});
+    expect(restoreActionReplayState(journal!, 'other-prompt')).to.deep.equal({kind: 'dropped', reason: 'fingerprint'});
   });
 
   it('persists a journal written after the move on its own transaction', async () => {

@@ -34,6 +34,7 @@ function snapshot(entries: ReadonlyArray<ReplayJournalEntry>): ReplayJournalSnap
   return {
     gameId: 'game-id',
     rootSaveId: 7,
+    rootSnapshot: {id: 'game-id'} as never,
     currentActorId: 'p1',
     currentPromptFingerprint: 'fingerprint-1',
     resetBeforeNextInput: false,
@@ -157,8 +158,8 @@ describe('ReplayJournal', () => {
     const sqlite = sqliteReplaceReplayJournalStatements(journal, 'now');
     expect(postgres.headSql).to.include('$1');
     expect(sqlite.headSql).to.include('?');
-    expect(postgres.headValues.length).to.equal(7);
-    expect(sqlite.headValues.length).to.equal(7);
+    expect(postgres.headValues.length).to.equal(8);
+    expect(sqlite.headValues.length).to.equal(8);
     expect(postgres.entryValues.length).to.equal(9);
     expect(sqlite.entryValues.length).to.equal(9);
     expect(sqlite.entryValues[7]).to.equal(0);
@@ -166,7 +167,7 @@ describe('ReplayJournal', () => {
 
   it('restores the journal when the root save and prompt still match', () => {
     const journal = snapshot([entry(0)]);
-    const result = restoreActionReplayState(journal, {id: 'game-id'} as never, 'fingerprint-1');
+    const result = restoreActionReplayState(journal, 'fingerprint-1');
     expect(result.kind).to.equal('restored');
     if (result.kind === 'restored') {
       expect(result.state.rootSaveId).to.equal(7);
@@ -176,12 +177,13 @@ describe('ReplayJournal', () => {
   });
 
   it('drops the journal when the root save is gone', () => {
-    const result = restoreActionReplayState(snapshot([entry(0)]), undefined, 'fingerprint-1');
+    const legacy: ReplayJournalSnapshot = {...snapshot([entry(0)]), rootSnapshot: undefined as never};
+    const result = restoreActionReplayState(legacy, 'fingerprint-1');
     expect(result).to.deep.equal({kind: 'dropped', reason: 'missing_root'});
   });
 
   it('drops the journal when the prompt has moved on', () => {
-    const result = restoreActionReplayState(snapshot([entry(0)]), {id: 'game-id'} as never, 'other-fingerprint');
+    const result = restoreActionReplayState(snapshot([entry(0)]), 'other-fingerprint');
     expect(result).to.deep.equal({kind: 'dropped', reason: 'fingerprint'});
   });
 

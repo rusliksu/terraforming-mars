@@ -21,6 +21,7 @@ export type ReplayJournalEntry = {
 export type ReplayJournalHeadRow = {
   game_id: GameId,
   root_save_id: number,
+  root_json?: string | null,
   current_actor_id: PlayerId,
   current_prompt_fingerprint: string,
   reset_before_next_input: boolean | number,
@@ -45,6 +46,8 @@ export type ReplayJournalEntryRow = {
 export type ReplayJournalSnapshot = {
   gameId: GameId,
   rootSaveId: number,
+  /** Pre-action state, stored so a restored journal replays exactly what the live action replayed. */
+  rootSnapshot: SerializedGame,
   currentActorId: PlayerId,
   currentPromptFingerprint: string,
   resetBeforeNextInput: boolean,
@@ -94,6 +97,7 @@ export function toHeadRow(snapshot: ReplayJournalSnapshot, updatedAt: string): R
   return {
     game_id: snapshot.gameId,
     root_save_id: snapshot.rootSaveId,
+    root_json: JSON.stringify(snapshot.rootSnapshot),
     current_actor_id: snapshot.currentActorId,
     current_prompt_fingerprint: snapshot.currentPromptFingerprint,
     reset_before_next_input: snapshot.resetBeforeNextInput,
@@ -117,6 +121,18 @@ export function toEntryRows(snapshot: ReplayJournalSnapshot, createdAt: string):
   }));
 }
 
+function parseRootSnapshot(rootJson: string | null | undefined): SerializedGame | undefined {
+  if (rootJson === null || rootJson === undefined) {
+    return undefined;
+  }
+  try {
+    const parsed: unknown = JSON.parse(rootJson);
+    return typeof parsed === 'object' && parsed !== null ? parsed as SerializedGame : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Restores the journal from head and entry rows, returning undefined when any input cannot be replayed. */
 export function fromRows(head: ReplayJournalHeadRow, rows: ReadonlyArray<ReplayJournalEntryRow>): ReplayJournalSnapshot | undefined {
   const entries: Array<ReplayJournalEntry> = [];
@@ -133,9 +149,14 @@ export function fromRows(head: ReplayJournalHeadRow, rows: ReadonlyArray<ReplayJ
       continuesThroughNextInput: asBoolean(row.continues_through_next_input),
     });
   }
+  const rootSnapshot = parseRootSnapshot(head.root_json);
+  if (rootSnapshot === undefined) {
+    return undefined;
+  }
   return {
     gameId: head.game_id,
     rootSaveId: head.root_save_id,
+    rootSnapshot,
     currentActorId: head.current_actor_id,
     currentPromptFingerprint: head.current_prompt_fingerprint,
     resetBeforeNextInput: asBoolean(head.reset_before_next_input),
@@ -155,6 +176,7 @@ export function snapshotFromActionReplayState(gameId: GameId, state: ActionRepla
   return {
     gameId,
     rootSaveId: state.rootSaveId,
+    rootSnapshot: state.rootSnapshot,
     currentActorId: state.currentActorId,
     currentPromptFingerprint: state.currentPromptFingerprint,
     resetBeforeNextInput: state.resetBeforeNextInput,
@@ -207,10 +229,9 @@ export type ReplayRestoreResult =
  */
 export function restoreActionReplayState(
   journal: ReplayJournalSnapshot,
-  rootSnapshot: SerializedGame | undefined,
   currentPromptFingerprint: string,
 ): ReplayRestoreResult {
-  if (rootSnapshot === undefined) {
+  if (journal.rootSnapshot === undefined) {
     return {kind: 'dropped', reason: 'missing_root'};
   }
   if (journal.currentPromptFingerprint !== currentPromptFingerprint) {
@@ -219,7 +240,7 @@ export function restoreActionReplayState(
   return {
     kind: 'restored',
     state: {
-      rootSnapshot,
+      rootSnapshot: journal.rootSnapshot,
       rootSaveId: journal.rootSaveId,
       entries: journal.entries.map((entry) => ({
         actorId: entry.actorId,
@@ -259,11 +280,11 @@ export function postgresReplaceReplayJournalStatements(snapshot: ReplayJournalSn
     return '(' + Array.from({length: 9}, (_unused, offset) => '$' + String(base + offset + 1)).join(', ') + ')';
   }).join(', ');
   return {
-    headSql: `INSERT INTO game_action_replay_head(game_id, root_save_id, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      ON CONFLICT (game_id) DO UPDATE SET root_save_id = $2, current_actor_id = $3, current_prompt_fingerprint = $4,
-        reset_before_next_input = $5, last_step_back_log_start_index = $6, updated_at = $7`,
-    headValues: [head.game_id, head.root_save_id, head.current_actor_id, head.current_prompt_fingerprint, head.reset_before_next_input, head.last_step_back_log_start_index, head.updated_at],
+    headSql: `INSERT INTO game_action_replay_head(game_id, root_save_id, root_json, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      ON CONFLICT (game_id) DO UPDATE SET root_save_id = $2, root_json = $3, current_actor_id = $4,
+        current_prompt_fingerprint = $5, reset_before_next_input = $6, last_step_back_log_start_index = $7, updated_at = $8`,
+    headValues: [head.game_id, head.root_save_id, head.root_json ?? null, head.current_actor_id, head.current_prompt_fingerprint, head.reset_before_next_input, head.last_step_back_log_start_index, head.updated_at],
     entrySql: rows.length === 0 ? '' : `INSERT INTO game_action_replay(${ENTRY_COLUMNS}) VALUES ${placeholders}
       ON CONFLICT (game_id, seq) DO UPDATE SET root_save_id = excluded.root_save_id, actor_id = excluded.actor_id,
         prompt_fingerprint = excluded.prompt_fingerprint, input_json = excluded.input_json, log_start_index = excluded.log_start_index,
@@ -281,12 +302,13 @@ export function sqliteReplaceReplayJournalStatements(snapshot: ReplayJournalSnap
   const rows = toEntryRows(snapshot, now);
   const placeholders = rows.map(() => '(' + Array.from({length: 9}, () => '?').join(', ') + ')').join(', ');
   return {
-    headSql: `INSERT INTO game_action_replay_head(game_id, root_save_id, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT (game_id) DO UPDATE SET root_save_id = excluded.root_save_id, current_actor_id = excluded.current_actor_id,
+    headSql: `INSERT INTO game_action_replay_head(game_id, root_save_id, root_json, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT (game_id) DO UPDATE SET root_save_id = excluded.root_save_id, root_json = excluded.root_json,
+        current_actor_id = excluded.current_actor_id,
         current_prompt_fingerprint = excluded.current_prompt_fingerprint, reset_before_next_input = excluded.reset_before_next_input,
         last_step_back_log_start_index = excluded.last_step_back_log_start_index, updated_at = excluded.updated_at`,
-    headValues: [head.game_id, head.root_save_id, head.current_actor_id, head.current_prompt_fingerprint, head.reset_before_next_input ? 1 : 0, head.last_step_back_log_start_index, head.updated_at],
+    headValues: [head.game_id, head.root_save_id, head.root_json ?? null, head.current_actor_id, head.current_prompt_fingerprint, head.reset_before_next_input ? 1 : 0, head.last_step_back_log_start_index, head.updated_at],
     entrySql: rows.length === 0 ? '' : `INSERT INTO game_action_replay(${ENTRY_COLUMNS}) VALUES ${placeholders}
       ON CONFLICT (game_id, seq) DO UPDATE SET root_save_id = excluded.root_save_id, actor_id = excluded.actor_id,
         prompt_fingerprint = excluded.prompt_fingerprint, input_json = excluded.input_json, log_start_index = excluded.log_start_index,
@@ -295,11 +317,16 @@ export function sqliteReplaceReplayJournalStatements(snapshot: ReplayJournalSnap
   };
 }
 
+/** Adds the root snapshot column to databases created before it existed. */
+export const POSTGRES_REPLAY_JOURNAL_MIGRATIONS = ['ALTER TABLE game_action_replay_head ADD COLUMN IF NOT EXISTS root_json text;'];
+
 /** Schema for the replay journal tables (PostgreSQL). */
 export const POSTGRES_REPLAY_JOURNAL_DDL = [
   `CREATE TABLE IF NOT EXISTS game_action_replay_head(
     game_id varchar NOT NULL,
     root_save_id integer NOT NULL,
+    root_json text,
+    root_json text,
     current_actor_id varchar NOT NULL,
     current_prompt_fingerprint text NOT NULL,
     reset_before_next_input boolean NOT NULL DEFAULT false,
@@ -318,6 +345,9 @@ export const POSTGRES_REPLAY_JOURNAL_DDL = [
     created_at timestamp NOT NULL DEFAULT now(),
     PRIMARY KEY (game_id, seq));`,
 ];
+
+/** Adds the root snapshot column to databases created before it existed. */
+export const SQLITE_REPLAY_JOURNAL_MIGRATIONS = ['ALTER TABLE game_action_replay_head ADD COLUMN root_json text'];
 
 /** Schema for the replay journal tables (SQLite). */
 export const SQLITE_REPLAY_JOURNAL_DDL = [

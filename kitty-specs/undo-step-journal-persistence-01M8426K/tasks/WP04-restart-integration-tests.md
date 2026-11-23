@@ -1,18 +1,53 @@
 ---
 work_package_id: WP04
-title: Replay Journal Restart Integration Tests
-dependencies: [WP02, WP03]
+title: Интеграционные тесты на рестарт
+dependencies:
+- WP02
+- WP03
 requirement_refs:
-  - NFR-001
-  - NFR-004
+- NFR-001
+- NFR-004
 planning_base_branch: spec/undo-step-journal-persistence
 merge_target_branch: spec/undo-step-journal-persistence
+branch_strategy: Planning artifacts for this mission were generated on spec/undo-step-journal-persistence. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into spec/undo-step-journal-persistence unless the human explicitly redirects the landing branch.
 subtasks:
-  - T009
-  - T010
+- T009
+- T010
+phase: Phase 4 — доказательство
+history: []
+agent_profile: reviewer-renata
+authoritative_surface: tests/integration/
+create_intent: []
+execution_mode: code_change
+owned_files:
+- tests/integration/**
+tags: []
+tracker_refs: []
+---
+---
+work_package_id: WP04
+title: Replay Journal Restart Integration Tests
+dependencies:
+- WP02
+- WP03
+requirement_refs:
+- NFR-001
+- NFR-004
+planning_base_branch: spec/undo-step-journal-persistence
+merge_target_branch: spec/undo-step-journal-persistence
+branch_strategy: Planning artifacts for this mission were generated on spec/undo-step-journal-persistence. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into spec/undo-step-journal-persistence unless the human explicitly redirects the landing branch.
+subtasks:
+- T009
+- T010
 phase: Phase 1 - Persistence
-assignee: codex
-agent: codex
+history: []
+authoritative_surface: src/
+create_intent: []
+execution_mode: code_change
+owned_files:
+- src/**
+tags: []
+tracker_refs: []
 ---
 # WP04 — Интеграционные тесты на рестарт
 

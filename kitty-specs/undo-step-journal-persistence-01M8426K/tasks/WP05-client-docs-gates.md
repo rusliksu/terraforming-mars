@@ -1,19 +1,55 @@
 ---
 work_package_id: WP05
-title: Client Test, Docs and Gates
-dependencies: [WP03]
+title: Клиентский тест, документация, гейты
+dependencies:
+- WP03
 requirement_refs:
-  - NFR-003
-  - NFR-004
+- NFR-003
+- NFR-004
 planning_base_branch: spec/undo-step-journal-persistence
 merge_target_branch: spec/undo-step-journal-persistence
+branch_strategy: Planning artifacts for this mission were generated on spec/undo-step-journal-persistence. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into spec/undo-step-journal-persistence unless the human explicitly redirects the landing branch.
 subtasks:
-  - T011
-  - T012
-  - T013
+- T011
+- T012
+- T013
+phase: Phase 5 — проверки
+history: []
+agent_profile: reviewer-renata
+authoritative_surface: docs/
+create_intent: []
+execution_mode: code_change
+owned_files:
+- docs/variants/undo.md
+- docs/architecture/step-undo-experiment-plan.md
+- tests/client/**
+tags: []
+tracker_refs: []
+---
+---
+work_package_id: WP05
+title: Client Test, Docs and Gates
+dependencies:
+- WP03
+requirement_refs:
+- NFR-003
+- NFR-004
+planning_base_branch: spec/undo-step-journal-persistence
+merge_target_branch: spec/undo-step-journal-persistence
+branch_strategy: Planning artifacts for this mission were generated on spec/undo-step-journal-persistence. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into spec/undo-step-journal-persistence unless the human explicitly redirects the landing branch.
+subtasks:
+- T011
+- T012
+- T013
 phase: Phase 1 - Persistence
-assignee: codex
-agent: codex
+history: []
+authoritative_surface: kitty-specs/undo-step-journal-persistence-01M8426K/
+create_intent: []
+execution_mode: planning_artifact
+owned_files:
+- kitty-specs/undo-step-journal-persistence-01M8426K/**
+tags: []
+tracker_refs: []
 ---
 # WP05 — Клиентский тест, документация, финальные гейты
 

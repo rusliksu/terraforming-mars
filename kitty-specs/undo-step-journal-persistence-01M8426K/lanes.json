@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "mission_slug": "undo-step-journal-persistence-01M8426K",
+  "mission_id": "01M8426KNRH9YWF270BSTWRYTZ",
+  "mission_branch": "kitty/mission-undo-step-journal-persistence-01M8426K",
+  "target_branch": "spec/undo-step-journal-persistence",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01",
+        "WP02",
+        "WP03"
+      ],
+      "write_scope": [
+        "src/server/database/**",
+        "src/server/game/ActionReplay.ts",
+        "tests/server/database/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "tests/integration/**"
+      ],
+      "predicted_surfaces": [
+        "artifact-rendering",
+        "tests",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "docs/architecture/step-undo-experiment-plan.md",
+        "docs/variants/undo.md",
+        "tests/client/**"
+      ],
+      "predicted_surfaces": [
+        "artifact-rendering",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    }
+  ],
+  "computed_at": "2026-11-23T11:30:23.923201+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "36d1a518fa3a0a59f5a2fd947be3f5a716a944d3",
+  "collapse_report": {
+    "events": [
+      {
+        "wp_a": "WP01",
+        "wp_b": "WP02",
+        "rule": "write_scope_overlap",
+        "evidence": "overlapping globs: 'src/server/database/**' vs 'src/server/database/**', 'tests/server/database/**' vs 'tests/server/database/**'; WP02 depends on WP01"
+      },
+      {
+        "wp_a": "WP01",
+        "wp_b": "WP03",
+        "rule": "write_scope_overlap",
+        "evidence": "overlapping globs: 'src/server/database/**' vs 'src/server/database/**'; WP03 depends on WP01"
+      }
+    ],
+    "total_merges": 2,
+    "independent_wps_collapsed": 0,
+    "by_rule": {
+      "write_scope_overlap": 2
+    }
+  }
+}

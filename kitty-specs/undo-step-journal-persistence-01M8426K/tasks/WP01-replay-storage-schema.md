@@ -1,21 +1,57 @@
 ---
 work_package_id: WP01
+title: Схема и repository журнала
+dependencies: []
+requirement_refs:
+- FR-002
+- FR-003
+- FR-010
+- NFR-002
+planning_base_branch: spec/undo-step-journal-persistence
+merge_target_branch: spec/undo-step-journal-persistence
+branch_strategy: Planning artifacts for this mission were generated on spec/undo-step-journal-persistence. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into spec/undo-step-journal-persistence unless the human explicitly redirects the landing branch.
+subtasks:
+- T001
+- T002
+- T003
+phase: Phase 1 — хранение журнала
+history: []
+agent_profile: reviewer-renata
+authoritative_surface: src/server/database/
+create_intent: []
+execution_mode: code_change
+owned_files:
+- src/server/database/**
+- tests/server/database/**
+tags: []
+tracker_refs: []
+---
+---
+work_package_id: WP01
 title: Replay Journal Storage Schema
 dependencies: []
 requirement_refs:
-  - FR-002
-  - FR-003
-  - FR-010
-  - NFR-002
+- FR-002
+- FR-003
+- FR-010
+- NFR-002
 planning_base_branch: spec/undo-step-journal-persistence
 merge_target_branch: spec/undo-step-journal-persistence
+branch_strategy: Planning artifacts for this mission were generated on spec/undo-step-journal-persistence. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into spec/undo-step-journal-persistence unless the human explicitly redirects the landing branch.
 subtasks:
-  - T001
-  - T002
-  - T003
+- T001
+- T002
+- T003
 phase: Phase 1 - Persistence
-assignee: codex
-agent: codex
+history: []
+authoritative_surface: ''
+create_intent: []
+execution_mode: code_change
+owned_files:
+- src/server/database/**
+- tests/server/database/**
+tags: []
+tracker_refs: []
 ---
 # WP01 — Схема и repository журнала шагового отката
 

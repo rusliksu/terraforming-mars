@@ -1,21 +1,61 @@
 ---
 work_package_id: WP02
-title: Replay Journal Save Transaction Writer
-dependencies: [WP01]
+title: Запись журнала в транзакции сохранения
+dependencies:
+- WP01
 requirement_refs:
-  - FR-001
-  - FR-005
-  - FR-006
-  - FR-009
+- FR-001
+- FR-005
+- FR-006
+- FR-009
 planning_base_branch: spec/undo-step-journal-persistence
 merge_target_branch: spec/undo-step-journal-persistence
+branch_strategy: Planning artifacts for this mission were generated on spec/undo-step-journal-persistence. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into spec/undo-step-journal-persistence unless the human explicitly redirects the landing branch.
 subtasks:
-  - T004
-  - T005
-  - T006
+- T004
+- T005
+- T006
+phase: Phase 2 — запись журнала
+history: []
+agent_profile: reviewer-renata
+authoritative_surface: src/server/database/
+create_intent: []
+execution_mode: code_change
+owned_files:
+- src/server/database/**
+- src/server/game/ActionReplay.ts
+- tests/server/database/**
+tags: []
+tracker_refs: []
+---
+---
+work_package_id: WP02
+title: Replay Journal Save Transaction Writer
+dependencies:
+- WP01
+requirement_refs:
+- FR-001
+- FR-005
+- FR-006
+- FR-009
+planning_base_branch: spec/undo-step-journal-persistence
+merge_target_branch: spec/undo-step-journal-persistence
+branch_strategy: Planning artifacts for this mission were generated on spec/undo-step-journal-persistence. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into spec/undo-step-journal-persistence unless the human explicitly redirects the landing branch.
+subtasks:
+- T004
+- T005
+- T006
 phase: Phase 1 - Persistence
-assignee: codex
-agent: codex
+history: []
+authoritative_surface: src/server/
+create_intent: []
+execution_mode: code_change
+owned_files:
+- src/server/database/GameLoader.ts
+- src/server/database/ReplayJournal.ts
+- src/server/game/ActionReplay.ts
+tags: []
+tracker_refs: []
 ---
 # WP02 — Запись журнала в транзакции сохранения
 

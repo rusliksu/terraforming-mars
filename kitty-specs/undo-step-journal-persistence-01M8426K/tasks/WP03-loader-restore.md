@@ -1,19 +1,57 @@
 ---
 work_package_id: WP03
-title: Replay Journal Loader Restore
-dependencies: [WP01, WP02]
+title: Восстановление журнала при загрузке
+dependencies:
+- WP01
+- WP02
 requirement_refs:
-  - FR-004
-  - FR-007
-  - FR-008
+- FR-004
+- FR-007
+- FR-008
 planning_base_branch: spec/undo-step-journal-persistence
 merge_target_branch: spec/undo-step-journal-persistence
+branch_strategy: Planning artifacts for this mission were generated on spec/undo-step-journal-persistence. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into spec/undo-step-journal-persistence unless the human explicitly redirects the landing branch.
 subtasks:
-  - T007
-  - T008
+- T007
+- T008
+phase: Phase 3 — восстановление
+history: []
+agent_profile: reviewer-renata
+authoritative_surface: src/server/database/
+create_intent: []
+execution_mode: code_change
+owned_files:
+- src/server/database/**
+- src/server/game/ActionReplay.ts
+tags: []
+tracker_refs: []
+---
+---
+work_package_id: WP03
+title: Replay Journal Loader Restore
+dependencies:
+- WP01
+- WP02
+requirement_refs:
+- FR-004
+- FR-007
+- FR-008
+planning_base_branch: spec/undo-step-journal-persistence
+merge_target_branch: spec/undo-step-journal-persistence
+branch_strategy: Planning artifacts for this mission were generated on spec/undo-step-journal-persistence. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into spec/undo-step-journal-persistence unless the human explicitly redirects the landing branch.
+subtasks:
+- T007
+- T008
 phase: Phase 1 - Persistence
-assignee: codex
-agent: codex
+history: []
+authoritative_surface: src/server/
+create_intent: []
+execution_mode: code_change
+owned_files:
+- src/server/database/GameLoader.ts
+- src/server/game/ActionReplay.ts
+tags: []
+tracker_refs: []
 ---
 # WP03 — Восстановление журнала при загрузке
 

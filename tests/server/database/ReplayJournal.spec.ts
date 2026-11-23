@@ -187,7 +187,9 @@ describe('ReplayJournal', () => {
 
   it('persists the accepted step through the store', async () => {
     const written: Array<ReplayJournalSnapshot> = [];
-    const store = {writeReplayJournal: async (snapshot: ReplayJournalSnapshot) => { written.push(snapshot); }};
+    const store = {writeReplayJournal: async (snapshot: ReplayJournalSnapshot) => {
+      written.push(snapshot);
+    }};
     const state: ActionReplayState = {
       rootSnapshot: {id: 'game-id'} as never,
       rootSaveId: 3,
@@ -204,7 +206,9 @@ describe('ReplayJournal', () => {
 
   it('skips the store when there is no state or no steps', async () => {
     const written: Array<ReplayJournalSnapshot> = [];
-    const store = {writeReplayJournal: async (snapshot: ReplayJournalSnapshot) => { written.push(snapshot); }};
+    const store = {writeReplayJournal: async (snapshot: ReplayJournalSnapshot) => {
+      written.push(snapshot);
+    }};
     expect(await persistActionReplaySnapshot(store, 'game-id' as never, undefined)).to.be.false;
     expect(await persistActionReplaySnapshot(store, 'game-id' as never, null)).to.be.false;
     const emptyState: ActionReplayState = {rootSnapshot: {id: 'x'} as never, rootSaveId: 1, entries: [], currentActorId: 'p1', currentPromptFingerprint: 'f', resetBeforeNextInput: false};

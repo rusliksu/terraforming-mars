@@ -10,5 +10,7 @@
   "purpose_tldr": "Undo Step Journal Persistence",
   "slug": "undo-step-journal-persistence-01M8426K",
   "target_branch": "spec/undo-step-journal-persistence",
-  "topology": "single_branch"
+  "topology": "single_branch",
+  "vcs": "git",
+  "vcs_locked_at": "2026-11-23T11:40:43.632462+00:00"
 }

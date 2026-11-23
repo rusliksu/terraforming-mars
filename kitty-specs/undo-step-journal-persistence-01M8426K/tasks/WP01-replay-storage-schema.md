@@ -10,6 +10,9 @@ requirement_refs:
 planning_base_branch: spec/undo-step-journal-persistence
 merge_target_branch: spec/undo-step-journal-persistence
 branch_strategy: Planning artifacts for this mission were generated on spec/undo-step-journal-persistence. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into spec/undo-step-journal-persistence unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-undo-step-journal-persistence-01M8426K
+base_commit: 8e168d06a26d3e829e0b79c942b9f066fdbb8b4b
+created_at: '2026-11-23T11:40:49.187947+00:00'
 subtasks:
 - T001
 - T002

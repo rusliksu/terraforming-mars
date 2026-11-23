@@ -17,6 +17,10 @@ param(
     [string]$DefaultShadowLogDir = "/home/openclaw/repos/tm-tierlist/data/shadow/server-inputs",
     [string]$DefaultStagingUrl = "https://staging.tm.knightbyte.win",
     [string]$TurnNoticeReminderMs = "7200000",
+    # Node runtime for each environment. Staging runs the side-by-side Node 26 from /opt;
+    # prod stays on the system Node until the prod switch is approved.
+    [string]$ProdNodeBin = "/usr/bin",
+    [string]$StagingNodeBin = "/opt/node26/bin",
     [switch]$DryRun
 )
 
@@ -131,6 +135,7 @@ $prodContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server.
     '__AUTO_JOIN_SCRIPT__' = $autoJoinScript
     '__SHADOW_LOG_DIR__' = $shadowLogDir
     '__TURN_NOTICE_REMINDER_MS__' = $TurnNoticeReminderMs
+    '__NODE_BIN__' = $ProdNodeBin
 }
 
 $stagingContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server-staging.service.template') -Replacements @{
@@ -142,6 +147,7 @@ $stagingContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-serv
     '__STAGING_URL__' = $stagingUrl
     '__AUTO_JOIN_SCRIPT__' = $autoJoinScript
     '__TURN_NOTICE_REMINDER_MS__' = $TurnNoticeReminderMs
+    '__NODE_BIN__' = $StagingNodeBin
 }
 
 $eloContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-elo.service.template') -Replacements @{

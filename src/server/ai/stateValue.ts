@@ -21,7 +21,7 @@ import {collectorRate} from './collectorRate';
 import {firstMilestoneBonus, incomeFactor, openingBrakeCost} from './phasePlan';
 import {ACTION_DRAW_FACTOR, drawnCardValue} from './drawPriority';
 import {styleFocusValue} from './styleFocus';
-import {bgaExpectedMargin} from './bgaValueModel';
+import {bgaExpectedMargin, bgaMultiplayerMargin} from './bgaValueModel';
 import {awardScoreWithHand} from './awardHandOutlook';
 import {fundedHandValue} from './handFunding';
 import {handReadiness} from './handReadiness';
@@ -522,10 +522,11 @@ export function relativeValue(player: IPlayer, frozen: ValuationContext): number
 
 /**
  * Mixes the learned position value (bgaValueModel.ts) into the hand-made valuation: its expected final VP margin is
- * priced like any VP now. Two-player games only; otherwise the hand-made value stays.
+ * priced like any VP now. Two-player games use the BGA model; three- and four-player games use the pairwise
+ * multiplayer model. Otherwise the hand-made value stays.
  */
 function blendLearnedValue(player: IPlayer, handMade: number, share: number, victoryPoint: number): number {
-  const margin = bgaExpectedMargin(player);
+  const margin = bgaExpectedMargin(player) ?? bgaMultiplayerMargin(player);
   if (margin === undefined) {
     return handMade;
   }

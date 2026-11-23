@@ -417,21 +417,47 @@ on Linux it runs directly. Windows fixture inputs are retained under
 `D:\tm-db\smartbot-lab\durable-promotion` and Linux processes use a temporary
 fixture directory.
 
-Rollback an environment to the previous immutable release:
+### Rollback (verified procedure, 2026-11-18)
+
+Roll back to the previous immutable release, then roll forward again once the problem is understood.
+Both directions were executed on staging and prod on 2026-11-18; the numbers below come from those runs.
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\rollback_tm_runtime.ps1 -Environment staging -DryRun
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\rollback_tm_runtime.ps1 -Environment staging
+# 0. Pre-flight: no live prod games, no release operation in flight, previous release still present
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\cleanup_tm_games.ps1 -Environment prod -AllowProd -List
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\rollback_tm_runtime.ps1 -Environment prod -DryRun
-```
 
-Rollback to a specific release name:
+# 1. Previous release (staging first; prod only on an explicit operator command)
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\rollback_tm_runtime.ps1 -Environment staging
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\rollback_tm_runtime.ps1 -Environment prod
 
-```powershell
+# 2. Roll forward again, or pin any release directory from <env>/releases
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\rollback_tm_runtime.ps1 `
-  -Environment staging `
-  -TargetRelease 20260414120447-2634ec27d148e11e0b76590c9f714f000828e7d8
+  -Environment prod `
+  -TargetRelease 20261118093930-e46e3193527d948fc937449fc3abbb9258214056-20261118083923-18484-4b82bdd5eb3848e49e80d417237f0284
 ```
+
+What the script does, and how long it takes:
+
+- resolves `<previous>` as the release before `current`, or uses `-TargetRelease`; refuses when the target is already current;
+- swaps the `<env>/current` symlink and restarts only that environment's services: `tm-server-staging` on staging, `tm-server` + `tm-elo` on prod;
+- systemd stops and starts the unit within the same second (prod 11:02:41 → 11:02:41, staging 10:42:36), so there is no rebuild step and downtime is the app boot only;
+- runs `verify_tm_server.ps1` after the swap, so a single command completes in well under a minute on both environments.
+
+Confirm after every switch:
+
+| Check | How | Expected |
+|---|---|---|
+| Release manifest | `curl https://tm.knightbyte.win/release.json` | `environment=prod`, `gitSha`/`artifactSha256` equal the target release |
+| Home page | `curl -I https://tm.knightbyte.win/` | `200` |
+| Old bundle is really served | grep `main.<hash>.js` in the home HTML | hash belongs to the target release (2026-11-18: rollback served `main.e14539e4….js`, current serves `main.2fb60968….js`) |
+| ELO | `curl https://tm.knightbyte.win/elo/data.json` | `200` |
+| Services | `systemctl --user show tm-server tm-elo -p ActiveState -p ExecMainStartTimestamp` | `active` with a fresh start timestamp |
+| Games untouched | `cleanup_tm_games.ps1 -Environment prod -AllowProd -List` | same running count as before the switch (0 during the 2026-11-18 run) |
+| Current link | `readlink -f /home/openclaw/tm-runtime/prod/current` | target release directory |
+
+Retention: rollback needs two releases per environment, so `prune_tm_runtime.ps1 -KeepNewestReleases 2` keeps exactly `current` + `previous`;
+pruning below that removes the rollback target. `-SkipVerify` skips only the post-switch HTTP check — the symlink swap and service restart still happen.
 
 Preview runtime retention cleanup:
 
@@ -559,7 +585,7 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\verify_tm_s
 - Rollout syncs `build/`, `assets/`, and the source-managed subset of `elo/` (`index.html`, `elo-api.js`, aliases, and maintenance scripts). It deliberately preserves live Elo data files on the VPS.
 - Rollout also carries `package.json` and `package-lock.json`; runtime dependencies are resolved into a managed cache under `/home/openclaw/tm-runtime/<env>/shared/deps/<package-lock-sha256>` instead of linking back to legacy checkout `node_modules`.
 - Once both environments are on `tm-runtime/*/current` with managed dependency cache, old `/home/openclaw/terraforming-mars*` checkouts can be archived with `scripts/archive_tm_legacy_checkouts.ps1` as cold backups.
-- `rollback_tm_runtime.ps1` switches `current` to a previous or explicit release, restarts only the environment-specific services, and verifies the served `release.json` after the swap.
+- `rollback_tm_runtime.ps1` switches `current` to a previous or explicit release, restarts only the environment-specific services, and verifies the served `release.json` after the swap. Rollback was exercised in both directions on staging and prod on 2026-11-18 (see Rollback above).
 - `prune_tm_runtime.ps1` keeps `current`, `previous`, and the newest release window, then removes unreferenced dependency caches plus older checkout-artifact snapshots.
 - `backup_tm_runtime_shared.ps1` captures mutable runtime state (`db`, `elo`, `logs`, plus release metadata) from VPS to `D:\tm-vps-archive` by default; dependency cache stays excluded unless you explicitly pass `-IncludeDeps`.
 - `restore_tm_runtime_shared.ps1` restores mutable runtime state from a local backup set, keeps a pre-restore snapshot on VPS under `tm-runtime/<env>/restore-backups`, blocks `prod` by default, and refuses release-mismatched restores unless you explicitly override it.

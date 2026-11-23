@@ -8,6 +8,8 @@ param(
     [string]$ExpectedArtifactSha,
     [ValidateRange(30, 900)]
     [int]$ValidationTimeoutSeconds = 120,
+    # Node runtime that matches the staged release dependencies (native modules are ABI-bound).
+    [string]$NodeBinDir = "/opt/node26/bin",
     [switch]$DryRun
 )
 
@@ -18,6 +20,13 @@ $ErrorActionPreference = "Stop"
 
 $remoteScript = @'
 set -euo pipefail
+
+node_bin_dir="__NODE_BIN_DIR__"
+if [ -n "$node_bin_dir" ]; then
+  export PATH="$node_bin_dir:$PATH"
+fi
+command -v node >/dev/null 2>&1 || { echo "node not found on PATH (node_bin_dir=$node_bin_dir)" >&2; exit 1; }
+node_version="$(node -v)"
 
 staging_current="/home/openclaw/tm-runtime/staging/current"
 game_db="/home/openclaw/tm-runtime/prod/shared/db/game.db"
@@ -62,13 +71,14 @@ fi
   timeout --signal=TERM --kill-after=5 "${validation_timeout_seconds}s" \
     node build/src/server/tools/validate_saved_games.js "$game_db"
 )
-echo "Production saves validated read-only: git=$observed_git_sha artifact=$observed_artifact_sha"
+echo "Production saves validated read-only: git=$observed_git_sha artifact=$observed_artifact_sha node=$node_version"
 
 '@
 
 $remoteScript = $remoteScript.Replace("__EXPECTED_GIT_SHA__", $ExpectedGitSha.ToLowerInvariant())
 $remoteScript = $remoteScript.Replace("__EXPECTED_ARTIFACT_SHA__", $ExpectedArtifactSha.ToLowerInvariant())
 $remoteScript = $remoteScript.Replace("__VALIDATION_TIMEOUT_SECONDS__", $ValidationTimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
+$remoteScript = $remoteScript.Replace("__NODE_BIN_DIR__", $NodeBinDir)
 
 if ($DryRun) {
     Write-Host "Dry run only. Read-only validation script:"

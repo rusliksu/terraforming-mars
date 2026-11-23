@@ -2,6 +2,7 @@ import {IPlayer} from '../IPlayer';
 import {Tag} from '../../common/cards/Tag';
 import {Resource} from '../../common/Resource';
 import modelData from './data/bgaValueModel.json';
+import multiModelData from './data/bgaMultiValueModel.json';
 import {Tree, treeScore} from './treeEnsemble';
 
 // Learned position value for two-player games: a gradient-boosted tree model (LightGBM) trained on about
@@ -96,4 +97,51 @@ export function bgaExpectedMargin(player: IPlayer): number | undefined {
   }
   const opponent = opponents[0];
   return (bgaMargin(bgaFeatures(player, opponent)) - bgaMargin(bgaFeatures(opponent, player))) / 2;
+}
+
+// Learned position value for three- and four-player games: the base features plus colony trade (colonies,
+// trade fleets, the colony board and the expansion flag), trained on pairwise VP differences from real
+// archived games. Two-player games keep the BGA model above.
+type MultiModelData = {features: Array<string>, trees: Array<Tree>};
+const MULTI_MODEL = multiModelData as unknown as MultiModelData;
+/** Feature names in the order of `bgaMultiFeatures`. */
+export const BGA_MULTI_VALUE_FEATURES: ReadonlyArray<string> = MULTI_MODEL.features;
+
+/** Feature vector for the multiplayer model: base features followed by colony trade features. */
+export function bgaMultiFeatures(player: IPlayer, opponent: IPlayer): Array<number> {
+  const game = player.game;
+  const ownColonies = player.getColoniesCount();
+  const otherColonies = opponent.getColoniesCount();
+  const ownFleet = player.colonies.getFleetSize();
+  const otherFleet = opponent.colonies.getFleetSize();
+  let coloniesOnBoard = 0;
+  if (game.gameOptions.coloniesExtension) {
+    game.colonies.forEach((colony) => {
+      coloniesOnBoard += colony.colonies.length;
+    });
+  }
+  return bgaFeatures(player, opponent).concat([
+    ownColonies, otherColonies, ownColonies - otherColonies,
+    ownFleet, otherFleet, ownFleet - otherFleet,
+    coloniesOnBoard, game.gameOptions.coloniesExtension ? 1 : 0,
+  ]);
+}
+
+/** Expected final VP margin for a `bgaMultiFeatures` vector. */
+export function bgaMultiMargin(features: ReadonlyArray<number>): number {
+  return treeScore(MULTI_MODEL.trees, features);
+}
+
+/**
+ * Expected final VP margin of `player` over the field in three- and four-player games, averaged over the
+ * pairwise estimates. Undefined outside three- and four-player games.
+ */
+export function bgaMultiplayerMargin(player: IPlayer): number | undefined {
+  const opponents = player.opponents;
+  if (opponents.length < 2 || opponents.length > 3) {
+    return undefined;
+  }
+  const total = opponents.reduce((sum, opponent) =>
+    sum + (bgaMultiMargin(bgaMultiFeatures(player, opponent)) - bgaMultiMargin(bgaMultiFeatures(opponent, player))) / 2, 0);
+  return total / opponents.length;
 }

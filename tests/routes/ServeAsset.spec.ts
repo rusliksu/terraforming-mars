@@ -83,6 +83,28 @@ class ManifestFileApiMock extends FileApiMock {
   }
 }
 
+class NoReleaseFileApiMock extends IndexHtmlFileApiMock {
+  public override readFile(path: string): Promise<Buffer> {
+    this.counts.readFile++;
+    if (path === 'assets/release.json') {
+      const err = new Error('missing') as Error & {code?: string};
+      err.code = 'ENOENT';
+      return Promise.reject(err);
+    }
+    return super.readFile(path);
+  }
+}
+
+class EmptyReleaseFileApiMock extends IndexHtmlFileApiMock {
+  public override readFile(path: string): Promise<Buffer> {
+    this.counts.readFile++;
+    if (path === 'assets/release.json') {
+      return Promise.resolve(Buffer.from('{}'));
+    }
+    return super.readFile(path);
+  }
+}
+
 describe('ServeAsset', () => {
   let instance: ServeAsset;
   let scaffolding: RouteTestScaffolding;
@@ -159,6 +181,48 @@ describe('ServeAsset', () => {
     expect(res.content).contains(`vendors.js?v=${version}`);
     expect(res.content).contains(`main.js?v=${version}`);
     expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
+  });
+
+  it('index.html falls back to a per-boot version when release.json is missing', async () => {
+    instance = new ServeAsset(undefined, false, new NoReleaseFileApiMock());
+    scaffolding.url = '/assets/index.html';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+
+    const match = res.content.match(/styles\.css\?v=(dev-[0-9a-f]{8})/);
+    expect(match, res.content).to.not.eq(null);
+    const version = match![1];
+    expect(res.content).contains(`vendors.js?v=${version}`);
+    expect(res.content).contains(`main.js?v=${version}`);
+    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
+  });
+
+  it('per-boot fallback version is stable within one server boot', async () => {
+    const readVersion = async (asset: ServeAsset): Promise<string> => {
+      scaffolding = new RouteTestScaffolding();
+      res = new MockResponse();
+      scaffolding.url = '/assets/index.html';
+      scaffolding.req.headers['accept-encoding'] = '';
+      await scaffolding.get(asset, res);
+      return res.content.match(/styles\.css\?v=(dev-[0-9a-f]{8})/)![1];
+    };
+
+    instance = new ServeAsset(undefined, false, new NoReleaseFileApiMock());
+    const first = await readVersion(instance);
+    const second = await readVersion(instance);
+    const third = await readVersion(new ServeAsset(undefined, false, new NoReleaseFileApiMock()));
+
+    expect(second).eq(first);
+    expect(third).eq(first);
+  });
+
+  it('index.html falls back to a per-boot version when release.json has no version fields', async () => {
+    instance = new ServeAsset(undefined, false, new EmptyReleaseFileApiMock());
+    scaffolding.url = '/assets/index.html';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+
+    expect(res.content).to.match(/styles\.css\?v=dev-[0-9a-f]{8}/);
   });
 
   it('index.html points at content-hashed assets when the manifest exists', async () => {

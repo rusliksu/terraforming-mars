@@ -15,7 +15,7 @@ Environment=TM_DISABLE_TELEGRAM=1
 Environment=TM_AUTO_JOIN_SCRIPT=__AUTO_JOIN_SCRIPT__
 Environment=TM_TURN_NOTICE_REMINDER_MS=__TURN_NOTICE_REMINDER_MS__
 ExecStartPre=-/usr/bin/fuser -k __STAGING_PORT__/tcp
-ExecStart=/usr/bin/node build/src/server/server.js
+ExecStart=__NODE_BIN__/node build/src/server/server.js
 Restart=always
 RestartSec=3
 

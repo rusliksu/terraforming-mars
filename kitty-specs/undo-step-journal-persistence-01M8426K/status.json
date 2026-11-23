@@ -1,7 +1,7 @@
 {
-  "event_count": 8,
-  "last_event_id": "01M843K80ZF8BX3TZ9ECPG01WR",
-  "materialized_at": "2026-11-23T11:45:23.999411+00:00",
+  "event_count": 9,
+  "last_event_id": "01M8442ANEWERQ1VWWSA2T8AC7",
+  "materialized_at": "2026-11-23T11:53:38.222183+00:00",
   "mission_number": "",
   "mission_slug": "undo-step-journal-persistence-01M8426K",
   "mission_type": "software-dev",
@@ -9,12 +9,12 @@
     "approved": 0,
     "blocked": 0,
     "canceled": 0,
-    "claimed": 0,
+    "claimed": 1,
     "done": 0,
     "for_review": 1,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 4
+    "planned": 3
   },
   "work_packages": {
     "WP01": {
@@ -33,11 +33,21 @@
       }
     },
     "WP02": {
-      "actor": "finalize-tasks",
+      "actor": "user",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M842CCV9HQJGFWVYGHPS9F89",
-      "last_transition_at": "2026-11-23T11:24:10.985484+00:00"
+      "lane": "claimed",
+      "last_event_id": "01M8442ANEWERQ1VWWSA2T8AC7",
+      "last_transition_at": "2026-11-23T11:53:38.222183+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "subtasks": {
+        "T004": "done",
+        "T005": "done",
+        "T006": "done"
+      }
     },
     "WP03": {
       "actor": "finalize-tasks",

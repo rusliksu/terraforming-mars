@@ -7,7 +7,7 @@ import {IGame} from '@/server/IGame';
 import {Game} from '@/server/Game';
 import {testGame} from '../TestGame';
 import {ActionInputEntry, ActionReplayState, promptFingerprintForPlayer} from '@/server/game/ActionReplay';
-import {restoreActionReplayState} from '@/server/database/ReplayJournal';
+import {persistActionReplaySnapshot, restoreActionReplayState} from '@/server/database/ReplayJournal';
 import {InputResponse} from '@/common/inputs/InputResponse';
 import {setTestDatabase, restoreTestDatabase} from '../testing/setup';
 
@@ -194,5 +194,25 @@ describe('Replay journal restart persistence', () => {
     const withoutJournal = await measure(false, 'latency-plain');
     const withJournalLatency = await measure(true, 'latency-journal');
     expect(withJournalLatency - withoutJournal).to.be.below(10);
+  });
+
+  it('persists a journal written after the move without another game save', async () => {
+    const [game, player] = testGame(2, {undoStepOption: true});
+    await db.saveGame(game);
+    const fingerprint = promptFingerprintForPlayer(game, player.id);
+    const state: ActionReplayState = {
+      rootSnapshot: game.serialize(),
+      rootSaveId: 0,
+      entries: [{actorId: player.id, promptFingerprint: fingerprint, input: {type: 'option', index: 0} as unknown as InputResponse}],
+      currentActorId: player.id,
+      currentPromptFingerprint: fingerprint,
+      resetBeforeNextInput: false,
+    };
+    expect(await persistActionReplaySnapshot(db, game.id, state)).to.be.true;
+
+    const restarted = await openDatabase();
+    const journal = await restarted.readReplayJournal(game.id);
+    expect(journal).to.not.be.undefined;
+    expect(journal!.entries.length).to.equal(1);
   });
 });

@@ -105,6 +105,10 @@ export class InMemoryDatabase implements IDatabase {
     return Promise.resolve(undefined);
   }
 
+  writeReplayJournal(): Promise<void> {
+    return Promise.resolve();
+  }
+
   clearReplayJournal(): Promise<void> {
     return Promise.resolve();
   }

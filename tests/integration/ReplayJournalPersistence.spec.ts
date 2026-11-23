@@ -4,7 +4,7 @@ import {Game} from '@/server/Game';
 import {IGame} from '@/server/IGame';
 import {testGame} from '../TestGame';
 import {ActionReplayState, promptFingerprintForPlayer} from '@/server/game/ActionReplay';
-import {REPLAY_JOURNAL_ENTRY_LIMIT, restoreActionReplayState} from '@/server/database/ReplayJournal';
+import {REPLAY_JOURNAL_ENTRY_LIMIT, persistActionReplaySnapshot, restoreActionReplayState} from '@/server/database/ReplayJournal';
 import {InputResponse} from '@/common/inputs/InputResponse';
 
 const password = process.env.POSTGRES_INTEGRATION_TEST_PASSWORD;
@@ -138,5 +138,24 @@ function withJournal(game: IGame, actorId: string, entryCount: number): void {
     const journal = await database.readReplayJournal(gameId);
     const rootSnapshot = await database.getGameVersion(gameId, journal!.rootSaveId);
     expect(restoreActionReplayState(journal!, rootSnapshot, 'other-prompt')).to.deep.equal({kind: 'dropped', reason: 'fingerprint'});
+  });
+
+  it('persists a journal written after the move on its own transaction', async () => {
+    const [game, player] = testGame(2, {undoStepOption: true});
+    (game as unknown as {id: string}).id = gameId;
+    await database.saveGame(game);
+    const fingerprint = promptFingerprintForPlayer(game, player.id);
+    const state: ActionReplayState = {
+      rootSnapshot: game.serialize(),
+      rootSaveId: 0,
+      entries: [{actorId: player.id, promptFingerprint: fingerprint, input: {type: 'option'} as unknown as InputResponse}],
+      currentActorId: player.id,
+      currentPromptFingerprint: fingerprint,
+      resetBeforeNextInput: false,
+    };
+    expect(await persistActionReplaySnapshot(database, gameId as never, state)).to.be.true;
+    const journal = await database.readReplayJournal(gameId as never);
+    expect(journal).to.not.be.undefined;
+    expect(journal!.entries.length).to.equal(1);
   });
 });

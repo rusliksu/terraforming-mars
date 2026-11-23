@@ -284,6 +284,18 @@ export class SQLite implements IDatabase {
       await this.clearReplayJournal(game.id);
       return;
     }
+    await this.applyReplayJournal(snapshot);
+  }
+
+  /** Replaces the journal of one game on its own savepoint, without a full game save. */
+  async writeReplayJournal(snapshot: ReplayJournalSnapshot): Promise<void> {
+    if (!isReplayJournalEnabled()) {
+      return;
+    }
+    await this.applyReplayJournal(snapshot);
+  }
+
+  private async applyReplayJournal(snapshot: ReplayJournalSnapshot): Promise<void> {
     const statements = sqliteReplaceReplayJournalStatements(snapshot, new Date().toISOString());
     // One transaction keeps the journal at a single fsync on the writer thread instead of one per row.
     await this.asyncRun('SAVEPOINT replay_journal');

@@ -57,7 +57,7 @@ export type ReplayJournalStore = {
   /** Returns undefined when the game has no persisted journal. */
   readReplayJournal(gameId: GameId): Promise<ReplayJournalSnapshot | undefined>,
   /** Replaces the whole journal of the game in one transaction. */
-  replaceReplayJournal(snapshot: ReplayJournalSnapshot): Promise<void>,
+  writeReplayJournal(snapshot: ReplayJournalSnapshot): Promise<void>,
   clearReplayJournal(gameId: GameId): Promise<void>,
 };
 
@@ -167,6 +167,28 @@ export function snapshotFromActionReplayState(gameId: GameId, state: ActionRepla
       continuesThroughNextInput: entry.continuesThroughNextInput,
     })),
   };
+}
+
+/**
+ * Persists the accepted step of the current action, returning whether anything was written.
+ *
+ * The move's own save runs before the step exists, so the handler calls this right after the step
+ * is recorded. A game without a restorable root or without steps writes nothing.
+ */
+export async function persistActionReplaySnapshot(
+  store: Pick<ReplayJournalStore, 'writeReplayJournal'>,
+  gameId: GameId,
+  state: ActionReplayState | null | undefined,
+): Promise<boolean> {
+  if (state === undefined || state === null) {
+    return false;
+  }
+  const snapshot = snapshotFromActionReplayState(gameId, state);
+  if (snapshot === undefined) {
+    return false;
+  }
+  await store.writeReplayJournal(snapshot);
+  return true;
 }
 
 /** Why a persisted journal could not be attached to a loaded game. */

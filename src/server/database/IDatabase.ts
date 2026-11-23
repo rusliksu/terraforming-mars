@@ -116,6 +116,13 @@ export interface IDatabase {
      */
     readReplayJournal(gameId: GameId): Promise<ReplayJournalSnapshot | undefined>;
 
+    /**
+     * Replaces the persisted one-step undo journal of a game.
+     *
+     * Called when a step is accepted, so the journal is durable without waiting for the next save.
+     */
+    writeReplayJournal(snapshot: ReplayJournalSnapshot): Promise<void>;
+
     /** Removes the persisted one-step undo journal of a game. */
     clearReplayJournal(gameId: GameId): Promise<void>;
 

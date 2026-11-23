@@ -131,6 +131,10 @@ export class MetricsDelegate implements IDatabase {
     return withDatabaseMetrics('readReplayJournal', () => this.delegate.readReplayJournal(gameId));
   }
 
+  writeReplayJournal(snapshot: ReplayJournalSnapshot): Promise<void> {
+    return withDatabaseMetrics('writeReplayJournal', () => this.delegate.writeReplayJournal(snapshot));
+  }
+
   clearReplayJournal(gameId: GameId): Promise<void> {
     return withDatabaseMetrics('clearReplayJournal', () => this.delegate.clearReplayJournal(gameId));
   }

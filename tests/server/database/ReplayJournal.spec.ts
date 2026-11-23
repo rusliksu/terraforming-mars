@@ -15,6 +15,7 @@ import {InputResponse} from '@/common/inputs/InputResponse';
 import type {ActionReplayState} from '@/server/game/ActionReplay';
 import {
   isReplayJournalEnabled,
+  persistActionReplaySnapshot,
   restoreActionReplayState,
   postgresReplaceReplayJournalStatements,
   snapshotFromActionReplayState,
@@ -182,5 +183,32 @@ describe('ReplayJournal', () => {
   it('drops the journal when the prompt has moved on', () => {
     const result = restoreActionReplayState(snapshot([entry(0)]), {id: 'game-id'} as never, 'other-fingerprint');
     expect(result).to.deep.equal({kind: 'dropped', reason: 'fingerprint'});
+  });
+
+  it('persists the accepted step through the store', async () => {
+    const written: Array<ReplayJournalSnapshot> = [];
+    const store = {writeReplayJournal: async (snapshot: ReplayJournalSnapshot) => { written.push(snapshot); }};
+    const state: ActionReplayState = {
+      rootSnapshot: {id: 'game-id'} as never,
+      rootSaveId: 3,
+      entries: [{actorId: 'p1', promptFingerprint: 'f1', input: {type: 'option'} as unknown as InputResponse}],
+      currentActorId: 'p1',
+      currentPromptFingerprint: 'f1',
+      resetBeforeNextInput: false,
+    };
+    expect(await persistActionReplaySnapshot(store, 'game-id' as never, state)).to.be.true;
+    expect(written.length).to.equal(1);
+    expect(written[0].entries.length).to.equal(1);
+    expect(written[0].rootSaveId).to.equal(3);
+  });
+
+  it('skips the store when there is no state or no steps', async () => {
+    const written: Array<ReplayJournalSnapshot> = [];
+    const store = {writeReplayJournal: async (snapshot: ReplayJournalSnapshot) => { written.push(snapshot); }};
+    expect(await persistActionReplaySnapshot(store, 'game-id' as never, undefined)).to.be.false;
+    expect(await persistActionReplaySnapshot(store, 'game-id' as never, null)).to.be.false;
+    const emptyState: ActionReplayState = {rootSnapshot: {id: 'x'} as never, rootSaveId: 1, entries: [], currentActorId: 'p1', currentPromptFingerprint: 'f', resetBeforeNextInput: false};
+    expect(await persistActionReplaySnapshot(store, 'game-id' as never, emptyState)).to.be.false;
+    expect(written.length).to.equal(0);
   });
 });

@@ -20,6 +20,8 @@ import {hasRevealedHiddenInformation} from '../game/hasRevealedHiddenInformation
 import {getUserAgent} from './auditRequest';
 import type {AccessAuditEvent, AccessAuditRecordInput} from '../server/AccessAudit';
 import {prepareActionReplayEntry, recordAcceptedActionReplayEntry} from '../game/ActionReplay';
+import {Database} from '../database/Database';
+import {persistActionReplaySnapshot} from '../database/ReplayJournal';
 import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../common/undo';
 import {logIrreversibleUndo} from '../logs/logIrreversibleUndo';
 import {BotTakeoverManager} from '../bot/BotTakeoverManager';
@@ -294,8 +296,15 @@ export class PlayerInput extends Handler {
         }
         if (replayEntry !== undefined) {
           recordAcceptedActionReplayEntry(player.game, replayEntry);
-          if (savedNewRoot && player.game.actionReplayState !== undefined && player.game.actionReplayState !== null) {
-            player.game.actionReplayState.resetBeforeNextInput = true;
+          const replayState = player.game.actionReplayState;
+          if (savedNewRoot && replayState !== undefined && replayState !== null) {
+            replayState.resetBeforeNextInput = true;
+          }
+          // The move's save ran before this step existed, so persist the journal now.
+          try {
+            await persistActionReplaySnapshot(Database.getInstance(), player.game.id, replayState);
+          } catch (error) {
+            console.warn('Unable to persist the step undo journal', error);
           }
         }
       }

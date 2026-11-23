@@ -17,6 +17,7 @@ const FAKE_DATABASE: IDatabase = {
   deleteGame: () => Promise.resolve(),
   deleteOrphanParticipants: () => Promise.resolve(0),
   readReplayJournal: () => Promise.resolve(undefined),
+  writeReplayJournal: () => Promise.resolve(),
   clearReplayJournal: () => Promise.resolve(),
   getPlayerCount: () => Promise.resolve(0),
   getGame: () => Promise.resolve({} as SerializedGame),

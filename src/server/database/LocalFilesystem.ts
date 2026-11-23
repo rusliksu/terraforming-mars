@@ -92,6 +92,10 @@ export class LocalFilesystem implements IDatabase {
     return Promise.resolve(undefined);
   }
 
+  writeReplayJournal(_snapshot: ReplayJournalSnapshot): Promise<void> {
+    return Promise.resolve();
+  }
+
   clearReplayJournal(_gameId: GameId): Promise<void> {
     return Promise.resolve();
   }

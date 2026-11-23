@@ -526,13 +526,32 @@ export class PostgreSQL implements IDatabase {
     if (snapshot === undefined) {
       return;
     }
+    await this.applyReplayJournal(client, snapshot);
+    this.statistics.saveReplayJournalCount++;
+  }
+
+  /**
+   * Replaces the journal of one game on its own transaction.
+   *
+   * The accepted step is recorded after the move's save completes, so the handler calls this to
+   * persist it without forcing a second full game save.
+   */
+  async writeReplayJournal(snapshot: ReplayJournalSnapshot): Promise<void> {
+    if (!isReplayJournalEnabled()) {
+      return;
+    }
+    await tx(this.pool, async (client) => {
+      await this.applyReplayJournal(client, snapshot);
+    });
+  }
+
+  private async applyReplayJournal(client: pg.Pool | pg.PoolClient, snapshot: ReplayJournalSnapshot): Promise<void> {
     const statements = postgresReplaceReplayJournalStatements(snapshot, new Date().toISOString());
     await client.query(statements.headSql, [...statements.headValues]);
     if (statements.entrySql !== '') {
       await client.query(statements.entrySql, [...statements.entryValues]);
     }
     await client.query('DELETE FROM game_action_replay WHERE game_id = $1 AND seq >= $2', [snapshot.gameId, statements.entryValues.length / 9]);
-    this.statistics.saveReplayJournalCount++;
   }
 
   private async deleteReplayJournalRows(client: pg.Pool | pg.PoolClient, gameId: GameId): Promise<void> {

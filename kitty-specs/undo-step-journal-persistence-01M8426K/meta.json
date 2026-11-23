@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-11-23T11:21:01.634076+00:00",
+  "flattened": false,
+  "friendly_name": "Undo Step Journal Persistence",
+  "mission_id": "01M8426KNRH9YWF270BSTWRYTZ",
+  "mission_number": null,
+  "mission_slug": "undo-step-journal-persistence-01M8426K",
+  "mission_type": "software-dev",
+  "purpose_context": "This mission advances Undo Step Journal Persistence on spec/undo-step-journal-persistence so stakeholders can track the work from mission creation onward.",
+  "purpose_tldr": "Undo Step Journal Persistence",
+  "slug": "undo-step-journal-persistence-01M8426K",
+  "target_branch": "spec/undo-step-journal-persistence",
+  "topology": "single_branch"
+}

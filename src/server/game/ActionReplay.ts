@@ -19,6 +19,8 @@ export interface ActionInputEntry {
 
 export interface ActionReplayState {
   rootSnapshot: SerializedGame;
+  /** Save id of the persisted state that the root snapshot was captured from, when known. */
+  rootSaveId?: number;
   entries: Array<ActionInputEntry>;
   currentActorId: PlayerId;
   currentPromptFingerprint: string;
@@ -61,6 +63,7 @@ export function prepareActionReplayEntry(
       }
       game.actionReplayState = {
         rootSnapshot,
+        rootSaveId: game.lastSaveId,
         entries: [],
         currentActorId: actorId,
         currentPromptFingerprint,
@@ -138,6 +141,7 @@ export function stepBackActionInput(current: IGame, actorId: PlayerId): Game {
   restoreLiveOnlyState(replayed, current);
   replayed.actionReplayState = {
     rootSnapshot: state.rootSnapshot,
+    rootSaveId: state.rootSaveId,
     entries: remainingEntries,
     currentActorId: removedEntry.actorId,
     currentPromptFingerprint: predecessorFingerprint,

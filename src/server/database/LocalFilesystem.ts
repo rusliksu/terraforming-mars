@@ -7,6 +7,7 @@ import {Dirent, existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, wr
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
 import {assertSaveIdWithinLimit, resolveMaxSavesPerGame} from './HistoryLimits';
+import {ReplayJournalSnapshot} from './ReplayJournal';
 import {MapLibraryEntry, MapLibraryEntryId, MapLibraryStatus} from '../../common/boards/MapLibraryEntry';
 import {CustomCardLibraryEntry, CustomCardEntryId, CustomCardStatus} from '../../common/cards/CustomCardLibraryEntry';
 
@@ -84,6 +85,15 @@ export class LocalFilesystem implements IDatabase {
   deleteOrphanParticipants(): Promise<number> {
     // Participants are derived from the game files, so orphan rows cannot exist here.
     return Promise.resolve(0);
+  }
+
+  readReplayJournal(_gameId: GameId): Promise<ReplayJournalSnapshot | undefined> {
+    // The filesystem backend stores games only; step-undo journals are not persisted here.
+    return Promise.resolve(undefined);
+  }
+
+  clearReplayJournal(_gameId: GameId): Promise<void> {
+    return Promise.resolve();
   }
 
   saveGame(game: IGame): Promise<void> {

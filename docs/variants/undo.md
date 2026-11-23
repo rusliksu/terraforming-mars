@@ -27,6 +27,14 @@ step. If the placement revealed hidden information, such as drawing a card from
 a board bonus, the player must confirm the undo and the irreversible undo is
 recorded in the public game log.
 
-The step journal is currently kept in server memory. A server restart or a
-flow that cannot be replayed deterministically can make one-step undo
-unavailable; action undo remains a separate fallback when enabled.
+The step journal is persisted next to the game save: the root of the action is
+stored as a reference to its save, and the steps themselves live in the
+`game_action_replay` tables. A restart therefore keeps one-step undo available
+for games created with the option.
+
+Restoration is fail-closed. If the root save no longer exists, if the current
+prompt no longer matches the recorded fingerprint, or if a stored input cannot
+be replayed, the journal is dropped and the game loads without one-step undo;
+action undo remains a separate fallback when enabled. Setting
+`TM_DISABLE_REPLAY_JOURNAL=1` turns the persistence off without a schema
+change.

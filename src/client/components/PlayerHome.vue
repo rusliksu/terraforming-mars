@@ -7,7 +7,7 @@
     </div>
     <TopBar :playerView="playerView" />
     <div v-if="game.phase === 'end'">
-      <div class="player_home_block">
+      <div class="player-home-block">
         <DynamicTitle title="This game is over!" :color="thisPlayer.color" />
         <a :href="'the-end?id='+ playerView.id" v-i18n>Go to game results</a>
       </div>
@@ -32,7 +32,7 @@
       :otherDeckSizes="game.otherDeckSizes" />
 
     <div v-if="thisPlayer.tableau.length > 0" data-player-panels>
-      <div class="player_home_block player-layout-board" data-layout-panel="board">
+      <div class="player-home-block player-layout-board" data-layout-panel="board">
         <GameBoardView
           ref="gameBoardView"
           :game="game"
@@ -43,31 +43,31 @@
       </div>
 
       <a class="hotkey-target"></a>
-      <PlayersOverview class="player_home_block player_home_block--players nofloat" data-layout-panel="players" :playerView="playerView" id="shortkey-playersoverview" />
+      <PlayersOverview class="player-home-block player_home_block--players nofloat" data-layout-panel="players" :playerView="playerView" id="shortkey-playersoverview" />
 
       <a class="hotkey-target"></a>
-      <div class="player_home_block nofloat player-layout-log" data-layout-panel="log" v-if="!isInitialDraftingPhase">
+      <div class="player-home-block nofloat player-layout-log" data-layout-panel="log" v-if="!isInitialDraftingPhase">
         <LogPanel :viewModel="playerView" :step="game.step" @spaceClicked="onSpaceClicked" />
       </div>
 
       <a class="hotkey-target"></a>
-      <div class="player_home_block player_home_block--actions nofloat" data-layout-panel="actions">
-        <a name="actions" class="player_home_anchor"></a>
+      <div class="player-home-block player_home_block--actions nofloat" data-layout-panel="actions">
+        <a name="actions" class="player-home-anchor"></a>
         <DynamicTitle title="Actions" :color="thisPlayer.color" />
         <InputHost v-if="game.phase !== 'end'">
           <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor" :requestId="playerView.requestId" />
         </InputHost>
       </div>
 
-      <div class="player_home_block player_home_block--hand" data-layout-panel="cards" v-if="playerView.draftedCards.length > 0">
+      <div class="player-home-block player_home_block--hand" data-layout-panel="cards" v-if="playerView.draftedCards.length > 0">
         <DynamicTitle title="Drafted cards" :color="thisPlayer.color" />
         <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox">
           <Card :card="card" />
         </div>
       </div>
 
-      <a name="cards" class="player_home_anchor"></a>
-      <div class="player_home_block player_home_block--hand" data-layout-panel="cards" v-if="cardsInHandCount > 0" id="shortkey-hand">
+      <a name="cards" class="player-home-anchor"></a>
+      <div class="player-home-block player_home_block--hand" data-layout-panel="cards" v-if="cardsInHandCount > 0" id="shortkey-hand">
         <div class="hiding-card-button-row">
           <DynamicTitle title="Cards In Hand" :color="thisPlayer.color" />
           <div :class="getHideButtonClass('HAND')" @click.prevent="toggle('HAND')">
@@ -83,7 +83,7 @@
             .concat(playerView.cardsInHand)" v-model:sortOrder="handSortOrder" />
       </div>
 
-      <div class="player_home_block player_home_block--cards" data-layout-panel="cards">
+      <div class="player-home-block player_home_block--cards" data-layout-panel="cards">
         <div class="hiding-card-button-row">
           <DynamicTitle title="Played Cards" :color="thisPlayer.color" />
           <div class="played-cards-filters">
@@ -118,7 +118,7 @@
 
       </div>
 
-      <div v-if="thisPlayer.selfReplicatingRobotsCards.length > 0" class="player_home_block" data-layout-panel="cards">
+      <div v-if="thisPlayer.selfReplicatingRobotsCards.length > 0" class="player-home-block" data-layout-panel="cards">
         <DynamicTitle title="Self-replicating Robots cards" :color="thisPlayer.color" />
         <div>
           <div v-for="card in thisPlayer.selfReplicatingRobotsCards" :key="card.name" class="cardbox">
@@ -137,16 +137,16 @@
       <PlayerSetupView :playerView="playerView" :tileView="tileView" @toggleTileView="cycleTileView()" />
     </template>
 
-    <div v-if="game.colonies.length > 0" class="player_home_block" data-layout-panel="board" ref="colonies" id="shortkey-colonies">
-      <a name="colonies" class="player_home_anchor hotkey-target"></a>
+    <div v-if="game.colonies.length > 0" class="player-home-block" data-layout-panel="board" ref="colonies" id="shortkey-colonies">
+      <a name="colonies" class="player-home-anchor hotkey-target"></a>
       <DynamicTitle title="Colonies" :color="thisPlayer.color" />
       <div class="colonies-fleets-cont">
         <div class="colonies-player-fleets" v-for="colonyPlayer in playerView.players" :key="colonyPlayer.color">
           <div :class="'colonies-fleet colonies-fleet-'+ colonyPlayer.color" v-for="idx in getFleetsCountRange(colonyPlayer)" :key="idx"></div>
         </div>
       </div>
-      <div class="player_home_colony_cont">
-        <div class="player_home_colony" v-for="colony in game.colonies" :key="colony.name">
+      <div class="player-home-colony-cont">
+        <div class="player-home-colony" v-for="colony in game.colonies" :key="colony.name">
           <Colony :colony="colony" :active="colony.isActive" />
         </div>
       </div>

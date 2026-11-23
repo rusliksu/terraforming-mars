@@ -4,7 +4,7 @@
   background: linear-gradient(transparent, #000), url(./assets/stars.jpg);
   background-attachment: fixed;
 
-  > div:not([class]), > div:not([class]) > div.player_home_block:first-child {
+  > div:not([class]), > div:not([class]) > div.player-home-block:first-child {
     > a:after {
       content: '🔗';
       border-radius: 32px;
@@ -223,7 +223,7 @@
     border-bottom-right-radius: 4px;
   }
 
-  .highlighter_box {
+  .highlighter-box {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
   }
@@ -367,7 +367,7 @@
     text-shadow: 0 0 5px darkorange;
   }
 
-  .player_name_cont {
+  .player-name-cont {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -575,7 +575,7 @@
   margin-top: 11px;
 }
 
-.player_home_anchor {
+.player-home-anchor {
   position: relative;
   top: -100px;
   visibility: hidden;
@@ -586,33 +586,33 @@
   scroll-margin-top: 70px;
 }
 
-.highlighter_box {
+.highlighter-box {
   text-shadow: 1px 1px 1px @grey_900, -1px -1px 1px #666;
   padding: 1px 10px;
   border-radius: 4px;
 }
 
-.player_home_block {
+.player-home-block {
   margin-bottom: 20px;
 
   .accordion-header {
     display: inline-block;
   }
 
-  .player_item {
+  .player-item {
     display: inline-block;
     vertical-align: middle;
     white-space: nowrap;
     margin-right: 15px;
   }
 
-  .player_name {
+  .player-name {
     text-shadow: 1px 1px 1px @grey_900, -1px -1px 2px #666;
     padding: 2px 5px;
     border-radius: 4px;
   }
 
-  .player_name_cont {
+  .player-name-cont {
     text-align: center;
     width: 150px;
     overflow: hidden;
@@ -621,17 +621,17 @@
     display: inline-block;
     vertical-align: middle;
 
-    .player_number {
+    .player-number {
       margin-right: 5px;
       text-shadow: 1px 1px 1px @grey_900, -1px -1px 1px #666;
     }
   }
-  .other_player {
+  .other-player {
     display: flex;
     flex-wrap: wrap;
   }
 
-  .player_separator {
+  .player-separator {
     display: inline-block;
     vertical-align: top;
     font-size: 20px;
@@ -639,14 +639,14 @@
     color: #7e7c7c;
   }
 
-  .player_is_active {
+  .player-is-active {
     box-shadow: -1px -1px 5px #f80, 1px 1px 5px #f80;
     scale: 1.2;
     border: 2px solid #fff;
   }
 }
 
-.milestones_cont, .awards_cont {
+.milestones-cont, .awards-cont {
   vertical-align: top;
 }
 
@@ -1080,7 +1080,7 @@
   }
 }
 
-.player_home_block--setup {
+.player-home-block--setup {
   .wf-action {
     margin: 20px 0 40px;
     text-align: center;
@@ -1100,15 +1100,15 @@
   }
 }
 
-.player_home_colony_cont {
+.player-home-colony-cont {
   margin: 0 auto;
 
-  .player_home_colony {
+  .player-home-colony {
     display: inline-block;
     vertical-align: top;
     margin: 0px 0px 10px 0px;
   }
-  .inactiveColony {
+  .inactive-colony {
     transform: scale(.9);
     opacity: .7;
   }
@@ -1118,7 +1118,7 @@
   margin-bottom: 25px;
   margin-top: -25px;
 
-  .small_colony {
+  .small-colony {
     transform:scale(.5);
     width: 220px;
     height: 150px;
@@ -1300,7 +1300,7 @@
   }
 }
 
-.player_home_block--underground-tokens {
+.player-home-block--underground-tokens {
   height: 50px;
 }
 

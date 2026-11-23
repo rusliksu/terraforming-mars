@@ -18,7 +18,7 @@ export class GamesOverview extends Handler {
       responses.redirect(res, '/stats');
       return Promise.resolve();
     }
-    req.url = '/assets/index.html';
+    req.url = '/build/index.html';
     return ServeAsset.INSTANCE.get(req, res, ctx);
   }
 }

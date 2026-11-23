@@ -19,6 +19,7 @@ import {Space} from '../boards/Space';
 import {SpaceId} from '../../common/Types';
 import {Resource} from '@/common/Resource';
 import {CardResource} from '@/common/CardResource';
+import {BonusCardName} from '@/common/automa/BonusCardName';
 
 export class MessageBuilder {
   protected message: Message;
@@ -91,6 +92,11 @@ export class MessageBuilder {
 
   public cardNames(values: ReadonlyArray<CardName>, attrs?: LogMessageDataAttrs): this {
     return this.cards(values, attrs);
+  }
+
+  public bonusCardName(value: BonusCardName): this {
+    this.push({type: LogMessageDataType.BONUS_CARD, value});
+    return this;
   }
 
   public award(value: IAward): this {

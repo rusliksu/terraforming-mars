@@ -4,42 +4,42 @@
   <div v-else class="wf-component wf-component--select-production-to-lose">
     <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
 
-    <h3 v-if="playerinput.warning !== undefined" class="payments_title">{{ $t(playerinput.warning) }}</h3>
+    <h3 v-if="playerinput.warning !== undefined" class="payments-title">{{ $t(playerinput.warning) }}</h3>
 
-    <div class="payments_type input-group" v-if="canDeductMegaCredits()">
-      <div class="production-box"><div class="production resource_icon--megacredits" style="background-size:contain;"></div></div>
+    <div class="payments-type input-group" v-if="canDeductMegaCredits()">
+      <div class="production-box"><div class="production resource-icon--megacredits" style="background-size:contain;"></div></div>
       <button class="btn btn-primary" @click="delta('megacredits', -1)"><i class="icon icon-minus"></i></button>
-      <input class="form-input form-inline payments_input" v-model.number="units.megacredits">
+      <input class="form-input form-inline payments-input" v-model.number="units.megacredits">
       <button class="btn btn-primary" @click="delta('megacredits', 1)"><i class="icon icon-plus"></i></button>
     </div>
-    <div class="payments_type input-group" v-if="canDeductSteel()">
+    <div class="payments-type input-group" v-if="canDeductSteel()">
       <div class="production-box"><div class="production steel"></div></div>
       <button class="btn btn-primary" @click="delta('steel', -1)"><i class="icon icon-minus"></i></button>
-      <input class="form-input form-inline payments_input" v-model.number="units.steel">
+      <input class="form-input form-inline payments-input" v-model.number="units.steel">
       <button class="btn btn-primary" @click="delta('steel', 1)"><i class="icon icon-plus"></i></button>
     </div>
-    <div class="payments_type input-group" v-if="canDeductTitanium()">
+    <div class="payments-type input-group" v-if="canDeductTitanium()">
       <div class="production-box"><div class="production titanium"></div></div>
       <button class="btn btn-primary" @click="delta('titanium', -1)"><i class="icon icon-minus"></i></button>
-      <input class="form-input form-inline payments_input" v-model.number="units.titanium">
+      <input class="form-input form-inline payments-input" v-model.number="units.titanium">
       <button class="btn btn-primary" @click="delta('titanium', 1)"><i class="icon icon-plus"></i></button>
     </div>
-    <div class="payments_type input-group" v-if="canDeductPlants()">
+    <div class="payments-type input-group" v-if="canDeductPlants()">
       <div class="production-box"><div class="production plant"></div></div>
       <button class="btn btn-primary" @click="delta('plants', -1)"><i class="icon icon-minus"></i></button>
-      <input class="form-input form-inline payments_input" v-model.number="units.plants">
+      <input class="form-input form-inline payments-input" v-model.number="units.plants">
       <button class="btn btn-primary" @click="delta('plants', 1)"><i class="icon icon-plus"></i></button>
     </div>
-    <div class="payments_type input-group" v-if="canDeductEnergy()">
+    <div class="payments-type input-group" v-if="canDeductEnergy()">
       <div class="production-box"><div class="production energy"></div></div>
       <button class="btn btn-primary" @click="delta('energy', -1)"><i class="icon icon-minus"></i></button>
-      <input class="form-input form-inline payments_input" v-model.number="units.energy">
+      <input class="form-input form-inline payments-input" v-model.number="units.energy">
       <button class="btn btn-primary" @click="delta('energy', 1)"><i class="icon icon-plus"></i></button>
     </div>
-    <div class="payments_type input-group" v-if="canDeductHeat()">
+    <div class="payments-type input-group" v-if="canDeductHeat()">
       <div class="production-box"><div class="production heat"></div></div>
       <button class="btn btn-primary" @click="delta('heat', -1)"><i class="icon icon-minus"></i></button>
-      <input class="form-input form-inline payments_input" v-model.number="units.heat">
+      <input class="form-input form-inline payments-input" v-model.number="units.heat">
       <button class="btn btn-primary" @click="delta('heat', 1)"><i class="icon icon-plus"></i></button>
     </div>
 

@@ -20,7 +20,7 @@
           <p
             v-if="playerSymbol(score.color).length > 0"
             class="ma-score"
-            :class="`player_bg_color_${score.color}`"
+            :class="`player-bg-color-${score.color}`"
             v-text="playerSymbol(score.color)"
             data-test="player-score"
           ></p>
@@ -93,7 +93,7 @@ export default defineComponent({
     },
     getClass(score: MilestoneScore): string {
       let classes = 'ma-score';
-      classes += ` player_bg_color_${score.color}`;
+      classes += ` player-bg-color-${score.color}`;
       if (score.claimable) {
         classes += ' claimable';
       } else {

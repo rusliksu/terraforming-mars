@@ -31,10 +31,36 @@ import {RouteError} from './RouteError';
 import {CEO_CARDS_DEALT_PER_PLAYER} from '../../common/constants';
 import {validateCustomMA} from '../../common/ma/CustomMA';
 import {validateCustomMAExpansions} from '../ma/MilestoneAwardSelector';
-import {hasNegativeEscapeVelocityOption} from '../../common/game/escapeVelocity';
+import {hasNegativeEscapeVelocityOption, sanitizeEscapeVelocityOptions} from '../../common/game/escapeVelocity';
+import {isObject} from '@/common/utils/utils';
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
   return (telegramID ?? '').trim();
+}
+
+function parseQuotaConfig(struct: unknown): QuotaConfig {
+  if (!isObject(struct)) {
+    throw new Error('quota config is not an object');
+  }
+  if (!('limit' in struct)) {
+    throw new Error('limit is absent');
+  }
+  if (!('per' in struct)) {
+    throw new Error('per is absent');
+  }
+  const {limit, per} = struct;
+  const parsedLimit = Number.parseInt(String(limit));
+  if (isNaN(parsedLimit)) {
+    throw new Error('limit is invalid');
+  }
+  if (typeof per !== 'string') {
+    throw new Error('per is invalid');
+  }
+  const perMs = durationToMilliseconds(per);
+  if (isNaN(perMs)) {
+    throw new Error('per is invalid');
+  }
+  return {limit: parsedLimit, perMs};
 }
 
 /**
@@ -389,7 +415,7 @@ export class ApiCreateGame extends Handler {
         removeNegativeGlobalEventsOption: gameReq.removeNegativeGlobalEventsOption,
         requiresMoonTrackCompletion: gameReq.requiresMoonTrackCompletion,
         requiresVenusTrackCompletion: gameReq.requiresVenusTrackCompletion,
-        showOtherPlayersVP: gameReq.showOtherPlayersVP,
+        showVP: gameReq.showVP,
         showTimers: gameReq.showTimers,
         shuffleMapOption: gameReq.shuffleMapOption,
         solarPhaseOption: gameReq.solarPhaseOption,

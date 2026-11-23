@@ -20,13 +20,13 @@
           <p
             v-if="playerSymbol(score.color).length > 0"
             class="ma-score"
-            :class="`player_bg_color_${score.color}`"
+            :class="`player-bg-color-${score.color}`"
             v-text="playerSymbol(score.color)"
             data-test="player-score"
           ></p>
           <p
             class="ma-score"
-            :class="`player_bg_color_${score.color}`"
+            :class="`player-bg-color-${score.color}`"
             v-text="score.score"
             data-test="player-score"
           ></p>

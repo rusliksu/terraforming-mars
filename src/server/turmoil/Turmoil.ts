@@ -24,6 +24,7 @@ import {IGame} from '../IGame';
 import {GameOptions} from '../game/GameOptions';
 import {GlobalEventDealer, getGlobalEventByName} from './globalEvents/GlobalEventDealer';
 import {IGlobalEvent} from './globalEvents/IGlobalEvent';
+import {Random} from '@/common/utils/Random';
 import {SerializedDelegate, SerializedTurmoil} from './SerializedTurmoil';
 import {DELEGATES_FOR_NEUTRAL_PLAYER, DELEGATES_PER_PLAYER} from '../../common/constants';
 import {PoliticalAgendasData, PoliticalAgendas} from './PoliticalAgendas';
@@ -387,7 +388,7 @@ export class Turmoil {
     // 4.b - Distant Event is now Coming Event
     this.comingGlobalEvent = this.distantGlobalEvent;
     // 4.c - Draw the new distant event and add neutral delegate
-    this.distantGlobalEvent = this.globalEventDealer.draw();
+    this.distantGlobalEvent = this.globalEventDealer.draw(game);
     this.addNeutralDelegate(this.distantGlobalEvent?.revealedDelegate, game);
 
     // Behold The Emperor hook
@@ -725,8 +726,8 @@ export class Turmoil {
     return result;
   }
 
-  public static deserialize(d: SerializedTurmoil, players: ReadonlyArray<IPlayer>, gameOptions: GameOptions): Turmoil {
-    const dealer = GlobalEventDealer.deserialize(d.globalEventDealer);
+  public static deserialize(d: SerializedTurmoil, players: ReadonlyArray<IPlayer>, gameOptions: GameOptions, random: Random): Turmoil {
+    const dealer = GlobalEventDealer.deserialize(d.globalEventDealer, random);
     const chairman = deserializeDelegateOrUndefined(d.chairman, players);
     // Reconstruct the exact persisted set of parties -- never recompute it via createParties(),
     // which would re-randomize a More Parties game's 6-of-12 selection on every load.

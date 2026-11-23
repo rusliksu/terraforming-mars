@@ -39,3 +39,12 @@
 {"agent": "codex", "at": "2026-10-17T19:59:11.089621+00:00", "canonical_action_id": "implement::implement", "mission_id": "01M4R0GHH1EAEWZRBK041RJZAD", "phase": "started", "reason": null, "wp_id": "WP04"}
 {"agent": "codex", "at": "2026-10-17T21:28:03.337194+00:00", "canonical_action_id": "implement::implement", "mission_id": "01M4R0GHH1EAEWZRBK041RJZAD", "phase": "completed", "reason": null, "wp_id": "WP04"}
 {"agent": "codex", "at": "2026-10-17T21:28:12.712342+00:00", "canonical_action_id": "implement::implement", "mission_id": "01M4R0GHH1EAEWZRBK041RJZAD", "phase": "started", "reason": null, "wp_id": "WP05"}
+{"agent": "codex", "at": "2026-11-23T11:22:31.137606+00:00", "canonical_action_id": "discovery::research", "mission_id": "01M8426KNRH9YWF270BSTWRYTZ", "phase": "started", "reason": null, "wp_id": null}
+{"agent": "codex", "at": "2026-11-23T11:24:42.029697+00:00", "canonical_action_id": "discovery::research", "mission_id": "01M8426KNRH9YWF270BSTWRYTZ", "phase": "completed", "reason": null, "wp_id": null}
+{"agent": "codex", "at": "2026-11-23T11:24:48.343994+00:00", "canonical_action_id": "specify::specify", "mission_id": "01M8426KNRH9YWF270BSTWRYTZ", "phase": "started", "reason": null, "wp_id": null}
+{"agent": "codex", "at": "2026-11-23T11:24:59.088051+00:00", "canonical_action_id": "specify::specify", "mission_id": "01M8426KNRH9YWF270BSTWRYTZ", "phase": "completed", "reason": null, "wp_id": null}
+{"agent": "codex", "at": "2026-11-23T11:25:57.495374+00:00", "canonical_action_id": "plan::plan", "mission_id": "01M8426KNRH9YWF270BSTWRYTZ", "phase": "started", "reason": null, "wp_id": null}
+{"agent": "codex", "at": "2026-11-23T11:26:03.679459+00:00", "canonical_action_id": "plan::plan", "mission_id": "01M8426KNRH9YWF270BSTWRYTZ", "phase": "completed", "reason": null, "wp_id": null}
+{"agent": "codex", "at": "2026-11-23T11:27:25.720857+00:00", "canonical_action_id": "tasks::tasks", "mission_id": "01M8426KNRH9YWF270BSTWRYTZ", "phase": "started", "reason": null, "wp_id": null}
+{"agent": "codex", "at": "2026-11-23T11:27:36.908916+00:00", "canonical_action_id": "tasks::tasks", "mission_id": "01M8426KNRH9YWF270BSTWRYTZ", "phase": "completed", "reason": null, "wp_id": null}
+{"agent": "codex", "at": "2026-11-23T11:30:46.235372+00:00", "canonical_action_id": "implement::implement", "mission_id": "01M8426KNRH9YWF270BSTWRYTZ", "phase": "started", "reason": null, "wp_id": "WP01"}

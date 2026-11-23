@@ -3,7 +3,7 @@
   "flattened": false,
   "friendly_name": "Undo Step Journal Persistence",
   "mission_id": "01M8426KNRH9YWF270BSTWRYTZ",
-  "mission_number": null,
+  "mission_number": 3,
   "mission_slug": "undo-step-journal-persistence-01M8426K",
   "mission_type": "software-dev",
   "purpose_context": "This mission advances Undo Step Journal Persistence on spec/undo-step-journal-persistence so stakeholders can track the work from mission creation onward.",

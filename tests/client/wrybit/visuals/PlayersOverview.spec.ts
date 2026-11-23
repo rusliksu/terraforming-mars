@@ -35,7 +35,7 @@ describe('Wrybit players overview with our controllers', () => {
       const infos = wrapper.findAll('.player-info');
       await infos[2].get('.played-cards-button').trigger('click');
       expect(visibility).deep.eq({pinned_player_0: false, pinned_player_1: false, pinned_player_2: true});
-      expect(wrapper.findAll('.other_player_panel').filter((panel) => panel.isVisible())).has.length(1);
+      expect(wrapper.findAll('.other-player_panel').filter((panel) => panel.isVisible())).has.length(1);
       await infos[0].get('.played-cards-button').trigger('click');
       expect(visibility).deep.eq({pinned_player_0: true, pinned_player_1: false, pinned_player_2: false});
     } finally {

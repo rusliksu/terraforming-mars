@@ -18,7 +18,7 @@ const OVERLAY_SELECTOR = [
   '.game-menu-backdrop',
   '.space-confirm',
   '.card-panel--modal',
-  '.other_player_panel',
+  '.other-player_panel',
 ].join(', ');
 
 // Actions with their own listener elsewhere (LogPanel.vue rates AI decisions, HomeMixin.ts opens the help)

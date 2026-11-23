@@ -8,7 +8,7 @@
       <span class="log-plain-text" v-if="typeof(data) === 'string'" v-html="inlineMarkdown(data)"></span>
       <span v-else>
         <span v-if="data.type === undefined || data.value === undefined"></span>
-        <span v-else-if="data.type === LogMessageDataType.PLAYER" class="log-player" :class="'player_bg_color_' + data.value"> {{ getPlayerName(data.value) }} </span>
+        <span v-else-if="data.type === LogMessageDataType.PLAYER" class="log-player" :class="'player-bg-color-' + data.value"> {{ getPlayerName(data.value) }} </span>
         <span v-else-if="data.type === LogMessageDataType.CARD" v-html="cardToHtml(data)"></span>
         <span v-else-if="data.type === LogMessageDataType.PARTY" class="log-party">
           <span class="log-party-logo" :class="'log-party-logo--' + partyLogoSlug(data.value)"></span><span class="log-party-name" :class="'log-party-name--' + partySlug(data.value)" v-i18n>{{ data.value }}</span>

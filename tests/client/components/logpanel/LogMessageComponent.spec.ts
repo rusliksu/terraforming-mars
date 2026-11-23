@@ -86,8 +86,8 @@ describe('LogMessageComponent', () => {
       },
     });
 
-    expect(wrapper.find('.markdown-resource.resource_icon--steel').exists()).is.true;
-    expect(wrapper.find('.markdown-resource.resource_icon--megacredits').exists()).is.true;
+    expect(wrapper.find('.markdown-resource.resource-icon--steel').exists()).is.true;
+    expect(wrapper.find('.markdown-resource.resource-icon--megacredits').exists()).is.true;
     expect(wrapper.text()).contains('[ -2 -14 ]');
   });
   it('renders global-parameter icons in a message', () => {
@@ -236,9 +236,9 @@ describe('LogMessageComponent', () => {
     });
 
     const html = wrapper.html();
-    expect(html).includes('<span class="markdown-resource resource_icon--energy"></span>');
+    expect(html).includes('<span class="markdown-resource resource-icon--energy"></span>');
     expect(html).includes(
-      '<span class="markdown-production"><span class="markdown-resource resource_icon--megacredits"></span></span>');
+      '<span class="markdown-production"><span class="markdown-resource resource-icon--megacredits"></span></span>');
   });
 
   it('renders RESOURCE, PRODUCTION, and CARD_RESOURCE data as icons', () => {
@@ -253,9 +253,9 @@ describe('LogMessageComponent', () => {
     });
 
     const html = wrapper.html();
-    expect(html).includes('<span class="markdown-resource resource_icon--steel"></span>');
+    expect(html).includes('<span class="markdown-resource resource-icon--steel"></span>');
     expect(html).includes(
-      '<span class="markdown-production"><span class="markdown-resource resource_icon--heat"></span></span>');
+      '<span class="markdown-production"><span class="markdown-resource resource-icon--heat"></span></span>');
     expect(html).includes('<span class="markdown-resource card-resource-syndicate-fleet"></span>');
   });
 
@@ -269,7 +269,7 @@ describe('LogMessageComponent', () => {
     });
 
     const html = wrapper.html();
-    expect(html).includes('-3<span class="markdown-resource resource_icon--megacredits"></span> *x*');
+    expect(html).includes('-3<span class="markdown-resource resource-icon--megacredits"></span> *x*');
   });
 
   it('renders PARTY data with the party emblem and identity color', () => {

@@ -1,6 +1,6 @@
 <template>
   <component v-if="projectPresentation !== undefined" :is="projectPresentation" :binding="presentationBinding" v-bind="$attrs" />
-  <div v-else class="payments_cont" v-bind="$attrs">
+  <div v-else class="payments-cont" v-bind="$attrs">
     <div v-if="showtitle === true">{{ $t(playerinput.title) }}</div>
     <label v-for="availableCard in cards" class="payments_cards" :key="availableCard.name">
       <input v-if="!availableCard.isDisabled" class="hidden" type="radio" v-model="cardName" :value="availableCard.name">

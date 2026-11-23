@@ -10,13 +10,18 @@ import {InputResponse} from '@/common/inputs/InputResponse';
 const password = process.env.POSTGRES_INTEGRATION_TEST_PASSWORD;
 
 class TestPostgreSQL extends PostgreSQL {
-  public get pool() {
-    return this.client;
-  }
   public async reset(gameId: string): Promise<void> {
     for (const table of ['game_action_replay', 'game_action_replay_head', 'games', 'game', 'participants']) {
-      await this.client.query('DELETE FROM ' + table + ' WHERE game_id = $1', [gameId]);
+      await this.pool.query('DELETE FROM ' + table + ' WHERE game_id = $1', [gameId]);
     }
+  }
+
+  public async close(): Promise<void> {
+    await this.pool.end();
+  }
+
+  public async queryForTest(sql: string, params: ReadonlyArray<unknown>): Promise<void> {
+    await this.pool.query(sql, [...params]);
   }
 }
 
@@ -54,7 +59,7 @@ function withJournal(game: IGame, actorId: string, entryCount: number): void {
 
   afterEach(async () => {
     await database.reset(gameId);
-    await database.pool.end();
+    await database.close();
   });
 
   async function seedJournal(entryCount: number): Promise<IGame> {
@@ -77,7 +82,7 @@ function withJournal(game: IGame, actorId: string, entryCount: number): void {
     const fingerprint = promptFingerprintForPlayer(game, journal!.currentActorId);
     const restored = restoreActionReplayState(journal!, rootSnapshot, fingerprint);
     expect(restored.kind).to.equal('restored');
-    await restarted.pool.end();
+    await restarted.close();
   });
 
   it('keeps the newest 32 entries across repeated saves', async () => {
@@ -91,7 +96,7 @@ function withJournal(game: IGame, actorId: string, entryCount: number): void {
 
   it('drops the journal when the root save is gone', async () => {
     await seedJournal(1);
-    await database.pool.query('DELETE FROM games WHERE game_id = $1 AND save_id = 0', [gameId]);
+    await database.queryForTest('DELETE FROM games WHERE game_id = $1 AND save_id = 0', [gameId]);
     const journal = await database.readReplayJournal(gameId);
     let rootSnapshot;
     try {

@@ -37,7 +37,7 @@
 // Player bars slightly more transparent than the other surfaces in player colour
 each(@players, {
   @c: ~"player_@{value}";
-  .player-info.player_translucent_bg_color_@{value} {
+  .player-info.player-translucent-bg-color-@{value} {
     background: fade(@@c, @frosted-player-opacity);
   }
 });

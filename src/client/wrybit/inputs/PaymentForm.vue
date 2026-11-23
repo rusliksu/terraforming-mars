@@ -31,35 +31,35 @@
                   Some ${0} are reserved and unavailable here.</div>
               </div>
               <!-- Value of this row in M€; dimmed at 0 instead of empty, so the column stays calm -->
-              <span class="payments_unit_subtotal" :class="{'payments_unit_subtotal--zero': binding.payment[unit] === 0}" :style="{gridRow: index + 2}">
+              <span class="payments-unit-subtotal" :class="{'payments-unit-subtotal--zero': binding.payment[unit] === 0}" :style="{gridRow: index + 2}">
                 <span class="payments_equals">=</span>
                 <span>{{ binding.ledger[unit].rate * binding.payment[unit] }}</span>
-                <i class="resource_icon payments_type_smallicon resource_icon--megacredits"></i>
+                <i class="resource-icon payments-type-smallicon resource-icon--megacredits"></i>
               </span>
             </template>
             <!-- What is left of this currency after paying, in the row of its currency -->
             <span class="payments_rest" :class="{'payments_rest--empty': restOf(unit) === 0}" :style="{gridRow: index + 2}" :data-test="'rest-' + unit">
               <span>{{ restOf(unit) }}</span>
-              <i class="resource_icon payments_type_smallicon" :class="iconClass(unit)"></i>
+              <i class="resource-icon payments-type-smallicon" :class="iconClass(unit)"></i>
             </span>
           </template>
 
           <!-- Total: only whether the split fits (green), falls short (red) or overpays (yellow) – the amounts are in the rows -->
           <div v-if="hasCurrencyChoice" class="payments_total" :class="binding.totalClass" :style="{gridRow: '2 / span ' + visibleUnits.length}">
-            <span class="payments_total_value" :title="$t(binding.totalTitle)">
+            <span class="payments-total-value" :title="$t(binding.totalTitle)">
               <template v-if="binding.total === binding.cost">✓ <span v-i18n>Fits</span></template>
               <template v-else>
                 <span>{{ Math.abs(binding.total - binding.cost) }}</span>
-                <i class="resource_icon payments_type_smallicon resource_icon--megacredits"></i>
+                <i class="resource-icon payments-type-smallicon resource-icon--megacredits"></i>
                 <span v-if="binding.total < binding.cost" v-i18n>missing</span>
                 <span v-else v-i18n>too much</span>
               </template>
             </span>
           </div>
           <div v-else class="payments_total payments_single" :style="{gridRow: '2 / span ' + visibleUnits.length}">
-            <span class="payments_total_value">
+            <span class="payments-total-value">
               <span>{{ binding.cost }}</span>
-              <i class="resource_icon payments_type_smallicon resource_icon--megacredits"></i>
+              <i class="resource-icon payments-type-smallicon resource-icon--megacredits"></i>
             </span>
           </div>
 
@@ -72,7 +72,7 @@
         </div>
       </div>
 
-      <div v-if="binding.showsave" class="payments_save">
+      <div v-if="binding.showsave" class="payments-save">
         <AppButton size="big" hotkey="confirm" @click="binding.save()" :title="$t(binding.buttonLabel)" data-test="save" />
       </div>
       <SidebarModal :open="binding.confirmation !== undefined" :framed="true" @close="binding.dismissOverpayment()">

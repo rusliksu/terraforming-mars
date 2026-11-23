@@ -7,7 +7,7 @@
 export type CarouselState = {count: number, index: number, unavailable: ReadonlyArray<boolean>};
 
 // Standard projects are laid out as a grid, not in the carousel (mobile.less, mobileFit.ts)
-const LIST_SELECTOR = '.mb-screen--turn .payments_cont';
+const LIST_SELECTOR = '.mb-screen--turn .payments-cont';
 const ITEM_SELECTOR = 'label.payments_cards';
 
 function visibleList(root: HTMLElement): HTMLElement | undefined {

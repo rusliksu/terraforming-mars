@@ -113,7 +113,7 @@ describe('source waiting-for tabs on the permanent native RPC owner', () => {
     const {wrapper, registry, save, views} = form(input);
     try {
       await flushPromises();
-      const list = wrapper.get('.payments_cont');
+      const list = wrapper.get('.payments-cont');
       const toolbar = list.get('.card-filter-bar').element;
       const intro = list.get('.or-tab-panel-intro-slot').element;
       expect(Boolean(toolbar.compareDocumentPosition(intro) & Node.DOCUMENT_POSITION_FOLLOWING)).is.true;
@@ -132,7 +132,7 @@ describe('source waiting-for tabs on the permanent native RPC owner', () => {
       await flushPromises();
       expect(wrapper.getComponent(NativePayment).vm.$.uid).eq(uid);
       const footer = wrapper.get('[data-source-waiting] > .or-tab-panel > .or-tab-footer');
-      await footer.get('.payments_save button').trigger('click');
+      await footer.get('.payments-save button').trigger('click');
       await flushPromises();
       expect(save.mock.calls).deep.eq([[{type: 'projectCard', card: CardName.BIRDS, payment: payment.payment}]]);
     } finally {

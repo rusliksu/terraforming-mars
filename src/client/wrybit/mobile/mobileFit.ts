@@ -36,7 +36,7 @@ const GAP_PX = 6;
 const CHOICE_GAP = {column: 14, row: 36};
 // Reference width: the nearest box or screen the element is in (lists themselves are often only as wide as their content)
 // Played cards (mobile_played_cards.less) extend wider than the screen padding
-const CONTAINER_SELECTOR = '.setup-column-body, .or-tab-panel, .other_player_cont, .mb-screen, .game-end-box';
+const CONTAINER_SELECTOR = '.setup-column-body, .or-tab-panel, .other-player-cont, .mb-screen, .game-end-box';
 const FITTED_CLASS = 'mb-fit';
 // Mars without the scale ring (mobile.less: planet image, colony spaces in the corners)
 const CROPPED_CLASS = 'mb-mars-cropped';
@@ -59,7 +59,7 @@ export function choiceGridColumns(width: number, count: number, portrait: boolea
 }
 
 // Choice grid: standard projects and card selection (draft, buy cards, select card); one label per card in the block
-const STANDARD_PROJECT_LIST = '.payments_cont';
+const STANDARD_PROJECT_LIST = '.payments-cont';
 const CARD_CHOICE_LIST = '.wf-component--select-card.choice-block';
 
 /* Number of choices (one label each) in the list around `element`. */
@@ -119,14 +119,14 @@ const RULES: ReadonlyArray<FitRule> = [
   // With ring: the section includes the outer space columns beside the board (marsFrame, Board.vue)
   {selector: '.mb-screen--mars .board-tabs-mars > .board-cont, #game-end .board-cont', crop: RING_FRAME},
   // Rotated results table across the full width
-  {selector: '#game-end .game_end_table.mb-transposed', columns: () => 1},
+  {selector: '#game-end .game-end-table.mb-transposed', columns: () => 1},
   // Milestones & awards as a table across the full width
   {selector: '.mb-screen .ma-table', columns: () => 1},
   // Standard projects: all at a glance, no carousel (cf. cardCarousel.ts); landscape as square as possible (5 → 3×2),
   // portrait more rows (5 → 2×3), and
   // centered as on desktop (choiceBlock.ts). Gaps like the milestone/award tiles (mobile.less)
   {
-    selector: '.mb-screen--turn .payments_cont .card-container.card-standard-project',
+    selector: '.mb-screen--turn .payments-cont .card-container.card-standard-project',
     columns: choiceGridColumnsFor(STANDARD_PROJECT_LIST),
     choiceGap: CHOICE_GAP,
     grid: STANDARD_PROJECT_LIST,
@@ -150,7 +150,7 @@ const RULES: ReadonlyArray<FitRule> = [
     grid: CARD_CHOICE_LIST,
   },
   // Card carousel (play card): one large card in the middle
-  {selector: '.mb-screen--turn .payments_cont .card-container', columns: () => 1},
+  {selector: '.mb-screen--turn .payments-cont .card-container', columns: () => 1},
   {
     selector: '.card-container',
     // Log preview, cards in explainer tiles and nested cards keep their size

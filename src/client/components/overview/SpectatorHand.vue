@@ -1,11 +1,11 @@
 <template>
   <div v-show="isVisible()" class="spectator-hand-panel">
-    <div :class="'player_translucent_bg_color_' + player.color" class="other_player_header">
-      <div class="player_name">{{ player.name }} <span v-i18n>cards in hand</span></div>
+    <div :class="'player-translucent-bg-color-' + player.color" class="other-player-header">
+      <div class="player-name">{{ player.name }} <span v-i18n>cards in hand</span></div>
       <AppButton size="big" type="close" @click="hideMe" :disableOnServerBusy="false" align="right" />
     </div>
-    <div class="other_player_cont menu">
-      <div class="player_home_block">
+    <div class="other-player-cont menu">
+      <div class="player-home-block">
         <div class="sortable-cards">
           <div v-for="card in cardsInHand()" :key="card.name" class="cardbox">
             <Card :card="card" />

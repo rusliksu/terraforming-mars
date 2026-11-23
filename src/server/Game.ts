@@ -68,7 +68,8 @@ import {ColonyDeserializer} from './colonies/ColonyDeserializer';
 import {DEFAULT_GAME_OPTIONS, GameOptions} from './game/GameOptions';
 import {normalizeEscapeVelocityOptions} from '../common/game/EscapeVelocityOptions';
 import {GlobalParametersConfig, ParameterBonus, resolveGlobalParameters} from '../common/GlobalParameterConfig';
-import {CorporationDeck, PreludeDeck, ProjectDeck, CeoDeck} from './cards/Deck';
+import {isShowVP, showVPFromLegacy} from '../common/game/ShowVP';
+import {CorporationDeck, PreludeDeck, ProjectDeck, CeoDeck} from './cards/Decks';
 import {Logger} from './logs/Logger';
 import {addDays, stringToNumber} from '../common/utils/dateMath';
 import {Tag} from '../common/cards/Tag';
@@ -171,6 +172,12 @@ function deserializeGameOptions(d: SerializedGame): GameOptions {
   const hasTurnBasedGameOption = Object.prototype.hasOwnProperty.call(serializedOptions, 'turnBasedGame');
   if (!hasTurnBasedGameOption && d.players.some((player) => player.telegramID !== undefined && player.telegramID.trim() !== '')) {
     gameOptions.turnBasedGame = true;
+  }
+  // TODO(kberg): Remove after 2027-02-01
+  // Older games store the boolean showOtherPlayersVP instead of showVP.
+  const legacyOptions = gameOptions as GameOptions & {showOtherPlayersVP?: boolean};
+  if (!isShowVP(gameOptions.showVP)) {
+    gameOptions.showVP = showVPFromLegacy(legacyOptions.showOtherPlayersVP);
   }
   return gameOptions;
 }
@@ -2418,7 +2425,7 @@ export class Game implements IGame, Logger {
 
     // Reload turmoil elements if needed
     if (d.turmoil && gameOptions.turmoilExtension) {
-      game.turmoil = Turmoil.deserialize(d.turmoil, game.playersPlusMarsBot, gameOptions);
+      game.turmoil = Turmoil.deserialize(d.turmoil, game.playersPlusMarsBot, gameOptions, game.rng);
     }
 
     // Reload moon elements if needed

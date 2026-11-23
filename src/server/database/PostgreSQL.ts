@@ -28,6 +28,7 @@ import {compressToBrotli, decompressFromBrotli} from './compression';
 import {assertSaveIdWithinLimit} from './HistoryLimits';
 import {MapLibraryEntry, MapLibraryEntryId, MapLibraryStatus} from '../../common/boards/MapLibraryEntry';
 import {CustomCardLibraryEntry, CustomCardEntryId, CustomCardStatus} from '../../common/cards/CustomCardLibraryEntry';
+import {tx} from '@/server/database/tx';
 
 
 type StoredSerializedGame = Omit<SerializedGame, 'gameOptions' | 'gameLog'> & {logLength: number};
@@ -85,13 +86,13 @@ export class PostgreSQL implements IDatabase {
   };
   public metricsScrapeCache: ThrottledCache<void>;
 
-  private _client: pg.Pool | undefined;
+  private _pool: pg.Pool | undefined;
 
-  protected get client(): pg.Pool {
-    if (this._client === undefined) {
-      throw new Error('attempt to get client before initialized');
+  protected get pool(): pg.Pool {
+    if (this._pool === undefined) {
+      throw new Error('attempt to use Postgres before it is initialized.');
     }
-    return this._client;
+    return this._pool;
   }
 
   constructor(
@@ -113,7 +114,7 @@ export class PostgreSQL implements IDatabase {
   }
 
   public async initialize(): Promise<void> {
-    this._client = new pg.Pool(this.config);
+    this._pool = new pg.Pool(this.config);
 
     const sql = `
     CREATE TABLE IF NOT EXISTS games(
@@ -190,20 +191,20 @@ export class PostgreSQL implements IDatabase {
     CREATE INDEX IF NOT EXISTS map_library_idx_created_time on map_library(created_time);
     CREATE INDEX IF NOT EXISTS custom_card_library_idx_created_time on custom_card_library(created_time);
     `;
-    await this.client.query(sql);
+    await this.pool.query(sql);
     for (const statement of POSTGRES_REPLAY_JOURNAL_DDL) {
-      await this.client.query(statement);
+      await this.pool.query(statement);
     }
 
     // games.game_compressed is already in the CREATE TABLE above for fresh databases;
     // this covers databases where the table already existed without it.
-    await this.client.query('ALTER TABLE games ADD COLUMN IF NOT EXISTS game_compressed bytea;');
+    await this.pool.query('ALTER TABLE games ADD COLUMN IF NOT EXISTS game_compressed bytea;');
   }
 
   public async getPlayerCount(gameId: GameId): Promise<number> {
     const sql = 'SELECT players FROM games WHERE save_id = 0 AND game_id = $1 LIMIT 1';
 
-    const res = await this.client.query(sql, [gameId]);
+    const res = await this.pool.query(sql, [gameId]);
     if (res.rows.length === 0) {
       throw new Error(`no rows found for game id ${gameId}`);
     }
@@ -220,7 +221,7 @@ export class PostgreSQL implements IDatabase {
     WHERE games.game_id = a.game_id
     AND games.save_id = a.save_id
     ORDER BY created_time DESC`;
-    const res = await this.client.query(sql);
+    const res = await this.pool.query(sql);
     return res.rows.map((row) => row.game_id);
   }
 
@@ -251,7 +252,7 @@ export class PostgreSQL implements IDatabase {
 
   public async getGameId(participantId: ParticipantId): Promise<GameId> {
     try {
-      const res = await this.client.query('SELECT game_id FROM participants WHERE $1 = ANY(participants)', [participantId]);
+      const res = await this.pool.query('SELECT game_id FROM participants WHERE $1 = ANY(participants)', [participantId]);
       if (res.rowCount === 0) {
         throw new Error(`Game for player id ${participantId} not found`);
       }
@@ -263,7 +264,7 @@ export class PostgreSQL implements IDatabase {
   }
 
   public async getSaveIds(gameId: GameId): Promise<Array<number>> {
-    const res = await this.client.query('SELECT DISTINCT save_id FROM games WHERE game_id = $1', [gameId]);
+    const res = await this.pool.query('SELECT DISTINCT save_id FROM games WHERE game_id = $1', [gameId]);
     const allSaveIds: Array<number> = [];
     res.rows.forEach((row) => {
       allSaveIds.push(row.save_id);
@@ -273,7 +274,7 @@ export class PostgreSQL implements IDatabase {
 
   public async getGame(gameId: GameId): Promise<SerializedGame> {
     // Retrieve last save from database
-    const res = await this.client.query(
+    const res = await this.pool.query(
       `SELECT
         games.game as game,
         games.game_compressed as game_compressed,
@@ -294,7 +295,7 @@ export class PostgreSQL implements IDatabase {
   }
 
   async getGameVersion(gameId: GameId, saveId: number): Promise<SerializedGame> {
-    const res = await this.client.query(
+    const res = await this.pool.query(
       `SELECT
         games.game as game,
         games.game_compressed as game_compressed,
@@ -320,7 +321,7 @@ export class PostgreSQL implements IDatabase {
     const operation = 'saveGameResults';
     const startMs = Date.now();
     databaseMetrics.operationCount.inc({operation});
-    this.client.query('INSERT INTO game_results (game_id, seed_game_id, players, generations, game_options, scores) VALUES($1, $2, $3, $4, $5, $6)', [gameId, gameOptions.clonedGamedId, players, generations, gameOptions, JSON.stringify(scores)], (err) => {
+    this.pool.query('INSERT INTO game_results (game_id, seed_game_id, players, generations, game_options, scores) VALUES($1, $2, $3, $4, $5, $6)', [gameId, gameOptions.clonedGamedId, players, generations, gameOptions, JSON.stringify(scores)], (err) => {
       databaseMetrics.operationLatency.observe({operation}, Date.now() - startMs);
       if (err) {
         databaseMetrics.operationErrors.inc({operation});
@@ -334,7 +335,7 @@ export class PostgreSQL implements IDatabase {
   // directly here instead.
   getMaxSaveId(gameId: GameId): Promise<number> {
     return withDatabaseMetrics('getMaxSaveId', async () => {
-      const res = await this.client.query('SELECT MAX(save_id) as save_id FROM games WHERE game_id = $1', [gameId]);
+      const res = await this.pool.query('SELECT MAX(save_id) as save_id FROM games WHERE game_id = $1', [gameId]);
       return res.rows[0].save_id;
     });
   }
@@ -347,16 +348,16 @@ export class PostgreSQL implements IDatabase {
   }
 
   async markFinished(gameId: GameId): Promise<void> {
-    const promise1 = this.client.query('UPDATE games SET status = \'finished\' WHERE game_id = $1', [gameId]);
-    const promise2 = this.client.query('UPDATE game SET status = \'finished\' WHERE game_id = $1', [gameId]);
-    const promise3 = this.client.query('INSERT INTO completed_game(game_id) VALUES ($1)', [gameId]);
+    const promise1 = this.pool.query('UPDATE games SET status = \'finished\' WHERE game_id = $1', [gameId]);
+    const promise2 = this.pool.query('UPDATE game SET status = \'finished\' WHERE game_id = $1', [gameId]);
+    const promise3 = this.pool.query('INSERT INTO completed_game(game_id) VALUES ($1)', [gameId]);
     await Promise.all([promise1, promise2, promise3]);
   }
 
   // Purge unfinished games older than MAX_GAME_DAYS days. If this environment variable is absent, it uses the default of 10 days.
   async purgeUnfinishedGames(maxGameDays: string | undefined = process.env.MAX_GAME_DAYS): Promise<Array<GameId>> {
     const dateToSeconds = daysAgoToSeconds(maxGameDays, 10);
-    const selectResult = await this.client.query(
+    const selectResult = await this.pool.query(
       `SELECT latest.game_id
       FROM games latest
       JOIN (
@@ -379,11 +380,11 @@ export class PostgreSQL implements IDatabase {
 
     if (gameIds.length > 0) {
       // https://github.com/brianc/node-postgres/wiki/FAQ#11-how-do-i-build-a-where-foo-in--query-to-find-rows-matching-an-array-of-values
-      const deleteGamesResult = await this.client.query('DELETE FROM games WHERE game_id = ANY($1)', [gameIds]);
+      const deleteGamesResult = await this.pool.query('DELETE FROM games WHERE game_id = ANY($1)', [gameIds]);
       console.log(`Purged ${deleteGamesResult.rowCount} rows from games`);
-      const deleteParticipantsResult = await this.client.query('DELETE FROM participants WHERE game_id = ANY($1)', [gameIds]);
+      const deleteParticipantsResult = await this.pool.query('DELETE FROM participants WHERE game_id = ANY($1)', [gameIds]);
       console.log(`Purged ${deleteParticipantsResult.rowCount} rows from participants`);
-      const deleteGameResult = await this.client.query('DELETE FROM game WHERE game_id = ANY($1)', [gameIds]);
+      const deleteGameResult = await this.pool.query('DELETE FROM game WHERE game_id = ANY($1)', [gameIds]);
       console.log(`Purged ${deleteGameResult.rowCount} rows from game`);
     }
     return gameIds;
@@ -395,7 +396,7 @@ export class PostgreSQL implements IDatabase {
       return;
     }
     const dateToSeconds = daysAgoToSeconds(compressCompletedGamesDays, 0);
-    const selectResult = await this.client.query('SELECT DISTINCT game_id FROM completed_game WHERE completed_time < to_timestamp($1)', [dateToSeconds]);
+    const selectResult = await this.pool.query('SELECT DISTINCT game_id FROM completed_game WHERE completed_time < to_timestamp($1)', [dateToSeconds]);
     const gameIds = selectResult.rows.slice(0, 1000).map((row) => row.game_id);
     console.log(`${gameIds.length} completed games to be compressed.`);
     if (gameIds.length > 1000) {
@@ -409,22 +410,17 @@ export class PostgreSQL implements IDatabase {
   }
 
   async deleteGame(gameId: GameId): Promise<void> {
-    await this.client.query('BEGIN');
-    try {
-      await this.client.query('DELETE FROM games WHERE game_id = $1', [gameId]);
-      await this.client.query('DELETE FROM game WHERE game_id = $1', [gameId]);
-      await this.client.query('DELETE FROM participants WHERE game_id = $1', [gameId]);
-      await this.client.query('DELETE FROM game_results WHERE game_id = $1', [gameId]);
-      await this.client.query('DELETE FROM completed_game WHERE game_id = $1', [gameId]);
-      await this.client.query('COMMIT');
-    } catch (err) {
-      await this.client.query('ROLLBACK');
-      throw err;
-    }
+    await tx(this.pool, async (client) => {
+      await client.query('DELETE FROM games WHERE game_id = $1', [gameId]);
+      await client.query('DELETE FROM game WHERE game_id = $1', [gameId]);
+      await client.query('DELETE FROM participants WHERE game_id = $1', [gameId]);
+      await client.query('DELETE FROM game_results WHERE game_id = $1', [gameId]);
+      await client.query('DELETE FROM completed_game WHERE game_id = $1', [gameId]);
+    });
   }
 
   async deleteOrphanParticipants(): Promise<number> {
-    const result = await this.client.query(
+    const result = await this.pool.query(
       'DELETE FROM participants p WHERE NOT EXISTS (SELECT 1 FROM games g WHERE g.game_id = p.game_id)');
     return result.rowCount ?? 0;
   }
@@ -434,8 +430,8 @@ export class PostgreSQL implements IDatabase {
   compressCompletedGame(gameId: GameId): Promise<void> {
     return withDatabaseMetrics('compressCompletedGame', async () => {
       const maxSaveId = await this.getMaxSaveId(gameId);
-      await this.client.query('DELETE FROM games WHERE game_id = $1 AND save_id < $2 AND save_id > 0', [gameId, maxSaveId]);
-      await this.client.query('DELETE FROM completed_game where game_id = $1', [gameId]);
+      await this.pool.query('DELETE FROM games WHERE game_id = $1 AND save_id < $2 AND save_id > 0', [gameId, maxSaveId]);
+      await this.pool.query('DELETE FROM completed_game where game_id = $1', [gameId]);
     });
   }
 
@@ -459,60 +455,57 @@ export class PostgreSQL implements IDatabase {
 
     this.statistics.saveCount++;
     try {
-      await this.client.query('BEGIN');
+      await tx(this.pool, async (client) => {
+        // Holding onto a value avoids certain race conditions where saveGame is called twice in a row.
+        const thisSaveId = game.lastSaveId;
+        // xmax = 0 is described at https://stackoverflow.com/questions/39058213/postgresql-upsert-differentiate-inserted-and-updated-rows-using-system-columns-x
+        //
+        // When compressOnWrite is true, the game state is written to game_compressed; when it's
+        // false, it's written to game. The other column is set to null so a row never carries both.
+        const res = await client.query(
+          `INSERT INTO games (game_id, save_id, game, game_compressed, players)
+          VALUES ($1, $2, $3, $4, $5)
+          ON CONFLICT (game_id, save_id) DO UPDATE SET game = $3, game_compressed = $4
+          RETURNING (xmax = 0) AS inserted`,
+          [game.id, game.lastSaveId, this.compressOnWrite ? null : gameJSON, this.compressOnWrite ? gameCompressed : null, game.players.length]);
 
-      // Holding onto a value avoids certain race conditions where saveGame is called twice in a row.
-      const thisSaveId = game.lastSaveId;
-      // xmax = 0 is described at https://stackoverflow.com/questions/39058213/postgresql-upsert-differentiate-inserted-and-updated-rows-using-system-columns-x
-      //
-      // When compressOnWrite is true, the game state is written to game_compressed; when it's
-      // false, it's written to game. The other column is set to null so a row never carries both.
-      const res = await this.client.query(
-        `INSERT INTO games (game_id, save_id, game, game_compressed, players)
-        VALUES ($1, $2, $3, $4, $5)
-        ON CONFLICT (game_id, save_id) DO UPDATE SET game = $3, game_compressed = $4
-        RETURNING (xmax = 0) AS inserted`,
-        [game.id, game.lastSaveId, this.compressOnWrite ? null : gameJSON, this.compressOnWrite ? gameCompressed : null, game.players.length]);
+        await client.query(
+          `INSERT INTO game (game_id, log, options)
+          VALUES ($1, $2, $3)
+          ON CONFLICT (game_id)
+          DO UPDATE SET log = $2`,
+          [game.id, log, options]);
 
-      await this.client.query(
-        `INSERT INTO game (game_id, log, options)
-        VALUES ($1, $2, $3)
-        ON CONFLICT (game_id)
-        DO UPDATE SET log = $2`,
-        [game.id, log, options]);
+        game.lastSaveId = thisSaveId + 1;
 
-      game.lastSaveId = thisSaveId + 1;
-
-      let inserted = true;
-      try {
-        inserted = res.rows[0].inserted;
-      } catch (err) {
-        console.error(err);
-      }
-      if (inserted === false) {
-        if (game.gameOptions.undoOption) {
-          this.statistics.saveConflictUndoCount++;
-        } else {
-          this.statistics.saveConflictNormalCount++;
+        let inserted = true;
+        try {
+          inserted = res.rows[0].inserted;
+        } catch (err) {
+          console.error(err);
         }
-      }
-
-      // Save IDs on the very first save for this game. That's when the incoming saveId is 0, and also
-      // when the database operation was an insert. (We should figure out why multiple saves occur and
-      // try to stop them. But that's for another day.)
-      if (inserted === true && thisSaveId === 0) {
-        const participantIds: Array<ParticipantId> = game.players.map(toID);
-        if (game.spectatorId) {
-          participantIds.push(game.spectatorId);
+        if (inserted === false) {
+          if (game.gameOptions.undoOption) {
+            this.statistics.saveConflictUndoCount++;
+          } else {
+            this.statistics.saveConflictNormalCount++;
+          }
         }
-        await this.storeParticipants({gameId: game.id, participantIds: participantIds});
-      }
 
-      await this.saveReplayJournal(game);
+        // Save IDs on the very first save for this game. That's when the incoming saveId is 0, and also
+        // when the database operation was an insert. (We should figure out why multiple saves occur and
+        // try to stop them. But that's for another day.)
+        if (inserted === true && thisSaveId === 0) {
+          const participantIds: Array<ParticipantId> = game.players.map(toID);
+          if (game.spectatorId) {
+            participantIds.push(game.spectatorId);
+          }
+          await this.insertParticipants(client, {gameId: game.id, participantIds: participantIds});
+        }
 
-      await this.client.query('COMMIT');
+        await this.saveReplayJournal(client, game);
+      });
     } catch (err) {
-      await this.client.query('ROLLBACK');
       this.statistics.saveErrorCount++;
       // saveGame deliberately never rejects (see below), so MetricsDelegate's generic wrapper never
       // sees this error. It's the only way this operation's error count gets recorded.
@@ -523,44 +516,44 @@ export class PostgreSQL implements IDatabase {
   }
 
   /** Writes or clears the replay journal inside the caller's open transaction. */
-  private async saveReplayJournal(game: IGame): Promise<void> {
+  private async saveReplayJournal(client: pg.PoolClient, game: IGame): Promise<void> {
     if (game.gameOptions?.undoStepOption !== true || !isReplayJournalEnabled()) {
       return;
     }
     const state = game.actionReplayState;
     const snapshot = state === undefined || state === null ? undefined : snapshotFromActionReplayState(game.id, state);
-    await this.deleteReplayJournalRows(game.id);
+    await this.deleteReplayJournalRows(client, game.id);
     if (snapshot === undefined) {
       return;
     }
     const statements = postgresReplaceReplayJournalStatements(snapshot, new Date().toISOString());
-    await this.client.query(statements.headSql, [...statements.headValues]);
+    await client.query(statements.headSql, [...statements.headValues]);
     if (statements.entrySql !== '') {
-      await this.client.query(statements.entrySql, [...statements.entryValues]);
+      await client.query(statements.entrySql, [...statements.entryValues]);
     }
-    await this.client.query('DELETE FROM game_action_replay WHERE game_id = $1 AND seq >= $2', [snapshot.gameId, statements.entryValues.length / 9]);
+    await client.query('DELETE FROM game_action_replay WHERE game_id = $1 AND seq >= $2', [snapshot.gameId, statements.entryValues.length / 9]);
     this.statistics.saveReplayJournalCount++;
   }
 
-  private async deleteReplayJournalRows(gameId: GameId): Promise<void> {
-    await this.client.query('DELETE FROM game_action_replay WHERE game_id = $1', [gameId]);
-    await this.client.query('DELETE FROM game_action_replay_head WHERE game_id = $1', [gameId]);
+  private async deleteReplayJournalRows(client: pg.Pool | pg.PoolClient, gameId: GameId): Promise<void> {
+    await client.query('DELETE FROM game_action_replay WHERE game_id = $1', [gameId]);
+    await client.query('DELETE FROM game_action_replay_head WHERE game_id = $1', [gameId]);
   }
 
   async readReplayJournal(gameId: GameId): Promise<ReplayJournalSnapshot | undefined> {
     if (!isReplayJournalEnabled()) {
       return undefined;
     }
-    const headResult = await this.client.query('SELECT game_id, root_save_id, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at FROM game_action_replay_head WHERE game_id = $1', [gameId]);
+    const headResult = await this.pool.query('SELECT game_id, root_save_id, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at FROM game_action_replay_head WHERE game_id = $1', [gameId]);
     if (headResult.rows.length === 0) {
       return undefined;
     }
-    const rows = await this.client.query('SELECT game_id, seq, root_save_id, actor_id, prompt_fingerprint, input_json, log_start_index, continues_through_next_input, created_at FROM game_action_replay WHERE game_id = $1 ORDER BY seq', [gameId]);
+    const rows = await this.pool.query('SELECT game_id, seq, root_save_id, actor_id, prompt_fingerprint, input_json, log_start_index, continues_through_next_input, created_at FROM game_action_replay WHERE game_id = $1 ORDER BY seq', [gameId]);
     return fromRows(headResult.rows[0] as ReplayJournalHeadRow, rows.rows as Array<ReplayJournalEntryRow>);
   }
 
   async clearReplayJournal(gameId: GameId): Promise<void> {
-    await this.deleteReplayJournalRows(gameId);
+    await this.deleteReplayJournalRows(this.pool, gameId);
   }
 
   // Not part of IDatabase, invisible to MetricsDelegate, and invoked fire-and-forget (not awaited) by
@@ -571,7 +564,7 @@ export class PostgreSQL implements IDatabase {
     }
     if (game.lastSaveId % this.trimCount === 0) {
       const maxSaveId = game.lastSaveId - this.trimCount;
-      await this.client.query(
+      await this.pool.query(
         'DELETE FROM games WHERE game_id = $1 AND save_id > 0 AND save_id < $2', [game.id, maxSaveId]);
     }
   }
@@ -582,15 +575,19 @@ export class PostgreSQL implements IDatabase {
       // Should this be an error?
       return;
     }
-    await this.client.query('DELETE FROM games WHERE ctid IN (SELECT ctid FROM games WHERE game_id = $1 ORDER BY save_id DESC LIMIT $2)', [gameId, rollbackCount]);
+    await this.pool.query('DELETE FROM games WHERE ctid IN (SELECT ctid FROM games WHERE game_id = $1 ORDER BY save_id DESC LIMIT $2)', [gameId, rollbackCount]);
   }
 
   public async storeParticipants(entry: GameIdLedger): Promise<void> {
-    await this.client.query('INSERT INTO participants (game_id, participants) VALUES($1, $2) ON CONFLICT (game_id) DO NOTHING', [entry.gameId, entry.participantIds]);
+    await this.insertParticipants(this.pool, entry);
+  }
+
+  private async insertParticipants(queryable: pg.Pool | pg.PoolClient, entry: GameIdLedger): Promise<void> {
+    await queryable.query('INSERT INTO participants (game_id, participants) VALUES($1, $2) ON CONFLICT (game_id) DO NOTHING', [entry.gameId, entry.participantIds]);
   }
 
   public async getParticipants(): Promise<Array<{gameId: GameId, participantIds: Array<ParticipantId>}>> {
-    const res = await this.client.query('select game_id, participants from participants');
+    const res = await this.pool.query('select game_id, participants from participants');
     return res.rows.map((row) => {
       return {gameId: safeCast(row.game_id, isGameId), participantIds: row.participants as Array<ParticipantId>};
     });
@@ -599,9 +596,9 @@ export class PostgreSQL implements IDatabase {
   public async stats(): Promise<{[key: string]: string | number}> {
     const map: {[key: string]: string | number}= {
       'type': 'POSTGRESQL',
-      'pool-total-count': this.client.totalCount,
-      'pool-idle-count': this.client.idleCount,
-      'pool-waiting-count': this.client.waitingCount,
+      'pool-total-count': this.pool.totalCount,
+      'pool-idle-count': this.pool.idleCount,
+      'pool-waiting-count': this.pool.waitingCount,
       'save-count': this.statistics.saveCount,
       'save-error-count': this.statistics.saveErrorCount,
       'save-conflict-normal-count': this.statistics.saveConflictNormalCount,
@@ -615,7 +612,7 @@ export class PostgreSQL implements IDatabase {
     // Rows with no matching game_id in `games` — these are unreachable via getGame()/getGameVersion()
     // and are safe to delete.
     for (const table of ['participants', 'game']) {
-      const result = await this.client.query(
+      const result = await this.pool.query(
         `select count(*) as rowcount from ${table} t where not exists (select 1 from games where games.game_id = t.game_id)`);
       map['orphaned-rows-' + varz(table)] = result.rows[0].rowcount;
     }
@@ -625,14 +622,14 @@ export class PostgreSQL implements IDatabase {
   // The size-stat queries: table/index sizes, database size, and row counts.
   // Throttled by collectSizeStatsIfStale() above; not intended to be called directly elsewhere.
   private collectSizeStats(): Promise<void> {
-    if (this._client === undefined) {
+    if (this._pool === undefined) {
       return Promise.resolve();
     }
 
     return withDatabaseMetrics('collectSizeStats', async () => {
       // Row counts use reltuples (a ~1%-accurate estimate) to avoid full count(*) scans.
       // https://wiki.postgresql.org/wiki/Count_estimate
-      const rowCountResult = await this.client.query(
+      const rowCountResult = await this.pool.query(
         `SELECT s.relname, c.reltuples::bigint AS rowcount, pg_total_relation_size(c.oid) AS size
          FROM pg_stat_user_tables s
          JOIN pg_class c ON c.oid = s.relid
@@ -644,26 +641,26 @@ export class PostgreSQL implements IDatabase {
         metrics.tableRows.set({table}, Number(row.rowcount));
       }
 
-      const dbSizeResult = await this.client.query('SELECT pg_database_size(current_database()) as db_size');
+      const dbSizeResult = await this.pool.query('SELECT pg_database_size(current_database()) as db_size');
       metrics.databaseSizeBytes.set(Number(dbSizeResult.rows[0].db_size));
     });
   }
 
   public async createSession(session: Session): Promise<void> {
-    await this.client.query('INSERT INTO session (session_id, data, expiration_time) VALUES($1, $2, $3)', [session.id, JSON.stringify(session.data), new Date(session.expirationTimeMillis)]);
+    await this.pool.query('INSERT INTO session (session_id, data, expiration_time) VALUES($1, $2, $3)', [session.id, JSON.stringify(session.data), new Date(session.expirationTimeMillis)]);
   }
 
   public async deleteSession(sessionId: SessionId): Promise<void> {
-    await this.client.query('DELETE FROM session where session_id = $1', [sessionId]);
+    await this.pool.query('DELETE FROM session where session_id = $1', [sessionId]);
   }
 
   public async deleteExpiredSessions(): Promise<number> {
-    const res = await this.client.query('DELETE FROM session WHERE expiration_time <= to_timestamp($1)', [Date.now() / 1000]);
+    const res = await this.pool.query('DELETE FROM session WHERE expiration_time <= $1', [new Date()]);
     return res.rowCount ?? 0;
   }
 
   async getSessions(): Promise<Array<Session>> {
-    const res = await this.client.query('SELECT session_id, data, expiration_time FROM session WHERE expiration_time > to_timestamp($1)', [Date.now() / 1000]);
+    const res = await this.pool.query('SELECT session_id, data, expiration_time FROM session WHERE expiration_time > $1', [new Date()]);
     return res.rows.map((row) => {
       return {
         id: row.session_id,
@@ -674,27 +671,27 @@ export class PostgreSQL implements IDatabase {
   }
 
   public async listMapLibraryEntries(): Promise<Array<MapLibraryEntry>> {
-    const res = await this.client.query('SELECT * FROM map_library ORDER BY created_time DESC');
+    const res = await this.pool.query('SELECT * FROM map_library ORDER BY created_time DESC');
     return res.rows.map((row) => this.rowToMapLibraryEntry(row));
   }
 
   public async getMapLibraryEntry(id: MapLibraryEntryId): Promise<MapLibraryEntry | undefined> {
-    const res = await this.client.query('SELECT * FROM map_library WHERE id = $1', [id]);
+    const res = await this.pool.query('SELECT * FROM map_library WHERE id = $1', [id]);
     return res.rows.length === 0 ? undefined : this.rowToMapLibraryEntry(res.rows[0]);
   }
 
   public async insertMapLibraryEntry(entry: MapLibraryEntry): Promise<void> {
-    await this.client.query(
+    await this.pool.query(
       'INSERT INTO map_library (id, code, description, submitted_by, origin, status, created_time) VALUES($1, $2, $3, $4, $5, $6, $7)',
       [entry.id, entry.code, entry.description, entry.submittedBy, entry.origin, entry.status, new Date(entry.createdAt)]);
   }
 
   public async setMapLibraryEntryStatus(id: MapLibraryEntryId, status: MapLibraryStatus): Promise<void> {
-    await this.client.query('UPDATE map_library SET status = $1 WHERE id = $2', [status, id]);
+    await this.pool.query('UPDATE map_library SET status = $1 WHERE id = $2', [status, id]);
   }
 
   public async deleteMapLibraryEntry(id: MapLibraryEntryId): Promise<void> {
-    await this.client.query('DELETE FROM map_library WHERE id = $1', [id]);
+    await this.pool.query('DELETE FROM map_library WHERE id = $1', [id]);
   }
 
   private rowToMapLibraryEntry(row: any): MapLibraryEntry {
@@ -710,33 +707,33 @@ export class PostgreSQL implements IDatabase {
   }
 
   public async listCustomCardLibraryEntries(): Promise<Array<CustomCardLibraryEntry>> {
-    const res = await this.client.query('SELECT * FROM custom_card_library ORDER BY created_time DESC');
+    const res = await this.pool.query('SELECT * FROM custom_card_library ORDER BY created_time DESC');
     return res.rows.map((row) => this.rowToCustomCardLibraryEntry(row));
   }
 
   public async getCustomCardLibraryEntry(id: CustomCardEntryId): Promise<CustomCardLibraryEntry | undefined> {
-    const res = await this.client.query('SELECT * FROM custom_card_library WHERE id = $1', [id]);
+    const res = await this.pool.query('SELECT * FROM custom_card_library WHERE id = $1', [id]);
     return res.rows.length === 0 ? undefined : this.rowToCustomCardLibraryEntry(res.rows[0]);
   }
 
   public async insertCustomCardLibraryEntry(entry: CustomCardLibraryEntry): Promise<void> {
-    await this.client.query(
+    await this.pool.query(
       'INSERT INTO custom_card_library (id, definition, share_code, submitted_by, status, created_time) VALUES($1, $2, $3, $4, $5, $6)',
       [entry.id, JSON.stringify(entry.definition), entry.shareCode, entry.submittedBy, entry.status, new Date(entry.createdAt)]);
   }
 
   public async setCustomCardLibraryEntryStatus(id: CustomCardEntryId, status: CustomCardStatus): Promise<void> {
-    await this.client.query('UPDATE custom_card_library SET status = $1 WHERE id = $2', [status, id]);
+    await this.pool.query('UPDATE custom_card_library SET status = $1 WHERE id = $2', [status, id]);
   }
 
   public async updateCustomCardLibraryEntry(id: CustomCardEntryId, entry: CustomCardLibraryEntry): Promise<void> {
-    await this.client.query(
+    await this.pool.query(
       'UPDATE custom_card_library SET definition = $1, share_code = $2, submitted_by = $3, status = $4 WHERE id = $5',
       [JSON.stringify(entry.definition), entry.shareCode, entry.submittedBy, entry.status, id]);
   }
 
   public async deleteCustomCardLibraryEntry(id: CustomCardEntryId): Promise<void> {
-    await this.client.query('DELETE FROM custom_card_library WHERE id = $1', [id]);
+    await this.pool.query('DELETE FROM custom_card_library WHERE id = $1', [id]);
   }
 
   private rowToCustomCardLibraryEntry(row: any): CustomCardLibraryEntry {

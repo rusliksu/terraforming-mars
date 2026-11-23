@@ -1,12 +1,12 @@
 <template>
   <!-- [−] [icon amount] [+] [→ target]: the currency icon sits inside the field, so all icons share one axis.
        The target button names the value it sets instead of a vague "MAX" (payments.less). -->
-  <div class="payments_type input-group" :data-test="unit">
+  <div class="payments-type input-group" :data-test="unit">
     <AppButton type="minus" :disabled="minusDisabled" @click="$emit('minus')" />
     <span class="payments_field">
-      <i class="resource_icon payments_type_icon" :class="iconClass" :title="$t('Pay with ' + description)"></i>
+      <i class="resource-icon payments-type-icon" :class="iconClass" :title="$t('Pay with ' + description)"></i>
       <input
-        class="form-input form-inline payments_input"
+        class="form-input form-inline payments-input"
         :value="count"
         @input="onInput"
       >

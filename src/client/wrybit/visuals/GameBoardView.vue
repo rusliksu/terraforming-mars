@@ -1,6 +1,6 @@
 <!-- Board tab presentation; all board props and log-highlighting behavior come from our game models. -->
 <template>
-  <a name="board" class="player_home_anchor hotkey-target"></a>
+  <a name="board" class="player-home-anchor hotkey-target"></a>
   <BoardTabs :game="game" :players="players" :tileView="tileView" :reservedMarsHeight="reservedMarsHeight" @toggleTileView="$emit('toggleTileView')">
     <template #mars>
       <Teleport :to="boardZoomTarget ?? 'body'" :disabled="boardZoomTarget === undefined || zoomBoard !== 'mars'">
@@ -33,7 +33,7 @@
     @target="boardZoomTarget = $event" @rendered="zoomGeometry.revision.value++" @hidden="onZoomHidden" @close="closeBoardZoom">
     <template #banner><PlacementBanner v-if="placementInput !== undefined" :description="nativePlacementDescription(placementInput)" /></template>
   </BoardZoomModal>
-  <div v-if="players.length > 1" class="player_home_block--milestones-and-awards">
+  <div v-if="players.length > 1" class="player-home-block--milestones-and-awards">
     <a class="hotkey-target"></a>
     <Milestones :milestones="game.milestones" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates" />
     <Awards :awards="game.awards" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates" />

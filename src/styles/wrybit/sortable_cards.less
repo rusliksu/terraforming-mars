@@ -12,8 +12,8 @@
   }
 }
 
-// .filterDiv sets cursor: pointer – here the hand should signal that cards can be moved.
-.sortable-slot .filterDiv {
+// .filter-div sets cursor: pointer – here the hand should signal that cards can be moved.
+.sortable-slot .filter-div {
   cursor: grab;
 }
 
@@ -37,9 +37,9 @@
 }
 
 // Free slot where the card lands when released.
-// The border sits on the card surface itself (.filterDiv) so it lines up exactly with the neighboring cards –
+// The border sits on the card surface itself (.filter-div) so it lines up exactly with the neighboring cards –
 // the slot has a different size because of the card margins.
-.sortable-placeholder .filterDiv {
+.sortable-placeholder .filter-div {
   background: rgba(255, 255, 255, 0.03);
   border-color: transparent;
   box-shadow: none;
@@ -64,7 +64,7 @@
   transform: rotate(4deg) scale(1.04);
   transform-origin: 50% 30%;
 
-  .filterDiv {
+  .filter-div {
     transform: none;
     border-radius: 12px;
     box-shadow:

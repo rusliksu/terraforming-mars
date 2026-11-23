@@ -32,7 +32,7 @@ describe('PlayerResources', () => {
     // `tooltip`/`tooltip-bottom` classes, whose own CSS uses `::after` for the hover bubble,
     // and an element can only have one `::after` (the two rules were merging and the tooltip
     // library's opacity:0/positioning was winning, making the fill invisible).
-    expect(box.find('.resource_icon--coordination-fill').exists()).to.be.true;
+    expect(box.find('.resource-icon--coordination-fill').exists()).to.be.true;
   });
 
   it('does not show a Coordination resource box when Conglomerates is off', () => {
@@ -55,7 +55,7 @@ describe('PlayerResources', () => {
       },
     });
 
-    expect(wrapper.find('.resource_items_cont').classes()).to.include('resource_items_cont--team_red');
+    expect(wrapper.find('.resource-items-cont').classes()).to.include('resource-items-cont--team_red');
   });
 
   it('does not outline the resource bar when the player has no Conglomerates team', () => {
@@ -66,8 +66,8 @@ describe('PlayerResources', () => {
       },
     });
 
-    expect(wrapper.find('.resource_items_cont').classes()).to.not.include.members(
-      ['resource_items_cont--team_red', 'resource_items_cont--team_blue'],
+    expect(wrapper.find('.resource-items-cont').classes()).to.not.include.members(
+      ['resource-items-cont--team_red', 'resource-items-cont--team_blue'],
     );
   });
 });

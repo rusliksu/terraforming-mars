@@ -1,4 +1,5 @@
 import {getAutomationCompatibility} from '../bot/AutomationCompatibility';
+import {showVPFromLegacy} from '@/common/game/ShowVP';
 import {decodeCustomBoard} from '../../common/boards/customBoardCodec';
 import {decodeSimpleBoard} from '../../common/boards/simpleBoardCodec';
 import * as fs from 'fs';
@@ -166,6 +167,7 @@ export class ApiQuickGame extends Handler {
       showTimers: settings.showTimers ?? true,
       fastModeOption: settings.fastModeOption ?? true,
       showOtherPlayersVP: settings.showOtherPlayersVP ?? true,
+      showVP: showVPFromLegacy(settings.showOtherPlayersVP ?? true),
       privateHands: settings.privateHands ?? true,
       noEloGame: settings.noEloGame ?? false,
       turnBasedGame: false,
@@ -330,6 +332,7 @@ export class ApiQuickGame extends Handler {
         requiresMoonTrackCompletion: gameReq.requiresMoonTrackCompletion,
         requiresVenusTrackCompletion: gameReq.requiresVenusTrackCompletion,
         showOtherPlayersVP: gameReq.showOtherPlayersVP,
+        showVP: showVPFromLegacy(gameReq.showOtherPlayersVP),
         showTimers: gameReq.showTimers,
         shuffleMapOption: gameReq.shuffleMapOption,
         solarPhaseOption: gameReq.solarPhaseOption,

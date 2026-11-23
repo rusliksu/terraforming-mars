@@ -64,7 +64,7 @@ describe('Milestone', () => {
     const wrapper = mount(Milestone, {...globalConfig, props: {milestone, showScores: true}});
 
     const scoreWrapper = wrapper.find('[data-test=player-score]');
-    expect(scoreWrapper.classes()).to.includes(`player_bg_color_${milestone.scores[0].color}`);
+    expect(scoreWrapper.classes()).to.includes(`player-bg-color-${milestone.scores[0].color}`);
   });
 
   it('shows sorted players scores', () => {
@@ -164,7 +164,7 @@ describe('Milestone', () => {
 
     const colors = wrapper.findAll('[data-test=player-score]')
       .filter((w) => /^\d+$/.test(w.text()))
-      .map((w) => w.classes().find((c) => c.startsWith('player_bg_color_'))?.replace('player_bg_color_', ''));
+      .map((w) => w.classes().find((c) => c.startsWith('player-bg-color-'))?.replace('player-bg-color-', ''));
     // blue+green (higher team total) first, yellow ranked above red within their own team.
     expect(colors).to.deep.eq(['blue', 'green', 'yellow', 'red']);
   });

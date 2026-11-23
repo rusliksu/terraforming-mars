@@ -21,7 +21,7 @@ import {cardResourceCSS} from '@/client/components/common/cardResources';
 const props = defineProps<{side: AmountSideModel, before?: number, after?: number, change: number, direction: 'loss' | 'gain'}>();
 const label = computed(() => ({production: 'Production', card: 'On card', stock: 'Stock', cost: 'Costs'})[props.side.kind]);
 const iconClass = computed(() => props.side.kind === 'card' ? ['card-resource', cardResourceCSS[props.side.resource]] :
-  ['resource_icon', 'resource_icon--' + props.side.resource]);
+  ['resource-icon', 'resource-icon--' + props.side.resource]);
 function format(value: number): string {
   return props.side.kind === 'production' && value > 0 ? '+' + value : String(value);
 }

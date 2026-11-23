@@ -164,6 +164,11 @@ export abstract class Board {
   /** Computes the board and Ares costs, excluding political payments and later effects. */
   public getAdditionalCosts(player: IPlayer, space: Space, multiplier: number | undefined, subjectToHazardAdjacency: boolean): SpaceCosts {
     const costs: SpaceCosts = this.spaceCosts(space);
+    if (player.isMarsBot) {
+      // MarsBot never collects placement bonuses, so it never pays what they cost either.
+      costs.megacredits = 0;
+      costs.tr = {};
+    }
     if (multiplier !== undefined) {
       costs.megacredits *= multiplier;
       for (const key of TR_SOURCES) {

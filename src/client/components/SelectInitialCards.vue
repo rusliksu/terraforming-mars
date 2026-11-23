@@ -2,10 +2,10 @@
   <component v-if="initialPresentation !== undefined" :is="initialPresentation" :binding="presentationBinding" v-bind="$attrs" />
   <div v-else class="select-initial-cards" v-bind="$attrs">
     <PresentationHost :hosts="initialHosts.corporation" />
-    <div v-if="playerCanChooseAridor" class="player_home_colony_cont">
+    <div v-if="playerCanChooseAridor" class="player-home-colony-cont">
       <div v-i18n>These are the colony tiles Aridor may choose from:</div>
       <div class="discarded-colonies-for-aridor">
-        <div class="player_home_colony small_colony" v-for="colonyName in playerView.game.discardedColonies" :key="colonyName">
+        <div class="player-home-colony small-colony" v-for="colonyName in playerView.game.discardedColonies" :key="colonyName">
           <Colony :colony="getColony(colonyName)" :active="getColony(colonyName).isActive" />
         </div>
       </div>

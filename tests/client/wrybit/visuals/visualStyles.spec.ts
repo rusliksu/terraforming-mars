@@ -45,7 +45,7 @@ describe('Wrybit compiled visual styles', () => {
     expect(declaration('.wrybit-ui .players-table-row--saturn .players-table-corporation', 'opacity')).eq('1');
     expect(declaration('.wrybit-ui .players-table-row--saturnrings .players-table-corporation', 'opacity')).eq('1');
     // Idle action block (not this player's turn) shrinks so the cards panel fills the column
-    const idleActions = '.wrybit-ui .player-home--fixed:not(.player-home--acting) .player-home-columns__main > .player_home_block--actions';
+    const idleActions = '.wrybit-ui .player-home--fixed:not(.player-home--acting) .player-home-columns__main > .player-home-block--actions';
     expect(declaration(idleActions, 'flex')).eq('0 1 auto');
     expect(declaration(idleActions, 'min-height')).eq('0');
     // Tag cells stack the icon above the count; unplayed tags recede and the event group has a divider

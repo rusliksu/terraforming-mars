@@ -20,7 +20,7 @@ const ICONS: Record<Expansion, string> = {
   ceo: 'expansion-icon-ceo',
   starwars: 'expansion-icon-starwars',
   underworld: 'expansion-icon-underworld',
-  deltaProject: 'expansion-icon-deltaProject',
+  deltaProject: 'expansion-icon-deltaproject',
   sillyfication: 'expansion-icon-sillyfication',
   customCards: 'expansion-icon-customCards',
   conglomerates: 'expansion-icon-conglomerates',

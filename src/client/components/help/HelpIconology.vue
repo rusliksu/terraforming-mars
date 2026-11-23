@@ -210,7 +210,7 @@ const CARD_RESOURCES: ReadonlyArray<IconEntry> = [
 // they don't fit the "Resources on Cards" framing above.
 const RESOURCES_NOT_ON_CARDS: ReadonlyArray<IconEntry> = [
   {iconClass: 'tag-corruption-count', label: 'Corruption', official: false, expansions: ['underworld']},
-  {iconClass: 'resource_icon resource_icon--coordination', label: 'Coordination', official: false, expansions: ['conglomerates']},
+  {iconClass: 'resource-icon resource-icon--coordination', label: 'Coordination', official: false, expansions: ['conglomerates']},
 ];
 
 const TILES: ReadonlyArray<IconEntry> = [

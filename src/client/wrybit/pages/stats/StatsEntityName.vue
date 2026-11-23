@@ -1,5 +1,5 @@
 <template>
-  <a v-if="kind === 'player'" :href="href" data-stats-link class="stats-player" :class="`player_translucent_bg_color_${color}`">{{ name }}</a>
+  <a v-if="kind === 'player'" :href="href" data-stats-link class="stats-player" :class="`player-translucent-bg-color-${color}`">{{ name }}</a>
   <span v-else class="stats-entity-group">
     <a :href="href" data-stats-link class="stats-entity">
       <span v-i18n>{{ label }}</span>

@@ -11,6 +11,7 @@ import {CustomBoardDefinition} from '../../common/boards/CustomBoardDefinition';
 import {SimpleCustomBoardDefinition} from '../../common/boards/SimpleCustomBoardDefinition';
 import {GlobalParametersConfig} from '../../common/GlobalParameterConfig';
 import {CustomMA} from '../../common/ma/CustomMA';
+import {ShowVP} from '../../common/game/ShowVP';
 
 export type GameOptions = {
   /** Marks the expanded card pool; absent in pre-port saves. */
@@ -36,7 +37,9 @@ export type GameOptions = {
   aiAnalysis: boolean;
   showTimers: boolean;
   fastModeOption: boolean;
-  showOtherPlayersVP: boolean;
+  showVP: ShowVP;
+  /** Deprecated boolean view of showVP; kept for the custom create-game UI and older saves. */
+  showOtherPlayersVP?: boolean;
   privateHands: boolean;
   /** When true, guest seats cannot submit input; every human seat must be bound to a Discord account. */
   requiresDiscordLogin?: boolean;
@@ -203,7 +206,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   requiresMoonTrackCompletion: false,
   removeNegativeGlobalEventsOption: false,
   requiresVenusTrackCompletion: false,
-  showOtherPlayersVP: false,
+  showVP: 'yours',
   showTimers: true,
   shuffleMapOption: false,
   solarPhaseOption: false,

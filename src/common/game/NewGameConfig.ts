@@ -9,6 +9,7 @@ import {GameId} from '../Types';
 import {Expansion} from '../cards/GameModule';
 import {AiLevel} from '../ai/AiLevel';
 import {CustomMA} from '../ma/CustomMA';
+import {ShowVP} from './ShowVP';
 
 export type BoardNameType = BoardName | RandomBoardOption;
 
@@ -83,7 +84,9 @@ export type NewGameConfig = {
   /** Analysis game (only with AI players): the log shows the AI's cards and decisions for everyone. */
   aiAnalysis?: boolean;
   fastModeOption: boolean;
-  showOtherPlayersVP: boolean;
+  showVP: ShowVP;
+  /** Deprecated boolean view of showVP; kept for the custom create-game UI and older saves. */
+  showOtherPlayersVP?: boolean;
   privateHands: boolean;
   /** When true, every human seat must be bound to a Discord account and players must sign in. */
   requiresDiscordLogin?: boolean;

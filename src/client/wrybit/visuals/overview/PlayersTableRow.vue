@@ -18,7 +18,7 @@
           <div v-if="groupIndex > 0" class="players-table-tag-separator"></div>
           <div v-for="tag in group" :key="tag" :class="['players-table-cell', 'players-table-cell--tag', {'players-table-cell--tag-empty': !tagDetail(tag).count && tagDetail(tag).discount === 0 && tagDetail(tag).substitution === undefined}]" :data-test="'tag-' + tag">
             <Tag :tag="(tag as CardTag)" size="big" type="secondary" />
-            <span :class="tagCounterClasses(tag)"><span v-if="protectedTags.includes(tag)" class="players-table-protection shield_icon" :data-test="'protection-' + tag"></span>{{ tagDetail(tag).count || '·' }}<PlayerTagSubstitution v-if="tagDetail(tag).substitution !== undefined" :tag="tagDetail(tag).substitution!" :data-test="'substitution-' + tag" /></span>
+            <span :class="tagCounterClasses(tag)"><span v-if="protectedTags.includes(tag)" class="players-table-protection shield-icon" :data-test="'protection-' + tag"></span>{{ tagDetail(tag).count || '·' }}<PlayerTagSubstitution v-if="tagDetail(tag).substitution !== undefined" :tag="tagDetail(tag).substitution!" :data-test="'substitution-' + tag" /></span>
             <span v-if="tagDetail(tag).discount > 0" class="players-table-discount" :data-test="'discount-' + tag" :title="$t('Discount')">-{{ tagDetail(tag).discount }}</span>
             <PointsPerTag :points="tagDetail(tag)" />
           </div>
@@ -66,7 +66,7 @@
 
     <div v-if="!visibility.goods" class="players-table-goods-strip" data-test="goods-strip">
       <span v-for="good in goods" :key="good.type" class="players-table-goods-strip-item" :title="$t(good.type)">
-        <span :class="['resource_icon', 'resource_icon--' + good.type]"></span>
+        <span :class="['resource-icon', 'resource-icon--' + good.type]"></span>
         <b>{{ good.count }}</b>
         <small v-if="good.production !== 0 || good.value > 0">{{ good.production }}<template v-if="good.value > 0">×{{ good.value }}</template></small>
       </span>
@@ -164,7 +164,7 @@ export default defineComponent({
     rowClasses(): Array<string> {
       // The classic translucent class gives the row the persona surface and the matching text
       // tone; light reserved identities (pearl, gold, ...) override that tone inside the table.
-      const classes = ['players-table-row', 'players-table-row--player', 'players-table-row--' + this.player.color, 'player_translucent_bg_color_' + this.player.color];
+      const classes = ['players-table-row', 'players-table-row--player', 'players-table-row--' + this.player.color, 'player-translucent-bg-color-' + this.player.color];
       if (this.isThisPlayer) {
         classes.push('players-table-row--me');
       }

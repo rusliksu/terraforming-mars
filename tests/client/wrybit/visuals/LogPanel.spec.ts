@@ -44,7 +44,7 @@ describe('Wrybit log with our mutable history and access protocol', () => {
       await wrapper.get('input[type="search"]').setValue('Asteroid');
       expect(wrapper.findAllComponents(LogMessageComponent)).length(1);
       await wrapper.get('input[type="search"]').setValue('');
-      await wrapper.get('.log-player-filter.player_bg_color_red').trigger('click');
+      await wrapper.get('.log-player-filter.player-bg-color-red').trigger('click');
       expect(wrapper.findAllComponents(LogMessageComponent)).length(1);
       fetchLogs.mockClear();
       const canceled = {...asteroid, canceled: true};

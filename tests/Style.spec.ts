@@ -40,7 +40,7 @@ describe('Styles', () => {
     expect(variables).to.contain('@player_hydro: rgb(255, 102, 102);');
     expect(variables).to.contain('@player_hydro_token_gradient: linear-gradient(135deg, #ffd6d6 0%, @player_hydro 52%, #8f1f1f 100%);');
     expect(variables).to.contain('@player_hydro_tag_bg: rgba(255, 102, 102, 0.24);');
-    expect(common).to.contain('.player_bg_color_hydro');
+    expect(common).to.contain('.player-bg-color-hydro');
     expect(common).to.contain('#fff5f5');
     expect(common).not.to.contain('linear-gradient(90deg, @player_hydro, #254ec6)');
     expect(board).to.contain('.board-cube--hydro');
@@ -63,7 +63,7 @@ describe('Styles', () => {
 
     expect(variables).to.contain('@player_pearl: rgb(242, 248, 248);');
     expect(variables).to.contain('@player_pearl_sprite_filter: grayscale(1) brightness(1.58) contrast(0.82) saturate(0.25);');
-    expect(common).to.contain('.player_bg_color_pearl');
+    expect(common).to.contain('.player-bg-color-pearl');
     expect(common).to.contain('#102027');
     expect(board).to.contain('.board-cube--pearl');
     expect(board).to.contain('content: "✧"');
@@ -83,7 +83,7 @@ describe('Styles', () => {
     const playerSymbol = read('src/client/utils/playerSymbol.ts');
 
     expect(variables).to.contain('@player_antistress: rgb(29, 58, 116);');
-    expect(common).to.contain('.player_bg_color_antistress');
+    expect(common).to.contain('.player-bg-color-antistress');
     expect(board).to.contain('.board-cube--antistress');
     expect(board).to.contain('content: "✚"');
     expect(playerHome).to.contain('&.colonies-fleet-antistress');
@@ -100,7 +100,7 @@ describe('Styles', () => {
     const playerSymbol = read('src/client/utils/playerSymbol.ts');
 
     expect(variables).to.contain('@player_gambit: rgb(111, 164, 205);');
-    expect(common).to.contain('.player_bg_color_gambit');
+    expect(common).to.contain('.player-bg-color-gambit');
     expect(board).to.contain('.board-cube--gambit');
     expect(board).to.contain('content: "♞"');
     expect(playerHome).to.contain('&.colonies-fleet-gambit');
@@ -119,7 +119,7 @@ describe('Styles', () => {
 
     expect(variables).to.contain('@player_serge: rgb(76, 12, 31);');
     expect(variables).to.contain('@player_serge_token_gradient: linear-gradient(135deg, @player_serge_light 0%, @player_serge 52%, @player_serge_dark 100%);');
-    expect(common).to.contain('.player_bg_color_serge');
+    expect(common).to.contain('.player-bg-color-serge');
     expect(board).to.contain('.board-cube--serge');
     expect(board).to.contain('content: "S"');
     expect(playerHome).to.contain('&.colonies-fleet-serge');
@@ -139,7 +139,7 @@ describe('Styles', () => {
     expect(variables).to.contain('@player_turquoise: rgb(224, 54, 105);');
     expect(variables).to.contain('@player_turquoise_token_gradient: linear-gradient(135deg, @player_turquoise_light 0%, @player_turquoise 52%, @player_turquoise_dark 100%);');
     expect(variables).to.contain('@player_turquoise_sprite_filter: hue-rotate(18deg) saturate(1.70) brightness(0.78) contrast(1.20);');
-    expect(common).to.contain('.player_bg_color_turquoise');
+    expect(common).to.contain('.player-bg-color-turquoise');
     expect(common).to.contain('#fff2f5');
     expect(board).to.contain('.board-cube--turquoise');
     expect(board).to.contain('content: "◇"');
@@ -309,8 +309,8 @@ describe('Styles', () => {
     const defaultColors = new Set<string>(DEFAULT_PLAYER_COLORS);
     const reservedColors = new Set<string>(RESERVED_PLAYER_COLORS);
 
-    expect(common).to.contain('.player_bg_color_@{value}');
-    expect(common).to.contain('.player_translucent_bg_color_@{value}');
+    expect(common).to.contain('.player-bg-color-@{value}');
+    expect(common).to.contain('.player-translucent-bg-color-@{value}');
 
     for (const color of PLAYER_COLORS) {
       expect(variables, `${color} variable`).to.contain(`@player_${color}:`);
@@ -327,11 +327,11 @@ describe('Styles', () => {
       if (reservedColors.has(color)) {
         expect(variables, `${color} token gradient`).to.contain(`@player_${color}_token_gradient:`);
         expect(variables, `${color} tag background`).to.contain(`@player_${color}_tag_bg:`);
-        expect(common, `${color} reserved background`).to.contain(`.player_bg_color_${color}`);
-        expect(common, `${color} reserved translucent background`).to.contain(`.player_translucent_bg_color_${color}`);
+        expect(common, `${color} reserved background`).to.contain(`.player-bg-color-${color}`);
+        expect(common, `${color} reserved translucent background`).to.contain(`.player-translucent-bg-color-${color}`);
         expect(board, `${color} persona board token`).to.contain(`.board-cube--${color}.board-cube--persona::before`);
         expect(playerHome, `${color} tag overview`).to.contain(`player_tag_bg_color_${color}`);
-        expect(createGame, `${color} create-game profile surface`).to.contain(`player_translucent_bg_color_${color}`);
+        expect(createGame, `${color} create-game profile surface`).to.contain(`player-translucent-bg-color-${color}`);
         expect(turmoil, `${color} turmoil delegate token`).to.contain(`&.${color}`);
       }
     }
@@ -387,10 +387,10 @@ describe('Styles', () => {
     const common = read('src/styles/common.less');
     const createGame = read('src/styles/create_game_form.less');
 
-    expectCssContains(common, '.player_bg_color_gold {\n  background-color: @player_gold;\n  color: #000000;');
-    expectCssContains(common, '.player_translucent_bg_color_gold {\n  .player_gold_bg_translucent();\n  color: #000000;');
-    expectCssContains(common, '.player_translucent_bg_color_gold .player-name {\n  color: #000000;');
-    expect(common).to.contain('.player_translucent_bg_color_gold td,\n.player_translucent_bg_color_gold .game-end-name-and-elo,');
+    expectCssContains(common, '.player-bg-color-gold {\n  background-color: @player_gold;\n  color: #000000;');
+    expectCssContains(common, '.player-translucent-bg-color-gold {\n  .player_gold_bg_translucent();\n  color: #000000;');
+    expectCssContains(common, '.player-translucent-bg-color-gold .player-name {\n  color: #000000;');
+    expect(common).to.contain('.player-translucent-bg-color-gold td,\n.player-translucent-bg-color-gold .game-end-name-and-elo,');
     expect(common).to.contain('text-shadow: none;');
     expect(createGame).to.contain('.create-game-player-field-theme(#000000, #fff2a6);');
     expect(createGame).not.to.contain('background: linear-gradient(90deg, #f7d95b, @player_gold);');
@@ -429,43 +429,43 @@ describe('Styles', () => {
     expect(common).not.to.contain('font-family: Candara, "Trebuchet MS", Ubuntu, Sans;');
     expect(common).not.to.contain('font-family: "Segoe Script", "Lucida Handwriting", Candara, Ubuntu, Sans;');
     expect(common).not.to.contain('letter-spacing: 0.45px;');
-    expect(createGame).to.contain('.player_translucent_bg_color_ginger');
+    expect(createGame).to.contain('.player-translucent-bg-color-ginger');
     expect(createGame).not.to.contain('font-family: "Segoe Print", "Comic Sans MS", Verdana, Ubuntu, Sans;');
     expect(createGame).not.to.contain('font-style: italic;');
     expect(createGame).not.to.contain('letter-spacing: 0.45px;');
-    expect(createGame).to.contain('.player_translucent_bg_color_gambit');
+    expect(createGame).to.contain('.player-translucent-bg-color-gambit');
   });
 
   it('uses solid persona backgrounds and readable milestone/award score text', () => {
     const common = read('src/styles/common.less');
     const playerHome = read('src/styles/player_home.less');
 
-    for (const selector of ['.player_bg_color_emerald', '.player_bg_color_ginger', '.player_bg_color_hydro', '.player_bg_color_pearl', '.player_bg_color_antistress', '.player_bg_color_gambit', '.player_bg_color_turquoise', '.player_bg_color_serge', '.player_bg_color_saturn', '.player_bg_color_saturnrings', '.player_bg_color_titan', '.player_bg_color_saturnstorm', '.player_bg_color_catseye']) {
+    for (const selector of ['.player-bg-color-emerald', '.player-bg-color-ginger', '.player-bg-color-hydro', '.player-bg-color-pearl', '.player-bg-color-antistress', '.player-bg-color-gambit', '.player-bg-color-turquoise', '.player-bg-color-serge', '.player-bg-color-saturn', '.player-bg-color-saturnrings', '.player-bg-color-titan', '.player-bg-color-saturnstorm', '.player-bg-color-catseye']) {
       const block = cssBlock(common, selector);
       expect(block).to.contain('background-color:');
       expect(block).not.to.contain('linear-gradient');
     }
     expect(cssBlock(playerHome, '.ma-score')).to.contain('color: black;');
     for (const selector of ['red', 'green', 'blue', 'purple', 'emerald', 'ginger', 'hydro', 'antistress', 'turquoise', 'serge', 'saturnstorm', 'rigatone', 'rigatone2']) {
-      expect(playerHome).to.contain(`.ma-score.player_bg_color_${selector}`);
+      expect(playerHome).to.contain(`.ma-score.player-bg-color-${selector}`);
     }
     expect(playerHome).to.contain('color: #fff;');
-    expect(cssBlock(playerHome, '.ma-score.player_bg_color_hydro')).to.contain('color: #fff5f5;');
-    expect(cssBlock(playerHome, '.ma-score.player_bg_color_saturnstorm')).to.contain('color: #ffe5e8;');
+    expect(cssBlock(playerHome, '.ma-score.player-bg-color-hydro')).to.contain('color: #fff5f5;');
+    expect(cssBlock(playerHome, '.ma-score.player-bg-color-saturnstorm')).to.contain('color: #ffe5e8;');
   });
 
   it('keeps GydRo pearl names black while counters stay readable', () => {
     const common = read('src/styles/common.less');
 
-    expect(common).to.contain('.player_translucent_bg_color_pearl .player-info-details,');
-    expect(common).to.contain('.player_translucent_bg_color_pearl .player-info-corp,');
-    expectCssContains(common, '.player_translucent_bg_color_pearl .tag-count-display {\n  color: #ffffff;');
-    expectCssContains(common, '.player_translucent_bg_color_pearl .tag-count-display {\n  color: #ffffff;\n  text-shadow: 0 2px 2px black;');
-    expectCssContains(common, '.player_translucent_bg_color_pearl .resource_item .resource_item_stock_count {\n  color: #ffffff;');
-    expectCssContains(common, '.player_translucent_bg_color_pearl .resource_item .resource_item_prod_count {\n  color: #bb8760;');
+    expect(common).to.contain('.player-translucent-bg-color-pearl .player-info-details,');
+    expect(common).to.contain('.player-translucent-bg-color-pearl .player-info-corp,');
+    expectCssContains(common, '.player-translucent-bg-color-pearl .tag-count-display {\n  color: #ffffff;');
+    expectCssContains(common, '.player-translucent-bg-color-pearl .tag-count-display {\n  color: #ffffff;\n  text-shadow: 0 2px 2px black;');
+    expectCssContains(common, '.player-translucent-bg-color-pearl .resource-item .resource-item-stock-count {\n  color: #ffffff;');
+    expectCssContains(common, '.player-translucent-bg-color-pearl .resource-item .resource-item-prod-count {\n  color: #bb8760;');
     expect(common).to.contain('color: #ffffff;');
-    expectCssContains(common, '.player_translucent_bg_color_pearl .player-name {\n  color: #000000;');
-    expectCssContains(common, '.player_translucent_bg_color_pearl .game-end-name-and-elo a {\n  text-shadow: none;');
+    expectCssContains(common, '.player-translucent-bg-color-pearl .player-name {\n  color: #000000;');
+    expectCssContains(common, '.player-translucent-bg-color-pearl .game-end-name-and-elo a {\n  text-shadow: none;');
   });
 
   it('uses Vanger plain green persona surfaces', () => {
@@ -480,9 +480,9 @@ describe('Styles', () => {
     expect(playerHome).to.contain('background-color: rgba(0, 255, 0, 0.24);');
     expect(vpChart).to.contain("['vanger']: 'rgb(0, 255, 0)'");
     expect(eloBadge).to.contain('box-shadow: 0 0 7px rgba(0, 255, 0, 0.42);');
-    expect(common).to.contain('.player_translucent_bg_color_vanger .player-info-corp,');
-    expect(common).to.contain('.player_translucent_bg_color_vanger .player-info-corp,\n.player_translucent_bg_color_vanger td,');
-    expect(cssBlock(common, '.player_bg_color_vanger.log-player,\n.player_translucent_bg_color_vanger .player-info-name,\n.player_translucent_bg_color_vanger .player-info-corp,\n.player_translucent_bg_color_vanger .player_name,\n.player_translucent_bg_color_vanger .game-end-name-and-elo,\n.player_translucent_bg_color_vanger .game-end-name-and-elo a,\n.player_translucent_bg_color_vanger .player-name')).to.contain('color: #001f00;');
+    expect(common).to.contain('.player-translucent-bg-color-vanger .player-info-corp,');
+    expect(common).to.contain('.player-translucent-bg-color-vanger .player-info-corp,\n.player-translucent-bg-color-vanger td,');
+    expect(cssBlock(common, '.player-bg-color-vanger.log-player,\n.player-translucent-bg-color-vanger .player-info-name,\n.player-translucent-bg-color-vanger .player-info-corp,\n.player-translucent-bg-color-vanger .game-end-name-and-elo,\n.player-translucent-bg-color-vanger .game-end-name-and-elo a,\n.player-translucent-bg-color-vanger .player-name')).to.contain('color: #001f00;');
   });
 
   it('keeps the create-game profile picker usable on narrow screens', () => {
@@ -518,11 +518,11 @@ describe('Styles', () => {
 
     expect(variables).to.contain('@player_saturnstorm: rgb(190, 31, 72);');
     expect(variables).to.contain('@player_saturnstorm_sprite_filter: hue-rotate(18deg) saturate(1.55) brightness(0.68) contrast(1.18);');
-    expect(cssBlock(common, '.player_bg_color_saturnstorm')).to.contain('color: #ffe5e8;');
+    expect(cssBlock(common, '.player-bg-color-saturnstorm')).to.contain('color: #ffe5e8;');
     expect(cssBlock(board, '.board-cube--saturnstorm')).to.contain('background: url(./assets/board_icons.png) -24px -117px no-repeat;');
     expect(cssBlock(board, '.board-cube--saturnstorm')).to.contain('@player_saturnstorm_sprite_filter');
     expect(cssBlock(board, '.underground-excavator--saturnstorm')).to.contain('#ff8fa8 0%, @player_saturnstorm 46%, #5b001b 100%');
-    expectCssContains(createGame, '.player_translucent_bg_color_saturnstorm {\n  .create-game-player-field-theme(#ffe5eb, #640014);');
+    expectCssContains(createGame, '.player-translucent-bg-color-saturnstorm {\n  .create-game-player-field-theme(#ffe5eb, #640014);');
     expect(playerHome).to.contain('background-color: rgba(190, 31, 72, 0.24);');
     expect(vpChart).to.contain("['saturnstorm']: 'rgb(190, 31, 72)'");
   });

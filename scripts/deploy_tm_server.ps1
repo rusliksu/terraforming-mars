@@ -282,18 +282,16 @@ $eloSourceFiles = @(
 )
 $generatedSettingsPath = Join-Path $resolvedSourceRoot "src\\genfiles\\settings.json"
 
-$buildManifestPath = Join-Path $buildDir "asset-manifest.json"
-if (-not (Test-Path $buildManifestPath)) {
-    throw "Source build is missing build/asset-manifest.json in $resolvedSourceRoot. Run the build there before deploy."
+# Vite emits a single build/index.html that names the hashed entry script and stylesheet.
+$buildIndexPath = Join-Path $buildDir "index.html"
+if (-not (Test-Path $buildIndexPath)) {
+    throw "Source build is missing build/index.html in $resolvedSourceRoot. Run the build there before deploy."
 }
-$buildAssetManifest = Get-Content -LiteralPath $buildManifestPath -Raw | ConvertFrom-Json
-foreach ($logicalAssetName in @("main.js", "vendors.js", "styles.css")) {
-    $hashedAssetName = [string]$buildAssetManifest.$logicalAssetName
-    if ([string]::IsNullOrWhiteSpace($hashedAssetName)) {
-        throw "build/asset-manifest.json in $resolvedSourceRoot has no $logicalAssetName entry."
-    }
+$buildIndexHtml = Get-Content -LiteralPath $buildIndexPath -Raw
+foreach ($match in [regex]::Matches($buildIndexHtml, '(?:src|href)="/([^"/]+.(?:js|css))"')) {
+    $hashedAssetName = $match.Groups[1].Value
     if (-not (Test-Path (Join-Path $buildDir $hashedAssetName))) {
-        throw "build/asset-manifest.json in $resolvedSourceRoot points at missing build/$hashedAssetName."
+        throw "build/index.html in $resolvedSourceRoot points at missing build/$hashedAssetName."
     }
 }
 foreach ($legacyEntry in @("main.js", "vendors.js")) {
@@ -304,8 +302,8 @@ foreach ($legacyEntry in @("main.js", "vendors.js")) {
 if (-not (Test-Path (Join-Path $buildDir "src/server/server.js"))) {
     throw "Source build is missing build/src/server/server.js in $resolvedSourceRoot. Run the build there before deploy."
 }
-if (-not (Test-Path (Join-Path $assetsDir "index.html"))) {
-    throw "Source assets are missing assets/index.html in $resolvedSourceRoot."
+if (-not (Test-Path (Join-Path $assetsDir "Prototype.ttf"))) {
+    throw "Source assets are missing assets/Prototype.ttf in $resolvedSourceRoot."
 }
 if (-not (Test-Path $packageJsonPath)) {
     throw "Source package manifest is missing package.json in $resolvedSourceRoot."
@@ -755,12 +753,12 @@ rm -rf "$release_root"
 mkdir -p "$release_unpack_dir"
 tar -xzf "$archive" -C "$release_unpack_dir"
 
-test -f "$release_unpack_dir/build/asset-manifest.json"
-main_js_name="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["main.js"])' "$release_unpack_dir/build/asset-manifest.json")"
-test -n "$main_js_name"
-test -f "$release_unpack_dir/build/$main_js_name"
+test -f "$release_unpack_dir/build/index.html"
+for hashed_asset in $(grep -oE '(src|href)="/[^"]+\.(js|css)"' "$release_unpack_dir/build/index.html" | sed -E 's/^.*="\///; s/"$//'); do
+  test -f "$release_unpack_dir/build/$hashed_asset"
+done
 test -f "$release_unpack_dir/build/src/server/server.js"
-test -f "$release_unpack_dir/assets/index.html"
+test -f "$release_unpack_dir/assets/Prototype.ttf"
 test -f "$release_unpack_dir/elo/index.html"
 test -f "$release_unpack_dir/elo/elo-api.js"
 test -f "$release_unpack_dir/package.json"

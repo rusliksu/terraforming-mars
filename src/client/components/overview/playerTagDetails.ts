@@ -102,7 +102,7 @@ export const TAG_ORDER = ORDER;
 export const isTagInGame = isInGame;
 
 export function isVictoryPointCountHidden(player: PublicPlayerModel, view: ViewModel): boolean {
-  return !view.game.gameOptions.showOtherPlayersVP && player.color !== view.thisPlayer?.color;
+  return view.game.gameOptions.showVP !== 'all' && player.color !== view.thisPlayer?.color;
 }
 
 export function buildTagDetails(player: PublicPlayerModel, view: ViewModel): TagDetails {

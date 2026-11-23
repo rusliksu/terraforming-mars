@@ -1,19 +1,19 @@
 {
-  "event_count": 25,
-  "last_event_id": "01M84CKKP5ED0JJ9J5GR8XX4AE",
-  "materialized_at": "2026-11-23T14:22:53.125594+00:00",
+  "event_count": 26,
+  "last_event_id": "01M84CKPMFSAB7J83CSTM7X9ER",
+  "materialized_at": "2026-11-23T14:22:56.143215+00:00",
   "mission_number": "",
   "mission_slug": "undo-step-journal-persistence-01M8426K",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 2,
+    "approved": 3,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 2,
     "in_progress": 0,
-    "in_review": 1,
+    "in_review": 0,
     "planned": 0
   },
   "work_packages": {
@@ -69,11 +69,16 @@
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "in_review",
-      "last_event_id": "01M84CKKP5ED0JJ9J5GR8XX4AE",
-      "last_transition_at": "2026-11-23T14:22:53.125594+00:00",
+      "lane": "approved",
+      "last_event_id": "01M84CKPMFSAB7J83CSTM7X9ER",
+      "last_transition_at": "2026-11-23T14:22:56.143215+00:00",
       "model": "__resolved_model_absent__",
       "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://undo-step-journal-persistence-01M8426K/WP03-loader-restore/review-cycle-1.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
       "role": "reviewer",
       "subtasks": {
         "T007": "done",

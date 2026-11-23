@@ -158,8 +158,9 @@ describe('ReplayJournal', () => {
     expect(sqlite.headSql).to.include('?');
     expect(postgres.headValues.length).to.equal(7);
     expect(sqlite.headValues.length).to.equal(7);
-    expect(postgres.entryValues.length).to.equal(1);
-    expect(sqlite.entryValues[0][7]).to.equal(0);
+    expect(postgres.entryValues.length).to.equal(9);
+    expect(sqlite.entryValues.length).to.equal(9);
+    expect(sqlite.entryValues[7]).to.equal(0);
   });
 
   it('restores the journal when the root save and prompt still match', () => {

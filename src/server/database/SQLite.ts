@@ -280,14 +280,24 @@ export class SQLite implements IDatabase {
     }
     const state = game.actionReplayState;
     const snapshot = state === undefined || state === null ? undefined : snapshotFromActionReplayState(game.id, state);
-    await this.clearReplayJournal(game.id);
     if (snapshot === undefined) {
+      await this.clearReplayJournal(game.id);
       return;
     }
     const statements = sqliteReplaceReplayJournalStatements(snapshot, new Date().toISOString());
-    await this.asyncRun(statements.headSql, [...statements.headValues]);
-    for (const values of statements.entryValues) {
-      await this.asyncRun(statements.entrySql, [...values]);
+    // One transaction keeps the journal at a single fsync on the writer thread instead of one per row.
+    await this.asyncRun('SAVEPOINT replay_journal');
+    try {
+      await this.asyncRun(statements.headSql, [...statements.headValues]);
+      if (statements.entrySql !== '') {
+        await this.asyncRun(statements.entrySql, [...statements.entryValues]);
+      }
+      await this.asyncRun('DELETE FROM game_action_replay WHERE game_id = ? AND seq >= ?', [snapshot.gameId, statements.entryValues.length / 9]);
+      await this.asyncRun('RELEASE replay_journal');
+    } catch (error) {
+      await this.asyncRun('ROLLBACK TO replay_journal');
+      await this.asyncRun('RELEASE replay_journal');
+      throw error;
     }
   }
 

@@ -80,7 +80,7 @@ export class PostgreSQL implements IDatabase {
     saveCount: 0,
     saveErrorCount: 0,
     saveConflictUndoCount: 0,
-  saveReplayJournalCount: 0,
+    saveReplayJournalCount: 0,
     saveConflictNormalCount: 0,
   };
   public metricsScrapeCache: ThrottledCache<void>;
@@ -535,9 +535,10 @@ export class PostgreSQL implements IDatabase {
     }
     const statements = postgresReplaceReplayJournalStatements(snapshot, new Date().toISOString());
     await this.client.query(statements.headSql, [...statements.headValues]);
-    for (const values of statements.entryValues) {
-      await this.client.query(statements.entrySql, [...values]);
+    if (statements.entrySql !== '') {
+      await this.client.query(statements.entrySql, [...statements.entryValues]);
     }
+    await this.client.query('DELETE FROM game_action_replay WHERE game_id = $1 AND seq >= $2', [snapshot.gameId, statements.entryValues.length / 9]);
     this.statistics.saveReplayJournalCount++;
   }
 

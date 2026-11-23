@@ -101,6 +101,14 @@ export class InMemoryDatabase implements IDatabase {
     this.completedGames.delete(gameId);
     return Promise.resolve();
   }
+  readReplayJournal(): Promise<undefined> {
+    return Promise.resolve(undefined);
+  }
+
+  clearReplayJournal(): Promise<void> {
+    return Promise.resolve();
+  }
+
   deleteOrphanParticipants(): Promise<number> {
     // Participants live inside the serialized games here, so there are no orphan rows.
     return Promise.resolve(0);

@@ -11,6 +11,10 @@ import {MultiMap} from 'mnemonist';
 import {timeAsync} from '../utils/timer';
 import {durationToMilliseconds} from '../utils/durations';
 import {CacheConfig} from './CacheConfig';
+import {databaseMetrics} from './MetricsDelegate';
+import {restoreActionReplayState} from './ReplayJournal';
+import {promptFingerprintForPlayer} from '../game/ActionReplay';
+import {SerializedGame} from '../SerializedGame';
 import {Clock} from '../../common/Timer';
 import {EloSyncService} from '../elo/EloSyncService';
 import {appendCanceledLogMessages} from '../logs/appendCanceledLogMessages';
@@ -249,6 +253,7 @@ export class GameLoader implements IGameLoader {
           return undefined;
         }
         const game = Game.deserialize(serializedGame, {saveGame: this.saveGame.bind(this)});
+        await this.restoreReplayJournal(game);
         await this.add(game);
         this.reconcileGame(game);
         console.log(`GameLoader loaded game ${gameId} into memory from database`);
@@ -261,6 +266,60 @@ export class GameLoader implements IGameLoader {
 
     // Otherwise the game ID isn't valid.
     return undefined;
+  }
+
+  /**
+   * Reattaches the persisted one-step undo journal to a freshly loaded game.
+   *
+   * A game without the option, without a journal, or with a journal that no longer matches the
+   * loaded state simply loads without step undo. Nothing here can fail the load.
+   */
+  private async restoreReplayJournal(game: IGame): Promise<void> {
+    if (game.gameOptions.undoStepOption !== true) {
+      return;
+    }
+    const database = Database.getInstance();
+    let journal;
+    try {
+      journal = await database.readReplayJournal(game.id);
+    } catch (error) {
+      this.countReplayJournal('replayJournalDroppedCorrupt');
+      console.error('GameLoader:readReplayJournal', error);
+      return;
+    }
+    if (journal === undefined) {
+      return;
+    }
+    let rootSnapshot: SerializedGame | undefined;
+    try {
+      rootSnapshot = await database.getGameVersion(game.id, journal.rootSaveId);
+    } catch (_error) {
+      rootSnapshot = undefined;
+    }
+    let fingerprint = '';
+    try {
+      fingerprint = promptFingerprintForPlayer(game, journal.currentActorId);
+    } catch (_error) {
+      fingerprint = '';
+    }
+    const result = restoreActionReplayState(journal, rootSnapshot, fingerprint);
+    if (result.kind === 'restored') {
+      game.actionReplayState = result.state;
+      this.countReplayJournal('replayJournalRestored');
+      return;
+    }
+    const counter = result.reason === 'missing_root' ? 'replayJournalDroppedMissingRoot' :
+      result.reason === 'fingerprint' ? 'replayJournalDroppedFingerprint' :
+        'replayJournalDroppedCorrupt';
+    this.countReplayJournal(counter);
+  }
+
+  private countReplayJournal(operation: string): void {
+    try {
+      databaseMetrics.operationCount.inc({operation});
+    } catch (_error) {
+      // Observability must never break loading.
+    }
   }
 
   public async reconcileSurrenderedBots(): Promise<SurrenderBotReconciliationResult> {

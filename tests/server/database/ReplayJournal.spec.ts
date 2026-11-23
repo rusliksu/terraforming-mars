@@ -15,6 +15,7 @@ import {InputResponse} from '@/common/inputs/InputResponse';
 import type {ActionReplayState} from '@/server/game/ActionReplay';
 import {
   isReplayJournalEnabled,
+  restoreActionReplayState,
   postgresReplaceReplayJournalStatements,
   snapshotFromActionReplayState,
   sqliteReplaceReplayJournalStatements,
@@ -159,5 +160,26 @@ describe('ReplayJournal', () => {
     expect(sqlite.headValues.length).to.equal(7);
     expect(postgres.entryValues.length).to.equal(1);
     expect(sqlite.entryValues[0][7]).to.equal(0);
+  });
+
+  it('restores the journal when the root save and prompt still match', () => {
+    const journal = snapshot([entry(0)]);
+    const result = restoreActionReplayState(journal, {id: 'game-id'} as never, 'fingerprint-1');
+    expect(result.kind).to.equal('restored');
+    if (result.kind === 'restored') {
+      expect(result.state.rootSaveId).to.equal(7);
+      expect(result.state.entries.length).to.equal(1);
+      expect(result.state.entries[0].actorId).to.equal('p0');
+    }
+  });
+
+  it('drops the journal when the root save is gone', () => {
+    const result = restoreActionReplayState(snapshot([entry(0)]), undefined, 'fingerprint-1');
+    expect(result).to.deep.equal({kind: 'dropped', reason: 'missing_root'});
+  });
+
+  it('drops the journal when the prompt has moved on', () => {
+    const result = restoreActionReplayState(snapshot([entry(0)]), {id: 'game-id'} as never, 'other-fingerprint');
+    expect(result).to.deep.equal({kind: 'dropped', reason: 'fingerprint'});
   });
 });

@@ -1,6 +1,7 @@
 import {GameId, PlayerId} from '../../common/Types';
 import {InputResponse} from '../../common/inputs/InputResponse';
 import type {ActionReplayState} from '../game/ActionReplay';
+import {SerializedGame} from '../SerializedGame';
 
 /** Maximum number of steps retained for one game action. Mirrors ActionReplay's in-memory limit. */
 export const REPLAY_JOURNAL_ENTRY_LIMIT = 32;
@@ -243,5 +244,50 @@ export function sqliteReplaceReplayJournalStatements(snapshot: ReplayJournalSnap
     entrySql: `INSERT INTO game_action_replay(game_id, seq, root_save_id, actor_id, prompt_fingerprint, input_json, log_start_index, continues_through_next_input, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     entryValues: rows.map((row) => [row.game_id, row.seq, row.root_save_id, row.actor_id, row.prompt_fingerprint, row.input_json, row.log_start_index, row.continues_through_next_input ? 1 : 0, row.created_at]),
+  };
+}
+
+/** Why a persisted journal could not be attached to a loaded game. */
+export type ReplayRestoreFailure = 'missing_root' | 'fingerprint' | 'corrupt';
+
+/** Result of attaching a persisted journal to a freshly loaded game. */
+export type ReplayRestoreResult =
+  | {kind: 'restored', state: ActionReplayState}
+  | {kind: 'dropped', reason: ReplayRestoreFailure};
+
+/**
+ * Attaches a persisted journal to a loaded game.
+ *
+ * The journal is only usable when the root save still exists and the game's current prompt
+ * matches the recorded one; anything else drops the journal and leaves the game untouched.
+ */
+export function restoreActionReplayState(
+  journal: ReplayJournalSnapshot,
+  rootSnapshot: SerializedGame | undefined,
+  currentPromptFingerprint: string,
+): ReplayRestoreResult {
+  if (rootSnapshot === undefined) {
+    return {kind: 'dropped', reason: 'missing_root'};
+  }
+  if (journal.currentPromptFingerprint !== currentPromptFingerprint) {
+    return {kind: 'dropped', reason: 'fingerprint'};
+  }
+  return {
+    kind: 'restored',
+    state: {
+      rootSnapshot,
+      rootSaveId: journal.rootSaveId,
+      entries: journal.entries.map((entry) => ({
+        actorId: entry.actorId,
+        promptFingerprint: entry.promptFingerprint,
+        input: entry.input,
+        logStartIndex: entry.logStartIndex,
+        continuesThroughNextInput: entry.continuesThroughNextInput,
+      })),
+      currentActorId: journal.currentActorId,
+      currentPromptFingerprint: journal.currentPromptFingerprint,
+      resetBeforeNextInput: journal.resetBeforeNextInput,
+      lastStepBackLogStartIndex: journal.lastStepBackLogStartIndex,
+    },
   };
 }

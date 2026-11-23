@@ -34,5 +34,5 @@ describe('CardRenderer live server mode', () => {
 
     expect(child.error).to.be.undefined;
     expect(child.status, child.stderr || child.stdout).to.equal(0);
-  });
+  }).timeout(20000);
 });

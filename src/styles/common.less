@@ -8,23 +8,27 @@
 
 html,
 body,
-#app {
+#app 
+{
   height: 100%;
   margin: 0px;
 }
 
 @import "./wrybit/game_end_global.less";
-.btn {
+.btn 
+{
   color: @text_action !important;
   background: @bg_action !important;
   border-color: @border_action !important;
 }
 // Give visual feedback while a button is pressed.
-.btn:active {
+.btn:active 
+{
   transform: scale(0.96);
   filter: brightness(0.85);
 }
-.btn-tiny {
+.btn-tiny 
+{
   background: #5755d9;
   border-color: #4b48d6;
   color: #fff;
@@ -32,302 +36,369 @@ body,
   height: 1.5rem;
   line-height: 0.5rem;
 }
-.btn-max {
+.btn-max 
+{
   margin-left: 10px;
 }
-.btn-submit {
+.btn-submit 
+{
   min-width: 183px;
   height: 50px;
   font-size: 20px;
   margin: 10px 0 30px 0;
 }
-.btn-rounded {
+.btn-rounded 
+{
   border-radius: 8px;
 }
-.flex {
+.flex 
+{
   display: flex;
 }
-.float-left {
+.float-left 
+{
   float: left !important;
 }
-.float-right {
+.float-right 
+{
   float: right !important;
 }
-.centered-content {
+.centered-content 
+{
   display: flex;
   padding: 0px;
   justify-content: center;
 }
-.centered-content button {
+.centered-content button 
+{
   margin-right: 20px;
 }
-.dynamic-title {
+.dynamic-title 
+{
   font-size: @font_size_huge;
   margin-bottom: 16px;
 }
 
-.capitalized {
+.capitalized 
+{
   text-transform: capitalize;
 }
 
-.main-container {
+.main-container 
+{
   margin: 0 0 0 60px;
 }
 
-.hidden {
+.hidden 
+{
   display: none !important;
 }
-.visibility-hidden {
+.visibility-hidden 
+{
   visibility: hidden !important;
 }
 
-a:link {
+a:link 
+{
   color: #ddd;
 }
 
-a:visited {
+a:visited 
+{
   color: #ccc;
 }
 
-a:hover {
+a:hover 
+{
   color: #fff;
 }
 
-a:active {
+a:active 
+{
   color: #ddd;
 }
 
-@font-face {
+@font-face 
+{
   font-family: Prototype;
   src: url(./assets/Prototype.ttf);
   unicode-range: U+000-5FF; /* Latin glyphs */
 }
-@font-face {
+@font-face 
+{
   font-family: Prototype;
   src: url(./assets/Prototype-ru.ttf);
   unicode-range: U+0410-044F; /* Russian glyphs */
 }
-@font-face {
+@font-face 
+{
   font-family: Prototype;
   src: url(./assets/Prototype-pl.ttf);
   unicode-range: U+0104-0107, U+0118-0119, U+0141-0144, U+00D3, U+00F3, U+015A, U+015B, U+0179, U+017A-017C; /* Polish glyphs */
 }
 
-body {
+body 
+{
   background: @bg_main;
   color: @text_main;
   font-family: @font_family_main;
   font-size: @font_size_big;
 }
 
-h1 {
+h1 
+{
   filter: drop-shadow(4px 4px 4px black);
   text-shadow: -1px -1px 1px #aaaa, 1px 1px 1px #333a;
   padding: 1px 15px;
   border-radius: 8px;
 }
 
-h2 {
+h2 
+{
   font-size: @font_size_huge;
   filter: drop-shadow(4px 4px 4px black);
   text-shadow: -1px -1px 6px #aaa4;
 }
 
-.filter-div {
+.filter-div 
+{
   font-size: 17px !important;
 }
 
-.is-action {
+.is-action 
+{
   color: lightblue;
   cursor: pointer;
 }
 
-.nowrap {
+.nowrap 
+{
   white-space: nowrap;
 }
-.newlines {
+.newlines 
+{
   white-space: pre;
 }
 
 // normal backgrounds
-each(@players, {
+each(@players, 
+{
   @c: ~"player_@{value}";
-  .player-bg-color-@{value} {
+  .player-bg-color-@{value} 
+  {
     background-color: @@c;
   }
 })
 
-.player-bg-color-gold {
+.player-bg-color-gold 
+{
   background-color: @player_gold;
   color: #000000;
 }
 
-.player-bg-color-emerald {
+.player-bg-color-emerald 
+{
   background-color: @player_emerald;
   color: #001b13;
 }
 
-.player-bg-color-ginger {
+.player-bg-color-ginger 
+{
   background-color: @player_ginger;
   color: #1f0900;
 }
 
-.player-bg-color-hydro {
+.player-bg-color-hydro 
+{
   background-color: @player_hydro;
   color: #fff5f5;
 }
 
-.player-bg-color-pearl {
+.player-bg-color-pearl 
+{
   background-color: @player_pearl;
   color: #102027;
 }
 
-.player-bg-color-antistress {
+.player-bg-color-antistress 
+{
   background-color: @player_antistress;
   color: #d9e7ff;
 }
 
-.player-bg-color-gambit {
+.player-bg-color-gambit 
+{
   background-color: @player_gambit;
   color: #071a2c;
 }
 
-.player-bg-color-turquoise {
+.player-bg-color-turquoise 
+{
   background-color: @player_turquoise;
   color: #fff2f5;
 }
 
-.player-bg-color-vanger {
+.player-bg-color-vanger 
+{
   background-color: @player_vanger;
   color: #001f00;
 }
 
-.player-bg-color-serge {
+.player-bg-color-serge 
+{
   background-color: @player_serge;
   color: #fff2f5;
 }
 
-.player-bg-color-credicor {
+.player-bg-color-credicor 
+{
   background-color: @player_credicor;
   background-image: url(./assets/credicor-pattern.svg);
   background-size: 96px 96px;
   color: #f1edf7;
 }
 
-.player-bg-color-saturn {
+.player-bg-color-saturn 
+{
   background-color: @player_saturn;
   color: #201607;
 }
 
-.player-bg-color-saturnrings {
+.player-bg-color-saturnrings 
+{
   background-color: @player_saturnrings;
   color: #1d170d;
 }
 
-.player-bg-color-titan {
+.player-bg-color-titan 
+{
   background-color: @player_titan;
   color: #1f1000;
 }
 
-.player-bg-color-saturnstorm {
+.player-bg-color-saturnstorm 
+{
   background-color: @player_saturnstorm;
   color: #ffe5e8;
 }
 
-.player-bg-color-catseye {
+.player-bg-color-catseye 
+{
   background-color: @player_catseye;
   color: #182000;
 }
 
-.player-bg-color-rigatone {
+.player-bg-color-rigatone 
+{
   background: @player_rigatone_surface_gradient;
   color: #fff4e8;
 }
 
-.player-bg-color-rigatone2 {
+.player-bg-color-rigatone2 
+{
   .player_rigatone2_bg();
 }
 
 // backgrounds with opacity
-each(@players, {
+each(@players, 
+{
   @c: ~"player_@{value}";
-  .player-translucent-bg-color-@{value} {
+  .player-translucent-bg-color-@{value} 
+  {
     background: rgba(@@c, 0.7);
   }
 })
 
-.player-translucent-bg-color-gold {
+.player-translucent-bg-color-gold 
+{
   .player_gold_bg_translucent();
   color: #000000;
 }
 
-.player-translucent-bg-color-emerald {
+.player-translucent-bg-color-emerald 
+{
   .player_emerald_bg_translucent();
 }
 
-.player-translucent-bg-color-ginger {
+.player-translucent-bg-color-ginger 
+{
   .player_ginger_bg_translucent();
 }
 
-.player-translucent-bg-color-hydro {
+.player-translucent-bg-color-hydro 
+{
   .player_hydro_bg_translucent();
 }
 
-.player-translucent-bg-color-pearl {
+.player-translucent-bg-color-pearl 
+{
   .player_pearl_bg_translucent();
   color: #102027;
 }
 
-.player-translucent-bg-color-antistress {
+.player-translucent-bg-color-antistress 
+{
   .player_antistress_bg_translucent();
 }
 
-.player-translucent-bg-color-gambit {
+.player-translucent-bg-color-gambit 
+{
   .player_gambit_bg_translucent();
 }
 
-.player-translucent-bg-color-turquoise {
+.player-translucent-bg-color-turquoise 
+{
   .player_turquoise_bg_translucent();
 }
 
-.player-translucent-bg-color-vanger {
+.player-translucent-bg-color-vanger 
+{
   .player_vanger_bg_translucent();
   color: #001f00;
 }
 
-.player-translucent-bg-color-serge {
+.player-translucent-bg-color-serge 
+{
   .player_serge_bg_translucent();
 }
 
-.player-translucent-bg-color-credicor {
+.player-translucent-bg-color-credicor 
+{
   .player_credicor_bg_translucent();
 }
 
-.player-translucent-bg-color-saturn {
+.player-translucent-bg-color-saturn 
+{
   .player_saturn_bg_translucent();
 }
 
-.player-translucent-bg-color-saturnrings {
+.player-translucent-bg-color-saturnrings 
+{
   .player_saturnrings_bg_translucent();
 }
 
-.player-translucent-bg-color-titan {
+.player-translucent-bg-color-titan 
+{
   .player_titan_bg_translucent();
 }
 
-.player-translucent-bg-color-saturnstorm {
+.player-translucent-bg-color-saturnstorm 
+{
   .player_saturnstorm_bg_translucent();
 }
 
-.player-translucent-bg-color-catseye {
+.player-translucent-bg-color-catseye 
+{
   .player_catseye_bg_translucent();
 }
 
-.player-translucent-bg-color-rigatone {
+.player-translucent-bg-color-rigatone 
+{
   .player_rigatone_bg_translucent();
 }
 
-.player-translucent-bg-color-rigatone2 {
+.player-translucent-bg-color-rigatone2 
+{
   .player_rigatone2_bg();
 }
 
@@ -336,14 +407,15 @@ each(@players, {
 .player-translucent-bg-color-gold .player-name,
 .player-translucent-bg-color-gold .game-end-name-and-elo,
 .player-translucent-bg-color-gold .game-end-name-and-elo a,
-.player-translucent-bg-color-gold .player-name {
+{
   color: #000000;
 }
 
 .player-bg-color-gold.log-player,
 .player-translucent-bg-color-gold td,
 .player-translucent-bg-color-gold .game-end-name-and-elo,
-.player-translucent-bg-color-gold .game-end-name-and-elo a {
+.player-translucent-bg-color-gold .game-end-name-and-elo a 
+{
   text-shadow: none;
 }
 
@@ -352,7 +424,7 @@ each(@players, {
 .player-translucent-bg-color-emerald .player-name,
 .player-translucent-bg-color-emerald .game-end-name-and-elo,
 .player-translucent-bg-color-emerald .game-end-name-and-elo a,
-.player-translucent-bg-color-emerald .player-name {
+{
   color: #d7fff0;
 }
 
@@ -361,7 +433,7 @@ each(@players, {
 .player-translucent-bg-color-ginger .player-name,
 .player-translucent-bg-color-ginger .game-end-name-and-elo,
 .player-translucent-bg-color-ginger .game-end-name-and-elo a,
-.player-translucent-bg-color-ginger .player-name {
+{
   color: #ffe1c8;
 }
 
@@ -370,7 +442,7 @@ each(@players, {
 .player-translucent-bg-color-hydro .player-name,
 .player-translucent-bg-color-hydro .game-end-name-and-elo,
 .player-translucent-bg-color-hydro .game-end-name-and-elo a,
-.player-translucent-bg-color-hydro .player-name {
+{
   color: #fff5f5;
 }
 
@@ -381,7 +453,7 @@ each(@players, {
 .player-translucent-bg-color-pearl .player-name,
 .player-translucent-bg-color-pearl .game-end-name-and-elo,
 .player-translucent-bg-color-pearl .game-end-name-and-elo a,
-.player-translucent-bg-color-pearl .player-name {
+{
   color: #000000;
 }
 
@@ -390,27 +462,32 @@ each(@players, {
 .player-translucent-bg-color-pearl .player-info-corp,
 .player-translucent-bg-color-pearl td,
 .player-translucent-bg-color-pearl .game-end-name-and-elo,
-.player-translucent-bg-color-pearl .game-end-name-and-elo a {
+.player-translucent-bg-color-pearl .game-end-name-and-elo a 
+{
   text-shadow: none;
 }
 
-.player-translucent-bg-color-pearl .resource-item .resource-item-stock-count {
+.player-translucent-bg-color-pearl .resource-item .resource-item-stock-count 
+{
   color: #ffffff;
   text-shadow: 0 2px 2px black;
 }
 
-.player-translucent-bg-color-pearl .resource-item .resource-item-prod-count {
+.player-translucent-bg-color-pearl .resource-item .resource-item-prod-count 
+{
   color: #bb8760;
   text-shadow: 0 0 1px black;
 }
 
-.player-translucent-bg-color-pearl .tag-count-display {
+.player-translucent-bg-color-pearl .tag-count-display 
+{
   color: #ffffff;
   text-shadow: 0 2px 2px black;
 }
 
 .player-translucent-bg-color-pearl .resource-item,
-.player-translucent-bg-color-pearl .resource-item.resource-item--energy:after {
+.player-translucent-bg-color-pearl .resource-item.resource-item--energy:after 
+{
   background: linear-gradient(rgba(0, 0, 0, 0.88) 20%, rgba(0, 0, 0, 0.45) 50%);
 }
 
@@ -419,7 +496,7 @@ each(@players, {
 .player-translucent-bg-color-antistress .player-name,
 .player-translucent-bg-color-antistress .game-end-name-and-elo,
 .player-translucent-bg-color-antistress .game-end-name-and-elo a,
-.player-translucent-bg-color-antistress .player-name {
+{
   color: #d9e7ff;
 }
 
@@ -428,7 +505,7 @@ each(@players, {
 .player-translucent-bg-color-gambit .player-name,
 .player-translucent-bg-color-gambit .game-end-name-and-elo,
 .player-translucent-bg-color-gambit .game-end-name-and-elo a,
-.player-translucent-bg-color-gambit .player-name {
+{
   color: #f2f9ff;
 }
 
@@ -437,7 +514,7 @@ each(@players, {
 .player-translucent-bg-color-turquoise .player-name,
 .player-translucent-bg-color-turquoise .game-end-name-and-elo,
 .player-translucent-bg-color-turquoise .game-end-name-and-elo a,
-.player-translucent-bg-color-turquoise .player-name {
+{
   color: #fff2f5;
 }
 
@@ -447,7 +524,7 @@ each(@players, {
 .player-translucent-bg-color-vanger .player-name,
 .player-translucent-bg-color-vanger .game-end-name-and-elo,
 .player-translucent-bg-color-vanger .game-end-name-and-elo a,
-.player-translucent-bg-color-vanger .player-name {
+{
   color: #001f00;
 }
 
@@ -455,7 +532,8 @@ each(@players, {
 .player-translucent-bg-color-vanger .player-info-corp,
 .player-translucent-bg-color-vanger td,
 .player-translucent-bg-color-vanger .game-end-name-and-elo,
-.player-translucent-bg-color-vanger .game-end-name-and-elo a {
+.player-translucent-bg-color-vanger .game-end-name-and-elo a 
+{
   text-shadow: none;
 }
 
@@ -464,7 +542,7 @@ each(@players, {
 .player-translucent-bg-color-serge .player-name,
 .player-translucent-bg-color-serge .game-end-name-and-elo,
 .player-translucent-bg-color-serge .game-end-name-and-elo a,
-.player-translucent-bg-color-serge .player-name {
+{
   color: #fff2f5;
 }
 
@@ -473,18 +551,19 @@ each(@players, {
 .player-translucent-bg-color-credicor .player-name,
 .player-translucent-bg-color-credicor .game-end-name-and-elo,
 .player-translucent-bg-color-credicor .game-end-name-and-elo a,
-.player-translucent-bg-color-credicor .player-name {
+{
   color: #f1edf7;
 }
 
-.player-translucent-bg-color-credicor .player-info-details .player-info-name {
+.player-translucent-bg-color-credicor .player-info-details .player-info-name 
+{
   font-size: 18px;
 }
 
 .player-translucent-bg-color-credicor .player-persona-title::before,
 .player-translucent-bg-color-credicor .player-name::before,
 .player-translucent-bg-color-credicor .game-end-name-and-elo a::before,
-.player-translucent-bg-color-credicor .player-name::before {
+{
   content: "";
   display: inline-block;
   width: 1em;
@@ -494,7 +573,8 @@ each(@players, {
   background: url(./assets/credicor-crown.svg) center / contain no-repeat;
 }
 
-.player-persona-title {
+.player-persona-title 
+{
   display: block;
   color: #d7dce9;
   font-size: 10px;
@@ -502,7 +582,8 @@ each(@players, {
   letter-spacing: 0.04em;
 }
 
-.player-translucent-bg-color-credicor .player-persona-title + span .player-info-corp {
+.player-translucent-bg-color-credicor .player-persona-title + span .player-info-corp 
+{
   font-size: 14px;
   line-height: 14px;
   height: 14px;
@@ -513,7 +594,7 @@ each(@players, {
 .player-translucent-bg-color-saturn .player-name,
 .player-translucent-bg-color-saturn .game-end-name-and-elo,
 .player-translucent-bg-color-saturn .game-end-name-and-elo a,
-.player-translucent-bg-color-saturn .player-name {
+{
   color: #2b1d08;
 }
 
@@ -522,7 +603,7 @@ each(@players, {
 .player-translucent-bg-color-saturnrings .player-name,
 .player-translucent-bg-color-saturnrings .game-end-name-and-elo,
 .player-translucent-bg-color-saturnrings .game-end-name-and-elo a,
-.player-translucent-bg-color-saturnrings .player-name {
+{
   color: #241a0b;
 }
 
@@ -531,7 +612,7 @@ each(@players, {
 .player-translucent-bg-color-titan .player-name,
 .player-translucent-bg-color-titan .game-end-name-and-elo,
 .player-translucent-bg-color-titan .game-end-name-and-elo a,
-.player-translucent-bg-color-titan .player-name {
+{
   color: #ffe4b2;
 }
 
@@ -540,7 +621,7 @@ each(@players, {
 .player-translucent-bg-color-saturnstorm .player-name,
 .player-translucent-bg-color-saturnstorm .game-end-name-and-elo,
 .player-translucent-bg-color-saturnstorm .game-end-name-and-elo a,
-.player-translucent-bg-color-saturnstorm .player-name {
+{
   color: #ffe5e8;
 }
 
@@ -549,7 +630,7 @@ each(@players, {
 .player-translucent-bg-color-catseye .player-name,
 .player-translucent-bg-color-catseye .game-end-name-and-elo,
 .player-translucent-bg-color-catseye .game-end-name-and-elo a,
-.player-translucent-bg-color-catseye .player-name {
+{
   color: #f6ffd0;
 }
 
@@ -558,20 +639,23 @@ each(@players, {
 .player-translucent-bg-color-rigatone .player-name,
 .player-translucent-bg-color-rigatone .game-end-name-and-elo,
 .player-translucent-bg-color-rigatone .game-end-name-and-elo a,
-.player-translucent-bg-color-rigatone .player-name {
+{
   color: #fff4e8;
 }
 
-.alert-dialog {
+.alert-dialog 
+{
   position: fixed;
 
   a:link,
-  a:visited {
+  a:visited 
+{
     color: #0645ad;
   }
 }
 
-.bot-controlled-marker {
+.bot-controlled-marker 
+{
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
@@ -591,7 +675,8 @@ each(@players, {
   vertical-align: middle;
 }
 
-.general-warning {
+.general-warning 
+{
   color: #bb0000;
 }
 

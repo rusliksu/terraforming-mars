@@ -151,3 +151,11 @@ card-selection confirmation screen.
 - 2026-07-13: Drop the extra confirmation-before-card-selection design.
 - 2026-08-08: Make the root snapshot JSON-detached at capture; serializers do
   not individually own the step-replay immutability guarantee.
+
+## Journal persistence
+
+The one-step journal is no longer memory-only: `GameLoader` restores it from the
+`game_action_replay` and `game_action_replay_head` tables, keyed by the save id the
+action started from. Restoration is fail-closed (missing root, drifted prompt
+fingerprint, unreadable input) and can be disabled with
+`TM_DISABLE_REPLAY_JOURNAL=1`. See `docs/variants/undo.md`.

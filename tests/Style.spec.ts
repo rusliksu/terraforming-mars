@@ -482,7 +482,7 @@ describe('Styles', () => {
     expect(eloBadge).to.contain('box-shadow: 0 0 7px rgba(0, 255, 0, 0.42);');
     expect(common).to.contain('.player-translucent-bg-color-vanger .player-info-corp,');
     expect(common).to.contain('.player-translucent-bg-color-vanger .player-info-corp,\n.player-translucent-bg-color-vanger td,');
-    expect(cssBlock(common, '.player-bg-color-vanger.log-player,\n.player-translucent-bg-color-vanger .player-info-name,\n.player-translucent-bg-color-vanger .player-info-corp,\n.player-translucent-bg-color-vanger .player-name,\n.player-translucent-bg-color-vanger .game-end-name-and-elo,\n.player-translucent-bg-color-vanger .game-end-name-and-elo a,\n.player-translucent-bg-color-vanger .player-name')).to.contain('color: #001f00;');
+    expect(cssBlock(common, '.player-bg-color-vanger.log-player,\n.player-translucent-bg-color-vanger .player-info-name,\n.player-translucent-bg-color-vanger .player-info-corp,\n.player-translucent-bg-color-vanger .game-end-name-and-elo,\n.player-translucent-bg-color-vanger .game-end-name-and-elo a,\n.player-translucent-bg-color-vanger .player-name')).to.contain('color: #001f00;');
   });
 
   it('keeps the create-game profile picker usable on narrow screens', () => {

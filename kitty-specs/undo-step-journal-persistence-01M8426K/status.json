@@ -1,7 +1,7 @@
 {
-  "event_count": 7,
-  "last_event_id": "01M843AW48Y3W39MYFKYB91X3V",
-  "materialized_at": "2026-11-23T11:40:49.669359+00:00",
+  "event_count": 8,
+  "last_event_id": "01M843K80ZF8BX3TZ9ECPG01WR",
+  "materialized_at": "2026-11-23T11:45:23.999411+00:00",
   "mission_number": "",
   "mission_slug": "undo-step-journal-persistence-01M8426K",
   "mission_type": "software-dev",
@@ -11,8 +11,8 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 0,
-    "in_progress": 1,
+    "for_review": 1,
+    "in_progress": 0,
     "in_review": 0,
     "planned": 4
   },
@@ -21,11 +21,16 @@
       "actor": "implement-command",
       "agent": "implement-command",
       "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M843AW48Y3W39MYFKYB91X3V",
-      "last_transition_at": "2026-11-23T11:40:49.669359+00:00",
+      "lane": "for_review",
+      "last_event_id": "01M843K80ZF8BX3TZ9ECPG01WR",
+      "last_transition_at": "2026-11-23T11:45:23.999411+00:00",
       "shell_pid": 4568,
-      "shell_pid_created_at": "1795434039.161505"
+      "shell_pid_created_at": "1795434039.161505",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done"
+      }
     },
     "WP02": {
       "actor": "finalize-tasks",

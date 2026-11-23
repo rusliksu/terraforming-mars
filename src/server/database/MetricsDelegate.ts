@@ -7,6 +7,7 @@ import {SerializedGame} from '../SerializedGame';
 import {Session, SessionId} from '../auth/Session';
 import {MapLibraryEntry, MapLibraryEntryId, MapLibraryStatus} from '../../common/boards/MapLibraryEntry';
 import {CustomCardLibraryEntry, CustomCardEntryId, CustomCardStatus} from '../../common/cards/CustomCardLibraryEntry';
+import {ReplayJournalSnapshot} from './ReplayJournal';
 
 // Operation names that get routed to `maintenanceLatency` instead of `operationLatency`. These are
 // batch/background jobs (purge, compress) that run on a much longer timescale than a typical
@@ -124,6 +125,14 @@ export class MetricsDelegate implements IDatabase {
 
   deleteGame(gameId: GameId): Promise<void> {
     return withDatabaseMetrics('deleteGame', () => this.delegate.deleteGame(gameId));
+  }
+
+  readReplayJournal(gameId: GameId): Promise<ReplayJournalSnapshot | undefined> {
+    return withDatabaseMetrics('readReplayJournal', () => this.delegate.readReplayJournal(gameId));
+  }
+
+  clearReplayJournal(gameId: GameId): Promise<void> {
+    return withDatabaseMetrics('clearReplayJournal', () => this.delegate.clearReplayJournal(gameId));
   }
 
   deleteOrphanParticipants(): Promise<number> {

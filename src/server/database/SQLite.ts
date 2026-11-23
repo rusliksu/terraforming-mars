@@ -12,7 +12,16 @@ import {MultiMap} from 'mnemonist';
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
 import {assertSaveIdWithinLimit, resolveMaxSavesPerGame} from './HistoryLimits';
-import {SQLITE_REPLAY_JOURNAL_DDL} from './ReplayJournal';
+import {
+  fromRows,
+  isReplayJournalEnabled,
+  ReplayJournalEntryRow,
+  ReplayJournalHeadRow,
+  ReplayJournalSnapshot,
+  snapshotFromActionReplayState,
+  SQLITE_REPLAY_JOURNAL_DDL,
+  sqliteReplaceReplayJournalStatements,
+} from './ReplayJournal';
 import {ArchiveLocation, SQLiteArchiveRetention} from '@/server/archive/SQLiteArchiveRetention';
 import {MapLibraryEntry, MapLibraryEntryId, MapLibraryStatus} from '../../common/boards/MapLibraryEntry';
 import {CustomCardLibraryEntry, CustomCardEntryId, CustomCardStatus} from '../../common/cards/CustomCardLibraryEntry';
@@ -258,8 +267,45 @@ export class SQLite implements IDatabase {
       }
     }
 
+    await this.saveReplayJournal(game);
+
     // This must occur after the save.
     game.lastSaveId++;
+  }
+
+  /** Writes or clears the replay journal of a step-undo game. */
+  private async saveReplayJournal(game: IGame): Promise<void> {
+    if (game.gameOptions.undoStepOption !== true || !isReplayJournalEnabled()) {
+      return;
+    }
+    const state = game.actionReplayState;
+    const snapshot = state === undefined || state === null ? undefined : snapshotFromActionReplayState(game.id, state);
+    await this.clearReplayJournal(game.id);
+    if (snapshot === undefined) {
+      return;
+    }
+    const statements = sqliteReplaceReplayJournalStatements(snapshot, new Date().toISOString());
+    await this.asyncRun(statements.headSql, [...statements.headValues]);
+    for (const values of statements.entryValues) {
+      await this.asyncRun(statements.entrySql, [...values]);
+    }
+  }
+
+  async readReplayJournal(gameId: GameId): Promise<ReplayJournalSnapshot | undefined> {
+    if (!isReplayJournalEnabled()) {
+      return undefined;
+    }
+    const head = await this.asyncGet<ReplayJournalHeadRow>('SELECT game_id, root_save_id, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at FROM game_action_replay_head WHERE game_id = ?', [gameId]);
+    if (head === undefined) {
+      return undefined;
+    }
+    const rows = (await this.asyncAll<ReplayJournalEntryRow>('SELECT game_id, seq, root_save_id, actor_id, prompt_fingerprint, input_json, log_start_index, continues_through_next_input, created_at FROM game_action_replay WHERE game_id = ? ORDER BY seq', [gameId])) ?? [];
+    return fromRows({...head, reset_before_next_input: Boolean(head.reset_before_next_input)}, rows.map((row) => ({...row, continues_through_next_input: Boolean(row.continues_through_next_input)})));
+  }
+
+  async clearReplayJournal(gameId: GameId): Promise<void> {
+    await this.asyncRun('DELETE FROM game_action_replay WHERE game_id = ?', [gameId]);
+    await this.asyncRun('DELETE FROM game_action_replay_head WHERE game_id = ?', [gameId]);
   }
 
   async deleteGameNbrSaves(gameId: GameId, rollbackCount: number): Promise<void> {

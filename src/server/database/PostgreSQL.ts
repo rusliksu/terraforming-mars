@@ -13,7 +13,16 @@ import {databaseMetrics, withDatabaseMetrics} from './MetricsDelegate';
 import {ThrottledCache} from './ThrottledCache';
 import {Clock} from '@/common/Timer';
 import {parseInterned} from './parseInterned';
-import {POSTGRES_REPLAY_JOURNAL_DDL} from './ReplayJournal';
+import {
+  isReplayJournalEnabled,
+  POSTGRES_REPLAY_JOURNAL_DDL,
+  postgresReplaceReplayJournalStatements,
+  ReplayJournalHeadRow,
+  ReplayJournalEntryRow,
+  ReplayJournalSnapshot,
+  fromRows,
+  snapshotFromActionReplayState,
+} from './ReplayJournal';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {compressToBrotli, decompressFromBrotli} from './compression';
 import {assertSaveIdWithinLimit} from './HistoryLimits';
@@ -71,6 +80,7 @@ export class PostgreSQL implements IDatabase {
     saveCount: 0,
     saveErrorCount: 0,
     saveConflictUndoCount: 0,
+  saveReplayJournalCount: 0,
     saveConflictNormalCount: 0,
   };
   public metricsScrapeCache: ThrottledCache<void>;
@@ -498,6 +508,8 @@ export class PostgreSQL implements IDatabase {
         await this.storeParticipants({gameId: game.id, participantIds: participantIds});
       }
 
+      await this.saveReplayJournal(game);
+
       await this.client.query('COMMIT');
     } catch (err) {
       await this.client.query('ROLLBACK');
@@ -508,6 +520,46 @@ export class PostgreSQL implements IDatabase {
       console.error('PostgreSQL:saveGame', err);
     }
     this.trim(game);
+  }
+
+  /** Writes or clears the replay journal inside the caller's open transaction. */
+  private async saveReplayJournal(game: IGame): Promise<void> {
+    if (game.gameOptions.undoStepOption !== true || !isReplayJournalEnabled()) {
+      return;
+    }
+    const state = game.actionReplayState;
+    const snapshot = state === undefined || state === null ? undefined : snapshotFromActionReplayState(game.id, state);
+    await this.deleteReplayJournalRows(game.id);
+    if (snapshot === undefined) {
+      return;
+    }
+    const statements = postgresReplaceReplayJournalStatements(snapshot, new Date().toISOString());
+    await this.client.query(statements.headSql, [...statements.headValues]);
+    for (const values of statements.entryValues) {
+      await this.client.query(statements.entrySql, [...values]);
+    }
+    this.statistics.saveReplayJournalCount++;
+  }
+
+  private async deleteReplayJournalRows(gameId: GameId): Promise<void> {
+    await this.client.query('DELETE FROM game_action_replay WHERE game_id = $1', [gameId]);
+    await this.client.query('DELETE FROM game_action_replay_head WHERE game_id = $1', [gameId]);
+  }
+
+  async readReplayJournal(gameId: GameId): Promise<ReplayJournalSnapshot | undefined> {
+    if (!isReplayJournalEnabled()) {
+      return undefined;
+    }
+    const headResult = await this.client.query('SELECT game_id, root_save_id, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at FROM game_action_replay_head WHERE game_id = $1', [gameId]);
+    if (headResult.rows.length === 0) {
+      return undefined;
+    }
+    const rows = await this.client.query('SELECT game_id, seq, root_save_id, actor_id, prompt_fingerprint, input_json, log_start_index, continues_through_next_input, created_at FROM game_action_replay WHERE game_id = $1 ORDER BY seq', [gameId]);
+    return fromRows(headResult.rows[0] as ReplayJournalHeadRow, rows.rows as Array<ReplayJournalEntryRow>);
+  }
+
+  async clearReplayJournal(gameId: GameId): Promise<void> {
+    await this.deleteReplayJournalRows(gameId);
   }
 
   // Not part of IDatabase, invisible to MetricsDelegate, and invoked fire-and-forget (not awaited) by

@@ -1,5 +1,6 @@
 import {GameId, PlayerId} from '../../common/Types';
 import {InputResponse} from '../../common/inputs/InputResponse';
+import type {ActionReplayState} from '../game/ActionReplay';
 
 /** Maximum number of steps retained for one game action. Mirrors ActionReplay's in-memory limit. */
 export const REPLAY_JOURNAL_ENTRY_LIMIT = 32;
@@ -180,3 +181,67 @@ export const SQLITE_REPLAY_JOURNAL_DDL = [
     created_at timestamp NOT NULL DEFAULT (strftime('%s','now')),
     PRIMARY KEY (game_id, seq))`,
 ];
+
+/** Journal persistence is on by default; the environment switch disables it without a schema change. */
+export function isReplayJournalEnabled(env: Readonly<Record<string, string | undefined>> = process.env): boolean {
+  return env.TM_DISABLE_REPLAY_JOURNAL !== '1';
+}
+
+/**
+ * Builds the persistable journal for the current action, or undefined when the action has no
+ * restorable root or nothing worth restoring yet.
+ */
+export function snapshotFromActionReplayState(gameId: GameId, state: ActionReplayState): ReplayJournalSnapshot | undefined {
+  if (state.rootSaveId === undefined || state.entries.length === 0) {
+    return undefined;
+  }
+  return {
+    gameId,
+    rootSaveId: state.rootSaveId,
+    currentActorId: state.currentActorId,
+    currentPromptFingerprint: state.currentPromptFingerprint,
+    resetBeforeNextInput: state.resetBeforeNextInput,
+    lastStepBackLogStartIndex: state.lastStepBackLogStartIndex,
+    entries: state.entries.map((entry) => ({
+      actorId: entry.actorId,
+      promptFingerprint: entry.promptFingerprint,
+      input: entry.input,
+      logStartIndex: entry.logStartIndex,
+      continuesThroughNextInput: entry.continuesThroughNextInput,
+    })),
+  };
+}
+
+/** Statements that delete and insert one journal inside an open transaction (PostgreSQL). */
+export function postgresReplaceReplayJournalStatements(snapshot: ReplayJournalSnapshot, now: string): {
+  headSql: string, headValues: ReadonlyArray<unknown>,
+  entrySql: string, entryValues: ReadonlyArray<ReadonlyArray<unknown>>,
+} {
+  const head = toHeadRow(snapshot, now);
+  const rows = toEntryRows(snapshot, now);
+  return {
+    headSql: `INSERT INTO game_action_replay_head(game_id, root_save_id, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    headValues: [head.game_id, head.root_save_id, head.current_actor_id, head.current_prompt_fingerprint, head.reset_before_next_input, head.last_step_back_log_start_index, head.updated_at],
+    entrySql: `INSERT INTO game_action_replay(game_id, seq, root_save_id, actor_id, prompt_fingerprint, input_json, log_start_index, continues_through_next_input, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    entryValues: rows.map((row) => [row.game_id, row.seq, row.root_save_id, row.actor_id, row.prompt_fingerprint, row.input_json, row.log_start_index, row.continues_through_next_input, row.created_at]),
+  };
+}
+
+/** Statements that delete and insert one journal inside an open transaction (SQLite). */
+export function sqliteReplaceReplayJournalStatements(snapshot: ReplayJournalSnapshot, now: string): {
+  headSql: string, headValues: ReadonlyArray<unknown>,
+  entrySql: string, entryValues: ReadonlyArray<ReadonlyArray<unknown>>,
+} {
+  const head = toHeadRow(snapshot, now);
+  const rows = toEntryRows(snapshot, now);
+  return {
+    headSql: `INSERT INTO game_action_replay_head(game_id, root_save_id, current_actor_id, current_prompt_fingerprint, reset_before_next_input, last_step_back_log_start_index, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    headValues: [head.game_id, head.root_save_id, head.current_actor_id, head.current_prompt_fingerprint, head.reset_before_next_input ? 1 : 0, head.last_step_back_log_start_index, head.updated_at],
+    entrySql: `INSERT INTO game_action_replay(game_id, seq, root_save_id, actor_id, prompt_fingerprint, input_json, log_start_index, continues_through_next_input, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    entryValues: rows.map((row) => [row.game_id, row.seq, row.root_save_id, row.actor_id, row.prompt_fingerprint, row.input_json, row.log_start_index, row.continues_through_next_input ? 1 : 0, row.created_at]),
+  };
+}

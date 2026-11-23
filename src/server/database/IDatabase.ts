@@ -5,6 +5,7 @@ import {SerializedGame} from '../SerializedGame';
 import {Session, SessionId} from '../auth/Session';
 import {MapLibraryEntry, MapLibraryEntryId, MapLibraryStatus} from '../../common/boards/MapLibraryEntry';
 import {CustomCardLibraryEntry, CustomCardEntryId, CustomCardStatus} from '../../common/cards/CustomCardLibraryEntry';
+import {ReplayJournalSnapshot} from './ReplayJournal';
 
 export type GameIdLedger = {gameId: GameId, participantIds: Array<ParticipantId>}
 
@@ -107,6 +108,16 @@ export interface IDatabase {
      * separately (LocalFilesystem) return 0.
      */
     deleteOrphanParticipants(): Promise<number>;
+
+    /**
+     * Returns the persisted one-step undo journal of a game, or undefined when the game has none.
+     *
+     * Backends that do not keep a replay journal (LocalFilesystem) return undefined.
+     */
+    readReplayJournal(gameId: GameId): Promise<ReplayJournalSnapshot | undefined>;
+
+    /** Removes the persisted one-step undo journal of a game. */
+    clearReplayJournal(gameId: GameId): Promise<void>;
 
     /**
      * A maintenance task on a single game to mark it as complete.

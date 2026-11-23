@@ -12,6 +12,13 @@ import {
   toHeadRow,
 } from '@/server/database/ReplayJournal';
 import {InputResponse} from '@/common/inputs/InputResponse';
+import type {ActionReplayState} from '@/server/game/ActionReplay';
+import {
+  isReplayJournalEnabled,
+  postgresReplaceReplayJournalStatements,
+  snapshotFromActionReplayState,
+  sqliteReplaceReplayJournalStatements,
+} from '@/server/database/ReplayJournal';
 
 function entry(index: number): ReplayJournalEntry {
   return {
@@ -104,5 +111,53 @@ describe('ReplayJournal', () => {
     }
     expect(POSTGRES_REPLAY_JOURNAL_DDL.join(' ')).to.include('game_action_replay_head');
     expect(SQLITE_REPLAY_JOURNAL_DDL.join(' ')).to.include('game_action_replay_head');
+  });
+
+  it('builds a journal for an action that has a restorable root', () => {
+    const state: ActionReplayState = {
+      rootSnapshot: {id: 'game-id'} as unknown as ActionReplayState['rootSnapshot'],
+      rootSaveId: 12,
+      entries: [
+        {actorId: 'p1', promptFingerprint: 'f1', input: {type: 'option'} as unknown as InputResponse, logStartIndex: 3, continuesThroughNextInput: true},
+      ],
+      currentActorId: 'p1',
+      currentPromptFingerprint: 'f2',
+      resetBeforeNextInput: false,
+      lastStepBackLogStartIndex: 3,
+    };
+    const journal = snapshotFromActionReplayState('game-id' as never, state);
+    expect(journal).to.not.be.undefined;
+    expect(journal!.rootSaveId).to.equal(12);
+    expect(journal!.entries.length).to.equal(1);
+    expect(journal!.entries[0].continuesThroughNextInput).to.be.true;
+  });
+
+  it('skips persistence when the action has no root save or no entries', () => {
+    const base: ActionReplayState = {
+      rootSnapshot: {id: 'game-id'} as unknown as ActionReplayState['rootSnapshot'],
+      entries: [{actorId: 'p1', promptFingerprint: 'f1', input: {type: 'option'} as unknown as InputResponse}],
+      currentActorId: 'p1',
+      currentPromptFingerprint: 'f1',
+      resetBeforeNextInput: false,
+    };
+    expect(snapshotFromActionReplayState('game-id' as never, base)).to.be.undefined;
+    expect(snapshotFromActionReplayState('game-id' as never, {...base, rootSaveId: 4, entries: []})).to.be.undefined;
+  });
+
+  it('honors the disable switch', () => {
+    expect(isReplayJournalEnabled({})).to.be.true;
+    expect(isReplayJournalEnabled({TM_DISABLE_REPLAY_JOURNAL: '1'})).to.be.false;
+  });
+
+  it('builds backend-specific insert statements with matching placeholders', () => {
+    const journal = snapshot([entry(0)]);
+    const postgres = postgresReplaceReplayJournalStatements(journal, 'now');
+    const sqlite = sqliteReplaceReplayJournalStatements(journal, 'now');
+    expect(postgres.headSql).to.include('$1');
+    expect(sqlite.headSql).to.include('?');
+    expect(postgres.headValues.length).to.equal(7);
+    expect(sqlite.headValues.length).to.equal(7);
+    expect(postgres.entryValues.length).to.equal(1);
+    expect(sqlite.entryValues[0][7]).to.equal(0);
   });
 });

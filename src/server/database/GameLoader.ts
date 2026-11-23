@@ -12,8 +12,7 @@ import {timeAsync} from '../utils/timer';
 import {durationToMilliseconds} from '../utils/durations';
 import {CacheConfig} from './CacheConfig';
 import {databaseMetrics} from './MetricsDelegate';
-import {restoreActionReplayState} from './ReplayJournal';
-import {promptFingerprintForPlayer} from '../game/ActionReplay';
+import {rebuildLiveGameFromJournal} from './ReplayJournal';
 import {Clock} from '../../common/Timer';
 import {EloSyncService} from '../elo/EloSyncService';
 import {appendCanceledLogMessages} from '../logs/appendCanceledLogMessages';
@@ -251,8 +250,8 @@ export class GameLoader implements IGameLoader {
           console.error(`GameLoader:loadGame: game ${gameId} not found`);
           return undefined;
         }
-        const game = Game.deserialize(serializedGame, {saveGame: this.saveGame.bind(this)});
-        await this.restoreReplayJournal(game);
+        let game: IGame = Game.deserialize(serializedGame, {saveGame: this.saveGame.bind(this)});
+        game = await this.restoreReplayJournal(game);
         await this.add(game);
         this.reconcileGame(game);
         console.log(`GameLoader loaded game ${gameId} into memory from database`);
@@ -273,38 +272,31 @@ export class GameLoader implements IGameLoader {
    * A game without the option, without a journal, or with a journal that no longer matches the
    * loaded state simply loads without step undo. Nothing here can fail the load.
    */
-  private async restoreReplayJournal(game: IGame): Promise<void> {
+  private async restoreReplayJournal(game: IGame): Promise<IGame> {
     if (game.gameOptions.undoStepOption !== true) {
-      return;
+      return game;
     }
-    const database = Database.getInstance();
     let journal;
     try {
-      journal = await database.readReplayJournal(game.id);
+      journal = await Database.getInstance().readReplayJournal(game.id);
     } catch (error) {
       this.countReplayJournal('replayJournalDroppedCorrupt');
       console.error('GameLoader:readReplayJournal', error);
-      return;
+      return game;
     }
     if (journal === undefined) {
-      return;
+      return game;
     }
-    let fingerprint = '';
-    try {
-      fingerprint = promptFingerprintForPlayer(game, journal.currentActorId);
-    } catch (_error) {
-      fingerprint = '';
-    }
-    const result = restoreActionReplayState(journal, fingerprint);
+    const result = rebuildLiveGameFromJournal(game, journal);
     if (result.kind === 'restored') {
-      game.actionReplayState = result.state;
       this.countReplayJournal('replayJournalRestored');
-      return;
+      return result.game;
     }
     const counter = result.reason === 'missing_root' ? 'replayJournalDroppedMissingRoot' :
       result.reason === 'fingerprint' ? 'replayJournalDroppedFingerprint' :
         'replayJournalDroppedCorrupt';
     this.countReplayJournal(counter);
+    return game;
   }
 
   private countReplayJournal(operation: string): void {

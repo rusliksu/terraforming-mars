@@ -1,7 +1,9 @@
 import {GameId, PlayerId} from '../../common/Types';
 import {InputResponse} from '../../common/inputs/InputResponse';
 import {SerializedGame} from '../SerializedGame';
-import type {ActionReplayState} from '../game/ActionReplay';
+import {ActionReplayState, promoteReplayedGame, promptFingerprintForPlayer, replayActionInputs} from '../game/ActionReplay';
+import {Game} from '../Game';
+import {IGame} from '../IGame';
 
 /** Maximum number of steps retained for one game action. Mirrors ActionReplay's in-memory limit. */
 export const REPLAY_JOURNAL_ENTRY_LIMIT = 32;
@@ -211,6 +213,43 @@ export async function persistActionReplaySnapshot(
   }
   await store.writeReplayJournal(snapshot);
   return true;
+}
+
+/** Result of rebuilding live state from a persisted journal. */
+export type ReplayRebuildResult =
+  | {kind: 'restored', game: Game, state: ActionReplayState}
+  | {kind: 'dropped', reason: ReplayRestoreFailure};
+
+/**
+ * Rebuilds the live game from a persisted journal.
+ *
+ * Replaying the root snapshot re-creates the prompts that plain deserialization loses (deferred
+ * actions, option closures), so the fingerprint comparison happens on replayed state instead of on
+ * the freshly loaded save. A journal that cannot be replayed is dropped, never partially applied.
+ */
+export function rebuildLiveGameFromJournal(current: IGame, journal: ReplayJournalSnapshot): ReplayRebuildResult {
+  if (journal.rootSnapshot === undefined) {
+    return {kind: 'dropped', reason: 'missing_root'};
+  }
+  let replayed: Game;
+  try {
+    replayed = replayActionInputs(journal.rootSnapshot, journal.entries);
+  } catch (_error) {
+    return {kind: 'dropped', reason: 'corrupt'};
+  }
+  let fingerprint = '';
+  try {
+    fingerprint = promptFingerprintForPlayer(replayed, journal.currentActorId);
+  } catch (_error) {
+    fingerprint = '';
+  }
+  const restored = restoreActionReplayState(journal, fingerprint);
+  if (restored.kind === 'dropped') {
+    return restored;
+  }
+  const live = promoteReplayedGame(replayed, current);
+  live.actionReplayState = restored.state;
+  return {kind: 'restored', game: live, state: restored.state};
 }
 
 /** Why a persisted journal could not be attached to a loaded game. */

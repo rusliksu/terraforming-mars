@@ -32,9 +32,10 @@ stored as a reference to its save, and the steps themselves live in the
 `game_action_replay` tables. A restart therefore keeps one-step undo available
 for games created with the option.
 
-Restoration is fail-closed. If the root save no longer exists, if the current
-prompt no longer matches the recorded fingerprint, or if a stored input cannot
-be replayed, the journal is dropped and the game loads without one-step undo;
-action undo remains a separate fallback when enabled. Setting
+Restoration is fail-closed. The stored root snapshot and the recorded steps are replayed
+to rebuild the prompt, so prompts that hold deferred actions survive a restart even
+though a plain save/load cannot rebuild them. If a stored step no longer replays,
+the journal is dropped and the game loads without one-step undo; action undo
+remains a separate fallback when enabled. Setting
 `TM_DISABLE_REPLAY_JOURNAL=1` turns the persistence off without a schema
 change.

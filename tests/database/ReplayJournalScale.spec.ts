@@ -10,6 +10,7 @@ import {CardName} from '@/common/cards/CardName';
 import {InputResponse} from '@/common/inputs/InputResponse';
 import {
   ActionReplayState,
+  promptFingerprintForPlayer,
   prepareActionReplayEntry,
   recordAcceptedActionReplayEntry,
   stepBackActionInput,
@@ -17,8 +18,8 @@ import {
 } from '@/server/game/ActionReplay';
 import {
   persistActionReplaySnapshot,
+  rebuildLiveGameFromJournal,
   restoreActionReplayState,
-  snapshotFromActionReplayState,
 } from '@/server/database/ReplayJournal';
 import {ProjectEden} from '@/server/cards/prelude2/ProjectEden';
 import {ArcticAlgae} from '@/server/cards/base/ArcticAlgae';
@@ -124,17 +125,27 @@ describe('Replay journal at scale', () => {
     const journal = await restarted.readReplayJournal(game.id);
     expect(journal).to.not.be.undefined;
     expect(journal!.entries.length).to.equal(3);
-    // The live prompt cannot be rebuilt from the saved state alone (serialization drops deferred
-    // actions), so the step back is exercised on the live game with the journal read back from disk.
-    const restored = restoreActionReplayState(journal!, journal!.currentPromptFingerprint);
-    expect(restored.kind).to.equal('restored');
-    if (restored.kind !== 'restored') {
-      throw new Error('expected restored');
-    }
-    expect(restored.state.entries.length).to.equal(3);
+    // A plain deserialize cannot rebuild the mid-action prompt, so the loaded game is replaced by a
+    // state replayed from the stored root and entries.
+    const loaded = Game.deserialize(await restarted.getGame(game.id));
+    // Plain deserialization rebuilds a different prompt, which is exactly why the journal is
+    // validated against a replay instead of against the freshly loaded save.
+    const loadedFingerprint = promptFingerprintForPlayer(loaded, journal!.currentActorId);
+    console.log('COMPLEX_PROMPT loadedFp=' + loadedFingerprint + ' journalFp=' + journal!.currentPromptFingerprint +
+      ' equal=' + (loadedFingerprint === journal!.currentPromptFingerprint));
+    expect(loadedFingerprint).to.not.equal(journal!.currentPromptFingerprint);
+    expect(restoreActionReplayState(journal!, loadedFingerprint)).to.deep.equal({kind: 'dropped', reason: 'fingerprint'});
 
-    game.actionReplayState = restored.state;
-    const replayed = stepBackActionInput(game, player.id);
+    const rebuilt = rebuildLiveGameFromJournal(loaded, journal!);
+    expect(rebuilt.kind).to.equal('restored');
+    if (rebuilt.kind !== 'restored') {
+      throw new Error('expected restored, got ' + rebuilt.reason);
+    }
+    expect(rebuilt.state.entries.length).to.equal(3);
+    expect(rebuilt.state.currentPromptFingerprint).to.equal(journal!.currentPromptFingerprint);
+    expect(rebuilt.game.actionReplayState).to.equal(rebuilt.state);
+
+    const replayed = stepBackActionInput(rebuilt.game, player.id);
     const replayedPlayer = replayed.getPlayerById(player.id);
     expect(replayedPlayer.getWaitingFor()?.toModel(replayedPlayer)?.type).eq('or');
     expect(replayed.board.spaces.some((space) => space.player?.id === player.id)).is.false;
@@ -180,5 +191,30 @@ describe('Replay journal at scale', () => {
     const loaded = Game.deserialize(await restarted.getGame(game.id));
     loaded.actionReplayState = restored.state;
     expect(() => stepBackActionInput(loaded, player.id)).to.throw(ActionReplayMismatch);
+  });
+
+  it('drops a journal whose stored steps no longer replay', async () => {
+    const [rawGame, player] = testGame(2, {skipInitialCardSelection: true, undoStepOption: true});
+    const game = rawGame as Game;
+    game.generation = 2;
+    game.phase = Phase.ACTION;
+    game.activePlayer = player;
+    player.takeAction(false);
+    const state: ActionReplayState = {
+      rootSnapshot: game.serialize(),
+      rootSaveId: 0,
+      entries: [{actorId: player.id, promptFingerprint: 'prompt:tampered', input: {type: 'option'} as InputResponse}],
+      currentActorId: player.id,
+      currentPromptFingerprint: 'prompt:tampered',
+      resetBeforeNextInput: false,
+    };
+    await db.saveGame(game);
+    expect(await persistActionReplaySnapshot(db, game.id, state)).to.be.true;
+
+    const restarted = await openDatabase();
+    const journal = await restarted.readReplayJournal(game.id);
+    const loaded = Game.deserialize(await restarted.getGame(game.id));
+    const rebuilt = rebuildLiveGameFromJournal(loaded, journal!);
+    expect(rebuilt).to.deep.equal({kind: 'dropped', reason: 'corrupt'});
   });
 });

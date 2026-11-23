@@ -185,6 +185,17 @@ function cloneSerializedGame(snapshot: SerializedGame): SerializedGame {
   return JSON.parse(JSON.stringify(snapshot)) as SerializedGame;
 }
 
+/**
+ * Promotes a simulated replay to live state, carrying over the bookkeeping the replay cannot know.
+ *
+ * Callers must have validated that the replayed prompt matches the journal first.
+ */
+export function promoteReplayedGame(replayed: Game, current: IGame): Game {
+  restoreLiveOnlyState(replayed, current);
+  replayed.saveGamePromise = current.saveGamePromise;
+  return replayed;
+}
+
 function restoreLiveOnlyState(replayed: Game, current: IGame): void {
   replayed.simulationMode = false;
   replayed.lastSaveId = current.lastSaveId;

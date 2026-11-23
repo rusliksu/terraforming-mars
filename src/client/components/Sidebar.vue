@@ -45,7 +45,7 @@
 
     <div class="sidebar-item sidebar-item--info" :title="$t('Information panel')">
       <i class="sidebar-icon sidebar-icon--info"
-        :class="{'sidebar_item--is-active': ui.gamesetup_detail_open}"
+        :class="{'sidebar-item--is-active': ui.gamesetup_detail_open}"
         @click="ui.gamesetup_detail_open = !ui.gamesetup_detail_open"
         :title="$t('game setup details')"></i>
       <InfoPanel v-if="ui.gamesetup_detail_open" :gameOptions="gameOptions" :playerNumber="playerNumber" :lastSoloGeneration="lastSoloGeneration" :deckSize="deckSize" :discardPileSize="discardPileSize" :otherDeckSizes="otherDeckSizes" @close="ui.gamesetup_detail_open=false" />

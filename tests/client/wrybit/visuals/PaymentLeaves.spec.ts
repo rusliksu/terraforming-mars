@@ -13,8 +13,8 @@ describe('Wrybit payment visual leaves', () => {
     const native = mount(CanonicalPaymentUnit, {...globalConfig, props});
     const wrapper = mount(PaymentUnit, {...globalConfig, props});
     try {
-      expect(native.get('.payments_type_icon').classes()).include('resource_icon--microbes');
-      expect(wrapper.get('.payments_type_icon').classes()).include('resource_icon--microbes');
+      expect(native.get('.payments-type-icon').classes()).include('resource-icon--microbes');
+      expect(wrapper.get('.payments-type-icon').classes()).include('resource-icon--microbes');
       expect(wrapper.find('[data-test="target"]').exists()).is.false;
       await wrapper.setProps({target: 7, minusDisabled: true, plusDisabled: true});
       const buttons = wrapper.findAll<HTMLButtonElement>('button');
@@ -46,7 +46,7 @@ describe('Wrybit payment visual leaves', () => {
       expect(wrapper.get('[data-test="excess"]').text()).eq('+2');
       expect(wrapper.get('[data-test="item"]').text()).eq('Our custom project');
       expect(wrapper.get('[data-test="reason"]').text()).eq('Our payment explanation');
-      expect(wrapper.get('[data-test="segment-nereidMicrobes"]').get('i').classes()).include('resource_icon--microbes');
+      expect(wrapper.get('[data-test="segment-nereidMicrobes"]').get('i').classes()).include('resource-icon--microbes');
       expect(wrapper.get('.overpayment-dialog__legend-calc').text()).eq('3 × 4');
       expect(wrapper.get('.overpayment-dialog__legend-value').text()).eq('= 12');
       expect(wrapper.emitted('accept')).eq(undefined);

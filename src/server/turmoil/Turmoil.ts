@@ -208,11 +208,11 @@ export class Turmoil {
   }
 
   private drawStartingEvent(game: IGame): IGlobalEvent | undefined {
-    let event = this.globalEventDealer.draw();
+    let event = this.globalEventDealer.draw(game);
     while (game.gameOptions.morePartiesExpansion && event !== undefined &&
         !isPartyCompatible(event.revealedDelegate, game.gameOptions)) {
       this.globalEventDealer.discard(event);
-      event = this.globalEventDealer.draw();
+      event = this.globalEventDealer.draw(game);
     }
     return event;
   }

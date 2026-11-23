@@ -48,7 +48,7 @@ describe('MarsFirstBetterMars', () => {
   it('restores the Better Mars party after deserialization', () => {
     const turmoil = Turmoil.getTurmoil(game);
     const serialized = JSON.parse(JSON.stringify(turmoil.serialize()));
-    const reloaded = Turmoil.deserialize(serialized, [...game.players], game.gameOptions);
+    const reloaded = Turmoil.deserialize(serialized, [...game.players], game.gameOptions, game.rng);
 
     expect(reloaded.getPartyByName(PartyName.MARS)).to.be.instanceOf(MarsFirstBetterMars);
   });

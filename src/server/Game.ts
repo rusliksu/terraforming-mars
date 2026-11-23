@@ -179,7 +179,6 @@ function deserializeGameOptions(d: SerializedGame): GameOptions {
   if (!isShowVP(gameOptions.showVP)) {
     gameOptions.showVP = showVPFromLegacy(legacyOptions.showOtherPlayersVP);
   }
-  gameOptions.showOtherPlayersVP = gameOptions.showVP === 'all';
   return gameOptions;
 }
 

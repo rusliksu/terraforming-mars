@@ -2,7 +2,7 @@
   <StatsTable class="stats-games" :columns="columns" :rows="games" :rowKey="rowKey" :rowHref="resultHref" initialSort="date">
     <template #players="{row}">
       <span class="stats-game-players">
-        <span v-for="player in row.summary.players" :key="player.name" class="stats-game-player" :class="[`player_translucent_bg_color_${player.color}`, {'stats-game-winner': player.isWinner, 'stats-game-other': isOther(row, player.name)}]">
+        <span v-for="player in row.summary.players" :key="player.name" class="stats-game-player" :class="[`player-translucent-bg-color-${player.color}`, {'stats-game-winner': player.isWinner, 'stats-game-other': isOther(row, player.name)}]">
           {{ player.name }} <strong>{{ player.victoryPoints }}</strong>
         </span>
       </span>

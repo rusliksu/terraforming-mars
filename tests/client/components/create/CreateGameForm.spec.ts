@@ -1491,7 +1491,7 @@ describe('CreateGameForm', () => {
     expect(menuText).to.include('ELO 1749');
     expect(menuText).to.include('48 games');
     expect(wrapper.find('.create-game-profile-option-colored .create-game-profile-avatar').text()).to.eq('GG');
-    expect(wrapper.find('.create-game-profile-option-colored').classes()).to.include('player_translucent_bg_color_gold');
+    expect(wrapper.find('.create-game-profile-option-colored').classes()).to.include('player-translucent-bg-color-gold');
     expect(wrapper.find('.create-game-profile-option-colored .create-game-profile-option-name').classes()).to.include('player-name');
     expect(wrapper.find('.create-game-profile-color-swatch').exists()).to.be.true;
   });

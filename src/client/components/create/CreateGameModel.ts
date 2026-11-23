@@ -9,6 +9,7 @@ import {CustomMA} from '@/common/ma/CustomMA';
 import {Expansion} from '@/common/cards/GameModule';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
+import {ShowVP} from '@/common/game/ShowVP';
 
 export type CreateGameModel = {
   /* A checkbox when selected selects all official expansions */
@@ -68,7 +69,8 @@ export type CreateGameModel = {
   showColoniesList: boolean;
   showCorporationList: boolean;
   showIncludedCards: boolean;
-  showOtherPlayersVP: boolean;
+  showOtherPlayersVP?: boolean;
+  showVP?: ShowVP;
   showPreludesList: boolean;
   showTimers: boolean;
   shuffleMapOption: boolean;

@@ -28,6 +28,7 @@ import {CardName} from '../../src/common/cards/CardName';
 // A complete create-game request for a one-player game.
 function newGameConfigForTest(): NewGameConfig {
   return {
+    showVP: 'yours',
     players: [{
       name: 'Robot',
       color: 'blue',
@@ -108,6 +109,7 @@ function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
     return {...player, discordId: '1000000000000000' + index};
   });
   return {
+    showVP: 'yours',
     players: playersWithDiscordIds,
     expansions: {
       ...DEFAULT_EXPANSIONS,
@@ -1054,7 +1056,7 @@ describe('ApiCreateGame', () => {
   it('rejects custom milestones and awards of the wrong size', async () => {
     await postConfig({...twoPlayerConfig(), randomMA: RandomMAOptionType.MANUAL, customMA: {...customMA, awards: ['Banker']}});
     expect(res.statusCode).eq(statusCode.badRequest);
-    expect(res.content).contains('customMA must have 5 awards');
+    expect(res.content).contains('You must have between 3 and 8 custom awards');
   });
 
   it('rejects custom milestones and awards from missing expansions', async () => {

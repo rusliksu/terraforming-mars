@@ -86,8 +86,8 @@ describe('LogMessageComponent', () => {
       },
     });
 
-    expect(wrapper.find('.markdown-resource.resource_icon--steel').exists()).is.true;
-    expect(wrapper.find('.markdown-resource.resource_icon--megacredits').exists()).is.true;
+    expect(wrapper.find('.markdown-resource.resource-icon--steel').exists()).is.true;
+    expect(wrapper.find('.markdown-resource.resource-icon--megacredits').exists()).is.true;
     expect(wrapper.text()).contains('[ -2 -14 ]');
   });
   it('renders global-parameter icons in a message', () => {

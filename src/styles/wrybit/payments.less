@@ -1,12 +1,12 @@
-.payments_cont {
+.payments-cont {
   margin-bottom: 20px;
 }
 
-.payments_cont section {
+.payments-cont section {
   max-width: 600px;
 }
 
-.payments_cont .nes-container.with-title > .payments_title {
+.payments-cont .nes-container.with-title > .payments-title {
   display: table;
   padding: 0 .5rem;
   margin: -2.3rem 0 1rem;
@@ -15,7 +15,7 @@
 }
 
 // Plain amount field (e.g. SelectProductionToLose.vue); the payment field overrides it below
-.payments_input {
+.payments-input {
   max-width: 70px;
   font-size: 24px;
   font-weight: bold;
@@ -23,7 +23,7 @@
   text-align: center;
 }
 
-.payments_title {
+.payments-title {
   font-size: 20px;
   color: #666;
 }
@@ -129,15 +129,15 @@
 }
 
 // [−] [icon amount] [+] [→ target]
-.payments_type {
+.payments-type {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 // input-group (spectre) strips the rounding from inner elements – with a gap between, corners are round again
-.payments_type.input-group > .btn,
-.payments_type.input-group .payments_input.form-input {
+.payments-type.input-group > .btn,
+.payments-type.input-group .payments-input.form-input {
   border-radius: 6px;
 }
 
@@ -148,7 +148,7 @@
   align-self: stretch;
 }
 
-.payments_type_icon {
+.payments-type-icon {
   position: absolute;
   top: 50%;
   left: 7px;
@@ -162,7 +162,7 @@
   pointer-events: none;
 }
 
-.payments_field .payments_input.form-input {
+.payments_field .payments-input.form-input {
   width: 76px;
   height: 100%;
   padding: 0 10px 0 32px;
@@ -215,7 +215,7 @@
 }
 
 // Value of a row in M€ ("= 12 M€"): "=" on its own axis, number right-aligned, icon last; dimmed at 0
-.payments_unit_subtotal {
+.payments-unit-subtotal {
   grid-column: 2;
   display: grid;
   grid-template-columns: auto 1fr 20px;
@@ -232,11 +232,11 @@
   padding-right: 4px;
 }
 
-.payments_unit_subtotal--zero {
+.payments-unit-subtotal--zero {
   opacity: 0.35;
 }
 
-.payments_type_smallicon {
+.payments-type-smallicon {
   width: 20px;
   height: 20px;
   vertical-align: middle;
@@ -258,13 +258,13 @@
 .payments_rest--empty {
   color: @payments-dim;
 
-  .resource_icon {
+  .resource-icon {
     opacity: 0.45;
     filter: grayscale(1);
   }
 }
 
-.payments_total_value {
+.payments-total-value {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -273,15 +273,15 @@
 }
 
 // Color shows whether the amount fits
-.payments_total_exact .payments_total_value {
+.payments_total_exact .payments-total-value {
   color: #6fd36f;
 }
 
-.payments_total_under .payments_total_value {
+.payments-total-under .payments-total-value {
   color: #ff6b6b;
 }
 
-.payments_total_over .payments_total_value {
+.payments-total-over .payments-total-value {
   color: #ffd84d;
 }
 
@@ -307,6 +307,6 @@
   flex-basis: 100%;
 }
 
-.payments_form .payments_save {
+.payments_form .payments-save {
   margin-left: auto;
 }

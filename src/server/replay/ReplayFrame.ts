@@ -123,7 +123,7 @@ function publicGame(game: GameModel): GameModel {
       ...pick(game.gameOptions, ['altVenusBoard', 'aresExtremeVariant', 'boardName', 'bannedCards', 'bannedColonies', 'expansions',
         'draftVariant', 'fastModeOption', 'includedCards', 'includeFanMA', 'initialDraftVariant', 'initialDraftOneWay',
         'noEloGame', 'turnBasedGame', 'preludeDraftVariant', 'ceosDraftVariant', 'politicalAgendasExtension',
-        'removeNegativeGlobalEvents', 'showOtherPlayersVP', 'showTimers', 'shuffleMapOption', 'solarPhaseOption',
+        'removeNegativeGlobalEvents', 'showVP', 'showTimers', 'shuffleMapOption', 'solarPhaseOption',
         'soloTR', 'randomMA', 'requiresMoonTrackCompletion', 'requiresVenusTrackCompletion', 'twoCorpsVariant']),
       escapeVelocity: game.gameOptions.escapeVelocity === undefined ? undefined :
         pick(game.gameOptions.escapeVelocity, ['thresholdMinutes', 'bonusSectionsPerAction', 'penaltyPeriodMinutes', 'penaltyVPPerPeriod']),

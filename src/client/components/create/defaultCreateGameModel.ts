@@ -35,6 +35,7 @@ export function defaultCreateGameModel(): CreateGameModel {
     botGame: false,
     randomFirstPlayer: true,
     showVP: 'yours',
+    showOtherPlayersVP: false,
     // beginnerOption: false,
     showCeosList: false,
     showColoniesList: false,

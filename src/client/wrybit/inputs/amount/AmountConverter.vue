@@ -26,6 +26,6 @@ defineProps<{conversion: AmountPreviewModel, modelValue: number, min: number, ma
 defineEmits<{(event: 'update:modelValue', value: number): void}>();
 function iconClass(side: AmountSideModel): Array<string> {
   return side.kind === 'card' ? ['amount-rate__icon', 'card-resource', cardResourceCSS[side.resource]] :
-    ['amount-rate__icon', 'resource_icon', 'resource_icon--' + side.resource];
+    ['amount-rate__icon', 'resource-icon', 'resource-icon--' + side.resource];
 }
 </script>

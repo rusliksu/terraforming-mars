@@ -2,7 +2,7 @@
 <template>
   <div class="delta-board" :style="{'--delta-rows': rows.length}">
     <BoardTrackRow v-for="row in rows" :key="row.key" :name="row.name" :cells="cells(row.position)" :bonuses="{}"
-      :class="['delta-board__row', 'player_translucent_bg_color_' + row.player.color, {'delta-board__row--self': row.player.color === viewerColor}]"
+      :class="['delta-board__row', 'player-translucent-bg-color-' + row.player.color, {'delta-board__row--self': row.player.color === viewerColor}]"
       :data-test="'delta-row-' + row.key">
       <template #image><span class="board-track-row__picture"><PlayerCube :color="row.player.color" view="slight" :size="22" /></span></template>
       <template #value><span>{{ row.position }}</span></template>

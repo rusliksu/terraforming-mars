@@ -17,7 +17,7 @@
         <Card :card="card" />
       </div>
     </template>
-    <div class="player-home-block player_home_block--hand" v-if="playerView.draftedCards.length > 0">
+    <div class="player-home-block player-home-block--hand" v-if="playerView.draftedCards.length > 0">
       <DynamicTitle title="Drafted Cards" :color="thisPlayer.color" />
       <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox">
         <Card :card="card" />
@@ -63,7 +63,7 @@
       <Awards :show-scores="true" :awards="game.awards" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates" />
     </div>
 
-    <div class="player-home-block player_home_block--turnorder nofloat" v-if="playerView.players.length>1">
+    <div class="player-home-block player-home-block--turnorder nofloat" v-if="playerView.players.length>1">
       <DynamicTitle title="Turn order" :color="thisPlayer.color" />
       <div class="player-item" v-for="(p, idx) in playerView.players" :key="idx">
         <div class="player-name-cont" :class="getPlayerCssForTurnOrder(p, true)">

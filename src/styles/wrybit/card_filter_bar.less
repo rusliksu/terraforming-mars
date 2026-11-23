@@ -112,14 +112,14 @@
     margin-left: 0;
   }
 
-  // Played cards: first thing in the panel, over its padding (other_player.less, player_home_columns.less)
-  .other_player_cont > .card-filter-bar {
+  // Played cards: first thing in the panel, over its padding (other-player.less, player_home_columns.less)
+  .other-player-cont > .card-filter-bar {
     top: -10px;
     width: calc(100% + 25px);
     margin: -10px 0 @card-filter-row-gap-below -25px;
   }
 
-  .player-home-columns__main .other_player .other_player_cont > .card-filter-bar {
+  .player-home-columns__main .other-player .other-player-cont > .card-filter-bar {
     width: calc(100% + 20px);
     margin-left: -20px;
   }
@@ -197,7 +197,7 @@
       }
     }
 
-    .mb-screen--players .other_player_panel .other_player_cont > .card-filter-bar {
+    .mb-screen--players .other-player_panel .other-player-cont > .card-filter-bar {
       top: -8px;
       width: calc(100% + 8px);
       margin: -8px -4px 12px;
@@ -636,9 +636,9 @@
     content: "✓";
   }
 
-  .card-filter-bar .resource_icon,
-  .card-bar-menu .resource_icon,
-  .card-filter-sheet .resource_icon {
+  .card-filter-bar .resource-icon,
+  .card-bar-menu .resource-icon,
+  .card-filter-sheet .resource-icon {
     display: inline-block;
     width: 18px;
     height: 18px;
@@ -820,7 +820,7 @@
   // Open filter menu (not the phone sheet): the cards behind it 20 % darker and slightly blurred
   .hand-cards-panel:has(> .card-filter-bar--open) > .hand-cards-panel__section,
   .choice-block:has(> .card-filter-bar--open) > label,
-  .other_player_cont:has(> .card-filter-bar--open) > .player_home_block {
+  .other-player-cont:has(> .card-filter-bar--open) > .player-home-block {
     filter: brightness(0.8) blur(2px);
   }
 

@@ -23,7 +23,7 @@ const EXPANSION_ICON_CLASSES: Record<Expansion, string> = {
   ceo: 'ceo',
   starwars: 'starwars',
   underworld: 'underworld',
-  deltaProject: 'deltaProject',
+  deltaProject: 'deltaproject',
   sillyfication: 'sillyfication',
   betterMars: 'betterMars',
   rebalanced: 'rebalanced',

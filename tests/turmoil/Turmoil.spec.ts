@@ -1,4 +1,5 @@
 import {expect} from 'chai';
+import {UnseededRandom} from '../../src/common/utils/Random';
 import {PartyName} from '../../src/common/turmoil/PartyName';
 import {IGame} from '../../src/server/IGame';
 import {MarsFirst} from '../../src/server/turmoil/parties/MarsFirst';
@@ -941,7 +942,7 @@ describe('Turmoil', () => {
       },
     } as SerializedTurmoil;
     const s: SerializedTurmoil = JSON.parse(JSON.stringify(json));
-    const t = Turmoil.deserialize(s, players, DEFAULT_GAME_OPTIONS);
+    const t = Turmoil.deserialize(s, players, DEFAULT_GAME_OPTIONS, new UnseededRandom());
 
     expect(t.distantGlobalEvent!.name).eq('Eco Sabotage');
     expect(t.distantGlobalEvent!.revealedDelegate).eq('Greens');

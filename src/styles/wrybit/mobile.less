@@ -155,7 +155,7 @@
 
     // Desktop-only furniture: the mobile screen has its own quick buttons/bars.
     .tile-view-toggle,
-    .player_home_block--milestones-and-awards {
+    .player-home-block--milestones-and-awards {
       display: none;
     }
 
@@ -205,7 +205,7 @@
     white-space: nowrap;
   }
 
-  .mb-toolbar.sidebar_cont {
+  .mb-toolbar.sidebar-cont {
     position: static;
     width: auto;
     height: auto;
@@ -228,21 +228,21 @@
   }
 
   .mb-toolbar .tm,
-  .mb-toolbar .global_params {
+  .mb-toolbar .global-params {
     display: none;
   }
 
-  .mb-toolbar .preferences_player {
+  .mb-toolbar .preferences-player {
     display: none !important;
   }
 
   // Language and settings stay one tap away; info/help are already in the game menu (top-left).
-  .mb-toolbar .sidebar_item--info,
-  .mb-toolbar a:has(.sidebar_item--help) {
+  .mb-toolbar .sidebar-item--info,
+  .mb-toolbar a:has(.sidebar-item--help) {
     display: none !important;
   }
 
-  .mb-toolbar .sidebar_item {
+  .mb-toolbar .sidebar-item {
     position: static !important;
     flex: none;
     display: inline-flex;
@@ -258,7 +258,7 @@
     justify-self: center;
   }
 
-  .mb-toolbar .sidebar_icon {
+  .mb-toolbar .sidebar-icon {
     width: 30px !important;
     height: 30px !important;
     margin: 0 !important;
@@ -274,7 +274,7 @@
     padding-top: 2px;
   }
 
-  .mb-toolbar .sidebar_icon--cards {
+  .mb-toolbar .sidebar-icon--cards {
     position: relative;
     flex: none;
   }
@@ -886,7 +886,7 @@
   }
 
   // Columns of the mobile choice/card grids (mobileFit writes --mb-grid-columns)
-  .mb-screen .payments_cont,
+  .mb-screen .payments-cont,
   .mb-screen .wf-component--select-card.choice-block {
     display: flex;
     flex-wrap: wrap;
@@ -898,7 +898,7 @@
 
   // Card carousel (play card): one card per swipe, the centered card is selected.
   // Standard projects stay in the wrapping grid above.
-  .mb-screen--turn .payments_cont:has(> label.payments_cards):not(:has(.card-standard-project)) {
+  .mb-screen--turn .payments-cont:has(> label.payments_cards):not(:has(.card-standard-project)) {
     display: flex !important;
     flex-wrap: nowrap !important;
     justify-content: flex-start !important;
@@ -931,7 +931,7 @@
     }
   }
 
-  .mb-screen--turn .payments_cont > .payments_cards {
+  .mb-screen--turn .payments-cont > .payments_cards {
     flex: 0 0 auto;
   }
 

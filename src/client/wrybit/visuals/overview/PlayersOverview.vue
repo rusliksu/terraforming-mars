@@ -1,7 +1,7 @@
 <template>
   <div class="players-overview" v-if="hasPlayers"><OverviewSettings />
     <!-- Played cards of all players, including your own (via "show" in the player bar) -->
-    <div class="other_player">
+    <div class="other-player">
       <div v-for="(otherPlayer, index) in playersInOrder" :key="otherPlayer.color">
         <OtherPlayer :player="otherPlayer" :playerIndex="index" />
       </div>

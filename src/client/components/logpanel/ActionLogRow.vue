@@ -10,8 +10,8 @@
           :aria-label="effectLabel(summary)" :title="effectLabel(summary)">
           <span class="action-log-effect-visual" :class="{'production-box action-log-production-box': summary.effect.kind === 'resource' && summary.effect.production}">
             <span v-if="effectAmount(summary.effect)" class="action-log-effect-amount">{{ effectAmount(summary.effect) }}</span>
-            <i v-if="summary.effect.kind === 'resource'" class="resource_icon" :class="'resource_icon--' + summary.effect.resource" aria-hidden="true"></i>
-            <i v-else-if="summary.effect.kind === 'tr'" class="resource_icon resource_icon--rating" aria-hidden="true"></i>
+            <i v-if="summary.effect.kind === 'resource'" class="resource-icon" :class="'resource-icon--' + summary.effect.resource" aria-hidden="true"></i>
+            <i v-else-if="summary.effect.kind === 'tr'" class="resource-icon resource-icon--rating" aria-hidden="true"></i>
             <template v-else>
               <img v-for="icon in globalIconCount(summary.effect.amount)" :key="icon" class="action-log-global-icon"
                 :src="'/assets/global-parameters/' + summary.effect.parameter + '.png'" alt="" aria-hidden="true">
@@ -162,7 +162,7 @@ function oceanBonusEffect(message: LogMessage): EffectSummary | undefined {
 .action-log-effect-visual { display: inline-flex; align-items: center; gap: 4px; }
 .action-log-effect-amount { font-weight: bold; }
 .action-log-global-icon { display: block; width: auto; height: 24px; max-width: 32px; object-fit: contain; }
-.action-log-effect .resource_icon { display: inline-block; width: 21px; height: 21px; background-size: contain; }
+.action-log-effect .resource-icon { display: inline-block; width: 21px; height: 21px; background-size: contain; }
 .action-log-effect .action-log-production-box { min-width: 52px; width: auto; height: 29px; padding: 2px 5px; margin: 0; line-height: normal; box-sizing: border-box; color: #fff; }
 .action-log-source, .action-log-effect-counter { font-size: 0.8em; color: #b8d9f2; }
 .action-log-location { border: 1px solid #999; border-radius: 4px; background: #42424a; color: inherit; cursor: pointer; white-space: nowrap; }

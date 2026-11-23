@@ -61,7 +61,6 @@ import * as responses from './responses';
 import {AppError} from './AppError';
 import {capture, ErrorDiagnosticContext} from './SentryReporter';
 import {isPromotionWriteBlocked} from './PromotionWriteGate';
-import {isObject} from '@/common/utils/utils';
 
 const metrics = {
   request_count: new prometheus.Counter({

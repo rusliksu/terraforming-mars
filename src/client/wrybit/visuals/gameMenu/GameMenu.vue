@@ -49,19 +49,19 @@
                 <span v-i18n>Language</span>
               </button>
               <button v-if="context" type="button" role="menuitem" class="game-menu-item" @click="openDialog('info')">
-                <span class="game-menu-item-icon"><i class="sidebar_icon sidebar_icon--info"></i></span>
+                <span class="game-menu-item-icon"><i class="sidebar-icon sidebar-icon--info"></i></span>
                 <span v-i18n>Game settings</span>
               </button>
               <button type="button" role="menuitem" class="game-menu-item" @click="openDialog('help')">
-                <span class="game-menu-item-icon"><i class="sidebar_icon sidebar_icon--help"></i></span>
+                <span class="game-menu-item-icon"><i class="sidebar-icon sidebar-icon--help"></i></span>
                 <span v-i18n>Player help</span>
               </button>
               <button type="button" role="menuitem" class="game-menu-item" @click="openDialog('settings')">
-                <span class="game-menu-item-icon"><i class="sidebar_icon sidebar_icon--settings"></i></span>
+                <span class="game-menu-item-icon"><i class="sidebar-icon sidebar-icon--settings"></i></span>
                 <span v-i18n>Player Settings</span>
               </button>
               <a v-if="context && context.coloniesCount > 0" href="#colonies" role="menuitem" class="game-menu-item" @click="closeMenu">
-                <span class="game-menu-item-icon"><i class="sidebar_icon sidebar_icon--colonies"></i></span>
+                <span class="game-menu-item-icon"><i class="sidebar-icon sidebar-icon--colonies"></i></span>
                 <span v-i18n>Jump to colonies</span>
               </a>
             </div>

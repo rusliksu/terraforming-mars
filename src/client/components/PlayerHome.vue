@@ -43,7 +43,7 @@
       </div>
 
       <a class="hotkey-target"></a>
-      <PlayersOverview class="player-home-block player_home_block--players nofloat" data-layout-panel="players" :playerView="playerView" id="shortkey-playersoverview" />
+      <PlayersOverview class="player-home-block player-home-block--players nofloat" data-layout-panel="players" :playerView="playerView" id="shortkey-playersoverview" />
 
       <a class="hotkey-target"></a>
       <div class="player-home-block nofloat player-layout-log" data-layout-panel="log" v-if="!isInitialDraftingPhase">
@@ -51,7 +51,7 @@
       </div>
 
       <a class="hotkey-target"></a>
-      <div class="player-home-block player_home_block--actions nofloat" data-layout-panel="actions">
+      <div class="player-home-block player-home-block--actions nofloat" data-layout-panel="actions">
         <a name="actions" class="player-home-anchor"></a>
         <DynamicTitle title="Actions" :color="thisPlayer.color" />
         <InputHost v-if="game.phase !== 'end'">
@@ -59,7 +59,7 @@
         </InputHost>
       </div>
 
-      <div class="player-home-block player_home_block--hand" data-layout-panel="cards" v-if="playerView.draftedCards.length > 0">
+      <div class="player-home-block player-home-block--hand" data-layout-panel="cards" v-if="playerView.draftedCards.length > 0">
         <DynamicTitle title="Drafted cards" :color="thisPlayer.color" />
         <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox">
           <Card :card="card" />
@@ -67,7 +67,7 @@
       </div>
 
       <a name="cards" class="player-home-anchor"></a>
-      <div class="player-home-block player_home_block--hand" data-layout-panel="cards" v-if="cardsInHandCount > 0" id="shortkey-hand">
+      <div class="player-home-block player-home-block--hand" data-layout-panel="cards" v-if="cardsInHandCount > 0" id="shortkey-hand">
         <div class="hiding-card-button-row">
           <DynamicTitle title="Cards In Hand" :color="thisPlayer.color" />
           <div :class="getHideButtonClass('HAND')" @click.prevent="toggle('HAND')">
@@ -83,7 +83,7 @@
             .concat(playerView.cardsInHand)" v-model:sortOrder="handSortOrder" />
       </div>
 
-      <div class="player-home-block player_home_block--cards" data-layout-panel="cards">
+      <div class="player-home-block player-home-block--cards" data-layout-panel="cards">
         <div class="hiding-card-button-row">
           <DynamicTitle title="Played Cards" :color="thisPlayer.color" />
           <div class="played-cards-filters">

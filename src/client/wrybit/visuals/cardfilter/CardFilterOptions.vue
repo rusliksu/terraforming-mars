@@ -44,7 +44,7 @@
         <output>
           <template v-if="filter.maxCost === undefined">{{ $t('any') }}</template>
           <template v-else>≤ {{ filter.maxCost }}</template>
-          <i class="resource_icon resource_icon--megacredits"></i>
+          <i class="resource-icon resource-icon--megacredits"></i>
         </output>
       </label>
     </div>

@@ -114,16 +114,16 @@ export function forcePartiesInPlay(...names: ReadonlyArray<PartyName>): () => vo
     return ordered;
   };
   // Keeps forced parties from being replaced by starting events.
-  GlobalEventDealer.prototype.draw = function() {
+  GlobalEventDealer.prototype.draw = function(game) {
     const count = draws.get(this) ?? 0;
     draws.set(this, count + 1);
     if (count < 2) {
-      const index = this.deck.findIndex((event) => initialParties.includes(event.revealedDelegate));
+      const index = this.deck.drawPile.findIndex((event) => initialParties.includes(event.revealedDelegate));
       if (index >= 0) {
-        return this.deck.splice(index, 1)[0];
+        return this.deck.drawPile.splice(index, 1)[0];
       }
     }
-    return originalDraw.call(this);
+    return originalDraw.call(this, game);
   };
   return () => {
     Turmoil.shufflePartyNames = original;

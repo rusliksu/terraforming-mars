@@ -24,7 +24,7 @@
             <!-- Averages right of the tiles: plenty of room sideways, the cards below should stay in view -->
             <div class="stats-lineup-body">
               <div class="stats-wins">
-                <a v-for="count in lineup.counts" :key="count.name" :href="playerHref(count.name)" data-stats-link class="stats-win" :class="`player_translucent_bg_color_${colorOf(count.name)}`">
+                <a v-for="count in lineup.counts" :key="count.name" :href="playerHref(count.name)" data-stats-link class="stats-win" :class="`player-translucent-bg-color-${colorOf(count.name)}`">
                   <span class="stats-win-number">{{ count.wins }}</span>
                   <span class="stats-win-name">{{ count.name }}</span>
                 </a>
@@ -45,7 +45,7 @@
             <h3>{{ solo.name }} <span class="stats-dim">· {{ solo.games }} {{ gamesLabel(solo.games) }}</span></h3>
             <div class="stats-lineup-body">
               <div class="stats-wins">
-                <a :href="playerHref(solo.name)" data-stats-link class="stats-win" :class="`player_translucent_bg_color_${colorOf(solo.name)}`">
+                <a :href="playerHref(solo.name)" data-stats-link class="stats-win" :class="`player-translucent-bg-color-${colorOf(solo.name)}`">
                   <span class="stats-win-number">{{ solo.wins }}</span>
                   <span class="stats-win-name" v-i18n>Wins</span>
                 </a>

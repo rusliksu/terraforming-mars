@@ -117,7 +117,7 @@ describe('requestProcessor', () => {
     }) as typeof ServeAsset.INSTANCE.processRequest;
 
     try {
-      for (const url of ['/main.df7dcd2905327f15.js', '/vendors.df7dcd2905327f15.js', '/styles.c97c25aaaefe8fed.css']) {
+      for (const url of ['/main-C_op_hzA.js', '/client-BlX3Qah0.css']) {
         const req = new MockRequest();
         const res = new MockResponse();
         req.url = url;
@@ -125,9 +125,8 @@ describe('requestProcessor', () => {
         await processRequest(req, res);
       }
       expect(handledUrls).deep.eq([
-        '/main.df7dcd2905327f15.js',
-        '/vendors.df7dcd2905327f15.js',
-        '/styles.c97c25aaaefe8fed.css',
+        '/main-C_op_hzA.js',
+        '/client-BlX3Qah0.css',
       ]);
     } finally {
       ServeAsset.INSTANCE.processRequest = originalProcessRequest;
@@ -263,7 +262,7 @@ describe('requestProcessor', () => {
     req.url = '/';
     await processRequest(req, res);
 
-    expect(req.url).eq('/assets/index.html');
+    expect(req.url).eq('/build/index.html');
   });
 
   it('routes sw.js to the asset handler', async () => {

@@ -175,7 +175,7 @@ describe('Award', () => {
 
     const colors = wrapper.findAll('[data-test=player-score]')
       .filter((w) => /^\d+$/.test(w.text()))
-      .map((w) => w.classes().find((c) => c.startsWith('player_bg_color_'))?.replace('player_bg_color_', ''));
+      .map((w) => w.classes().find((c) => c.startsWith('player-bg-color-'))?.replace('player-bg-color-', ''));
     // blue+green (higher team total) first, yellow ranked above red within their own team.
     expect(colors).to.deep.eq(['blue', 'green', 'yellow', 'red']);
   });

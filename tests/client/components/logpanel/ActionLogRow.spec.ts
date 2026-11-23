@@ -42,7 +42,7 @@ describe('ActionLogRow', () => {
       '/assets/global-parameters/venus.png',
     ]);
     expect(wrapper.findAll('.action-log-global-icon').map((icon) => icon.attributes('alt'))).deep.eq(['', '', '', '', '', '']);
-    expect(wrapper.findAll('.action-log-target').map((target) => target.classes().includes('player_bg_color_blue'))).deep.eq([true, true, true]);
+    expect(wrapper.findAll('.action-log-target').map((target) => target.classes().includes('player-bg-color-blue'))).deep.eq([true, true, true]);
   });
 
   it('keeps reductions distinct and uses a count for larger global changes', () => {
@@ -77,7 +77,7 @@ describe('ActionLogRow', () => {
     });
 
     expect(wrapper.text()).to.contain('+2');
-    expect(wrapper.find('.resource_icon--steel').exists()).to.be.true;
+    expect(wrapper.find('.resource-icon--steel').exists()).to.be.true;
     expect(wrapper.findAllComponents(LogMessageComponent)).to.have.length(1);
     await wrapper.get('button').trigger('click');
     expect(wrapper.get('button').attributes('aria-expanded')).eq('true');
@@ -116,8 +116,8 @@ describe('ActionLogRow', () => {
     });
 
     expect(wrapper.findAll('.action-log-effect')).to.have.length(2);
-    expect(wrapper.find('.action-log-production-box .resource_icon--energy').exists()).to.be.true;
-    expect(wrapper.get('.resource_icon--megacredits').element.parentElement?.textContent).to.contain('+6');
+    expect(wrapper.find('.action-log-production-box .resource-icon--energy').exists()).to.be.true;
+    expect(wrapper.get('.resource-icon--megacredits').element.parentElement?.textContent).to.contain('+6');
     expect(wrapper.get('.action-log-source').text()).eq('🌊×3');
     expect(wrapper.findAll('.action-log-effect')[1].attributes('aria-label')).eq('+6 megacredits from 3 ocean(s) · Blue');
   });
@@ -138,11 +138,11 @@ describe('ActionLogRow', () => {
       ]})},
     });
 
-    expect(wrapper.find('.resource_icon--rating').exists()).to.be.true;
+    expect(wrapper.find('.resource-icon--rating').exists()).to.be.true;
     expect(wrapper.get('.action-log-effect').attributes('aria-label')).eq('-1 TR · Дамир');
     expect(wrapper.get('.action-log-target').text()).eq('Дамир');
     expect(wrapper.get('.action-log-target').classes()).to.include('log-player');
-    expect(wrapper.get('.action-log-target').classes()).to.include('player_bg_color_blue');
+    expect(wrapper.get('.action-log-target').classes()).to.include('player-bg-color-blue');
   });
 
   it('links a logged tile location from the collapsed action to its board space', async () => {

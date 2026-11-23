@@ -39,10 +39,10 @@
       :value="canUseHeatAsMegaCredits ? 1 : 0"
       :resourceProtection="player.protectedResources.heat"
       :productionProtection="player.protectedProduction.heat" />
-    <div v-if="conglomeratesExpansion" class="resource-item resource_item--coordination" data-test="coordination-resource">
+    <div v-if="conglomeratesExpansion" class="resource-item resource-item--coordination" data-test="coordination-resource">
       <div class="resource-item-stock">
-        <i class="resource-icon resource_icon--coordination tooltip tooltip-bottom" :data-tooltip="$t('Coordination')">
-          <span class="resource_icon--coordination-fill"></span>
+        <i class="resource-icon resource-icon--coordination tooltip tooltip-bottom" :data-tooltip="$t('Coordination')">
+          <span class="resource-icon--coordination-fill"></span>
         </i>
         <div class="resource-item-stock-count" data-test="stock-count">{{ player.conglomeratesData.coordination }}</div>
       </div>
@@ -81,7 +81,7 @@ export default defineComponent({
     },
     teamColorClass(): string {
       const color = this.player.conglomeratesTeamColor;
-      return color !== undefined ? `resource_items_cont--team_${color}` : '';
+      return color !== undefined ? `resource-items-cont--team_${color}` : '';
     },
   },
   components: {

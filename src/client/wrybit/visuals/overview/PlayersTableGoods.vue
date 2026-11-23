@@ -4,7 +4,7 @@
     <div :class="boxClasses" :style="boxStyle" data-flash-frame>
       <!-- Shield before the stock: protected amounts stand out as a white area with a black number -->
       <span class="players-table-goods-stock" data-test="stock"><span v-if="protectionIcon !== ''" :class="['players-table-protection', protectionIcon]" data-test="protection"></span>{{ good.count }}</span>
-      <span :class="productionClasses" data-test="production" :data-tooltip="$t('Production count')"><span v-if="good.productionProtection === 'on'" class="players-table-protection shield_production_protection" data-test="production-protection"></span>{{ productionText }}</span>
+      <span :class="productionClasses" data-test="production" :data-tooltip="$t('Production count')"><span v-if="good.productionProtection === 'on'" class="players-table-protection shield-production-protection" data-test="production-protection"></span>{{ productionText }}</span>
       <span v-if="showValue" class="players-table-goods-value" data-test="value">{{ good.value }}</span>
     </div>
   </div>
@@ -71,10 +71,10 @@ export default defineComponent({
     // Protection (e.g. via cards against attacks) as a small shield, as in the classic bar
     protectionIcon(): string {
       if (this.good.resourceProtection === 'on') {
-        return 'shield_icon';
+        return 'shield-icon';
       }
       if (this.good.resourceProtection === 'half') {
-        return 'shield_icon_half';
+        return 'shield-icon-half';
       }
       return '';
     },

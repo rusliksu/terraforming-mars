@@ -1,5 +1,5 @@
 import {SerializedDeck} from '@/server/cards/SerializedDeck';
-import {cardsFromJSON, ceosFromJSON, corporationCardsFromJSON, preludesFromJSON} from '@/server/createCard';
+import {ceosFromJSON, corporationCardsFromJSON, preludesFromJSON} from '@/server/createCard';
 import {CardName} from '@/common/cards/CardName';
 import {Random} from '@/common/utils/Random';
 import {ICorporationCard} from '@/server/cards/corporation/ICorporationCard';
@@ -66,7 +66,10 @@ export class ProjectDeck extends Deck<IProjectCard> {
         logger.log(`discarded every ${this.type} card without a match`);
         break;
       }
-      const projectCard = this.drawOrThrow(logger);
+      const projectCard = this.draw(logger);
+      if (projectCard === undefined) {
+        break;
+      }
       if (include(projectCard)) {
         result.push(projectCard);
       } else {

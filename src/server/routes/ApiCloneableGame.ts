@@ -1,4 +1,5 @@
 import {DEFAULT_EXPANSIONS} from '../../common/cards/GameModule';
+import {showVPFromLegacy} from '@/common/game/ShowVP';
 import {encodeCustomBoard} from '../../common/boards/customBoardCodec';
 import {encodeSimpleBoard} from '../../common/boards/simpleBoardCodec';
 import * as responses from '../server/responses';
@@ -128,6 +129,7 @@ export class ApiCloneableGame extends Handler {
       showTimers: options.showTimers,
       fastModeOption: options.fastModeOption,
       showOtherPlayersVP: options.showOtherPlayersVP,
+      showVP: showVPFromLegacy(options.showOtherPlayersVP),
       privateHands: options.privateHands !== false,
       aresExtremeVariant: options.aresExtremeVariant,
       politicalAgendasExtension: options.politicalAgendasExtension,

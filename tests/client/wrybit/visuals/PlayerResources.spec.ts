@@ -30,21 +30,21 @@ describe('Wrybit resources with our player data', () => {
     const wrapper = mount(PlayerResources, {...globalConfig, props: {player, conglomeratesExpansion: true}});
     try {
       expect(wrapper.findAllComponents(PlayerResource)).has.length(6);
-      expect(wrapper.classes()).contains('resource_items_cont--team_red');
-      expect(wrapper.get('.resource_item--megacredits [data-test="stock-count"]').text()).eq('23');
-      expect(wrapper.get('.resource_item--megacredits [data-test="production"]').text()).eq('-2');
-      expect(wrapper.get('.resource_item--steel [data-test="resource-value"]').text()).eq('4');
-      expect(wrapper.find('.resource_item--steel .shield_icon_half').exists()).is.true;
-      expect(wrapper.get('.resource_item--heat [data-test="resource-value"]').text()).eq('1');
-      expect(wrapper.find('.resource_item--heat .shield_production_protection').exists()).is.true;
+      expect(wrapper.classes()).contains('resource-items-cont--team_red');
+      expect(wrapper.get('.resource-item--megacredits [data-test="stock-count"]').text()).eq('23');
+      expect(wrapper.get('.resource-item--megacredits [data-test="production"]').text()).eq('-2');
+      expect(wrapper.get('.resource-item--steel [data-test="resource-value"]').text()).eq('4');
+      expect(wrapper.find('.resource-item--steel .shield-icon-half').exists()).is.true;
+      expect(wrapper.get('.resource-item--heat [data-test="resource-value"]').text()).eq('1');
+      expect(wrapper.find('.resource-item--heat .shield-production-protection').exists()).is.true;
       expect(wrapper.get('[data-test="coordination-resource"] [data-test="stock-count"]').text()).eq('5');
       expect(wrapper.get('[data-test="coordination-resource"] [data-test="production"]').text()).eq('+2');
-      expect(wrapper.find('.resource_icon--coordination-fill').exists()).is.true;
+      expect(wrapper.find('.resource-icon--coordination-fill').exists()).is.true;
       await wrapper.setProps({player: fakePublicPlayerModel({megacredits: 9}), conglomeratesExpansion: false});
-      expect(wrapper.get('.resource_item--megacredits [data-test="stock-count"]').text()).eq('9');
+      expect(wrapper.get('.resource-item--megacredits [data-test="stock-count"]').text()).eq('9');
       expect(wrapper.find('[data-test="coordination-resource"]').exists()).is.false;
-      expect(wrapper.find('.resource_item--heat [data-test="resource-value"]').exists()).is.false;
-      expect(wrapper.classes()).not.contains('resource_items_cont--team_red');
+      expect(wrapper.find('.resource-item--heat [data-test="resource-value"]').exists()).is.false;
+      expect(wrapper.classes()).not.contains('resource-items-cont--team_red');
     } finally {
       wrapper.unmount();
     }

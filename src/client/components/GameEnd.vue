@@ -85,7 +85,7 @@
             :aria-label="$t('Elo scoring note')"
             :data-tooltip="$t('Places use final VP, then M€. Exact ties count as 0.5 in pairwise Elo.')">?</span>
         </h2>
-        <table class="table game_end_table game-end-elo-table">
+        <table class="table game-end-table game-end-elo-table">
           <thead>
             <tr v-i18n>
               <th>Player</th>

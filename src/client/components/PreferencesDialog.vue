@@ -97,7 +97,7 @@
         <span class="tooltip tooltip-left" :data-tooltip="$t('Use a two-column desktop layout and mobile navigation.')">&#9432;</span>
       </label>
     </div>
-    <div class="preferences_panel_item">
+    <div class="preferences-panel-item">
       <label class="form-switch">
         <input type="checkbox" @change="updatePreferences" v-model="prefs.debug_view" data-test="debug_view">
         <i class="form-icon"></i>

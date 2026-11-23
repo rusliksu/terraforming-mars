@@ -16,7 +16,7 @@
         </div>
       </div>
       <!-- Links as buttons: navigation stays a real link (middle click, new tab) -->
-      <div class="game_end_navigation">
+      <div class="game-end-navigation">
         <!-- Icon + text like the other action buttons; rounded corners (btn-rounded), height grows with wrapped text -->
         <a href="new-game" class="btn btn-lg btn-rounded btn-tone-success game-end-nav-button">
           <svg class="game-end-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
@@ -65,7 +65,7 @@
         <div class="game-end-box game_end_victory_points">
           <h2><span v-i18n>Victory point breakdown after</span> {{ game.generation }} <span v-i18n>generations</span></h2>
           <!-- Contributions to the global parameters as their own column group in the same table (formerly a separate table) -->
-          <table class="table game_end_table">
+          <table class="table game-end-table">
             <thead>
               <tr class="game-end-table-groups">
                 <th :colspan="victoryPointColumnCount"></th>

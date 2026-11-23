@@ -2,7 +2,7 @@
   <div class="stats-stack">
     <div class="stats-players">
       <a v-for="player in players" :key="player.name" :href="player.href" data-stats-link class="stats-card stats-player-card">
-        <div class="stats-player-card-head" :class="`player_translucent_bg_color_${player.color}`">
+        <div class="stats-player-card-head" :class="`player-translucent-bg-color-${player.color}`">
           <strong>{{ player.name }}</strong>
           <span>{{ player.wins }} / {{ player.plays }}</span>
         </div>

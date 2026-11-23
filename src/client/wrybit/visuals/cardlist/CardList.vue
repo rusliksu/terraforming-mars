@@ -104,16 +104,16 @@
           </CardListSection>
 
           <CardListSection v-show="visibleColonyNames.length > 0" title="Colonies" :count="visibleColonyNames.length" :parts="partsFor('colonyTiles', visibleColonyNames.length)">
-            <div class="player_home_colony_cont">
-              <div class="player_home_colony" v-for="colonyName in visibleColonyNames" :key="colonyName" v-memo="[colonyName, showMetadata]">
+            <div class="player-home-colony-cont">
+              <div class="player-home-colony" v-for="colonyName in visibleColonyNames" :key="colonyName" v-memo="[colonyName, showMetadata]">
                 <Colony :colony="colonyModel(colonyName)" />
               </div>
             </div>
           </CardListSection>
 
           <CardListSection v-show="visibleMilestoneNames.length > 0" title="Milestones" :count="visibleMilestoneNames.length" :parts="partsFor('milestones', visibleMilestoneNames.length)">
-            <div class="player_home_colony_cont">
-              <div class="player_home_colony" v-for="milestoneName in visibleMilestoneNames" :key="milestoneName" v-memo="[milestoneName]">
+            <div class="player-home-colony-cont">
+              <div class="player-home-colony" v-for="milestoneName in visibleMilestoneNames" :key="milestoneName" v-memo="[milestoneName]">
                 <div class="milestones"> <!-- This div is necessary for the CSS. Perhaps find a way to remove that? -->
                   <Milestone :milestone="milestoneModel(milestoneName)" :showDescription="true" />
                 </div>
@@ -122,8 +122,8 @@
           </CardListSection>
 
           <CardListSection v-show="visibleAwardNames.length > 0" title="Awards" :count="visibleAwardNames.length" :parts="partsFor('awards', visibleAwardNames.length)">
-            <div class="player_home_colony_cont">
-              <div class="player_home_colony" v-for="awardName in visibleAwardNames" :key="awardName" v-memo="[awardName]">
+            <div class="player-home-colony-cont">
+              <div class="player-home-colony" v-for="awardName in visibleAwardNames" :key="awardName" v-memo="[awardName]">
                 <div class="awards"> <!-- This div is necessary for the CSS. Perhaps find a way to remove that? -->
                   <Award :award="awardModel(awardName)" :showDescription="true" />
                 </div>
@@ -132,8 +132,8 @@
           </CardListSection>
 
           <CardListSection v-show="visibleAgendaIds.length > 0" title="Agendas" :count="visibleAgendaIds.length" :parts="partsFor('agendas', visibleAgendaIds.length)">
-            <div class="player_home_colony_cont">
-              <div class="player_home_colony" v-for="id in visibleAgendaIds" :key="id" v-memo="[id]">
+            <div class="player-home-colony-cont">
+              <div class="player-home-colony" v-for="id in visibleAgendaIds" :key="id" v-memo="[id]">
                 <TurmoilAgendaContainer :agendaId="id" :morePartiesExpansion="expansions.moreParties" :betterMarsExpansion="expansions.betterMars" />
               </div>
             </div>

@@ -120,7 +120,7 @@ const configValues = computed((): Array<SetupValue> => {
   const switches: Array<[boolean, string]> = [
     [options.fastModeOption, 'fast mode'],
     [options.showTimers, 'timer'],
-    [options.showOtherPlayersVP, 'real-time vp'],
+    [options.showOtherPlayersVP === true, 'real-time vp'],
     [options.undoOption, 'undo action'],
     [options.undoStepOption, 'undo one step'],
     [options.noEloGame, 'no ELO'],

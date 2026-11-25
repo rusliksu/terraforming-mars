@@ -195,7 +195,7 @@ describe('Replay journal restart persistence', () => {
     const withoutJournal = await measure(false, 'latency-plain');
     const withJournalLatency = await measure(true, 'latency-journal');
     expect(withJournalLatency - withoutJournal).to.be.below(JOURNAL_LATENCY_BUDGET_MS);
-  });
+  }).timeout(30000); // 60 fsync-backed saves; the Windows runner needs well over mocha's 2s default.
 
   it('persists a journal written after the move without another game save', async () => {
     const [game, player] = testGame(2, {undoStepOption: true});

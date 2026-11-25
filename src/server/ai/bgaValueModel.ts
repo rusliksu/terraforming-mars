@@ -3,7 +3,9 @@ import {Tag} from '../../common/cards/Tag';
 import {Resource} from '../../common/Resource';
 import modelData from './data/bgaValueModel.json';
 import multiModelData from './data/bgaMultiValueModel.json';
+import multiModelDataV2 from './data/bgaMultiValueModel.m2.json';
 import {Tree, treeScore} from './treeEnsemble';
+import {tuningVariantName} from './aiTuning';
 
 // Learned position value for two-player games: a gradient-boosted tree model (LightGBM) trained on about
 // 43,000 two-player games from Board Game Arena estimates the final VP margin from a position. VP that are already
@@ -104,6 +106,7 @@ export function bgaExpectedMargin(player: IPlayer): number | undefined {
 // archived games. Two-player games keep the BGA model above.
 type MultiModelData = {features: Array<string>, trees: Array<Tree>};
 const MULTI_MODEL = multiModelData as unknown as MultiModelData;
+const MULTI_MODEL_V2 = multiModelDataV2 as unknown as MultiModelData;
 /** Feature names in the order of `bgaMultiFeatures`. */
 export const BGA_MULTI_VALUE_FEATURES: ReadonlyArray<string> = MULTI_MODEL.features;
 
@@ -127,9 +130,13 @@ export function bgaMultiFeatures(player: IPlayer, opponent: IPlayer): Array<numb
   ]);
 }
 
+function multiMarginWith(model: MultiModelData, features: ReadonlyArray<number>): number {
+  return treeScore(model.trees, features);
+}
+
 /** Expected final VP margin for a `bgaMultiFeatures` vector. */
 export function bgaMultiMargin(features: ReadonlyArray<number>): number {
-  return treeScore(MULTI_MODEL.trees, features);
+  return multiMarginWith(MULTI_MODEL, features);
 }
 
 /**
@@ -141,7 +148,8 @@ export function bgaMultiplayerMargin(player: IPlayer): number | undefined {
   if (opponents.length < 2 || opponents.length > 3) {
     return undefined;
   }
+  const model = tuningVariantName(player) === 'm2Cand' ? MULTI_MODEL_V2 : MULTI_MODEL;
   const total = opponents.reduce((sum, opponent) =>
-    sum + (bgaMultiMargin(bgaMultiFeatures(player, opponent)) - bgaMultiMargin(bgaMultiFeatures(opponent, player))) / 2, 0);
+    sum + (multiMarginWith(model, bgaMultiFeatures(player, opponent)) - multiMarginWith(model, bgaMultiFeatures(opponent, player))) / 2, 0);
   return total / opponents.length;
 }

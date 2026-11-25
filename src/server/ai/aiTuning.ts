@@ -573,6 +573,15 @@ export const TUNING_VARIANTS: Record<string, Partial<AiTuning>> = {
   drawCards: {drawCardModel: 1},
   // Before round 18: no rollouts.
   noRollout: {rolloutCandidates: 0},
+  // M1 experiment variants: throughput harness with the compared weights.
+  m1Ref: {rolloutCandidates: 0, valueModel: 0.25},
+  m1Cand: {rolloutCandidates: 0, valueModel: 0.5},
+  // M2 model comparison: same tuning, different model file (selected in bgaValueModel).
+  m2Ref: {rolloutCandidates: 0, valueModel: 0.25},
+  m2Cand: {rolloutCandidates: 0, valueModel: 0.25},
+  // M5 search track: prod-mirror harness (rollouts on), compare the search budget.
+  m5Ref: {rolloutCandidates: 3},
+  m5Cand: {rolloutCandidates: 5, rolloutBudget: 6000},
   // Human test game (2026-10-09): in generation 11 the AI built a city next to free land instead of a spot with
   // three greeneries and an ocean; free spots only become greeneries if there is time left.
   // Before round 19.
@@ -972,6 +981,10 @@ const tuningCache = new Map<string, AiTuning>();
 export function setPlayerTuning(playerId: string, variant: string): void {
   variantByPlayer.set(playerId, variant);
   tuningCache.clear();
+}
+
+export function tuningVariantName(player: IPlayer): string {
+  return variantByPlayer.get(player.id) ?? '';
 }
 
 export function clearPlayerTunings(): void {

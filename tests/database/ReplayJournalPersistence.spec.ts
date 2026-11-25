@@ -59,10 +59,12 @@ describe('Replay journal restart persistence', () => {
     return next;
   }
 
+  // Each test opens a fresh file-backed database and creates the journal tables in it; on a loaded
+  // Windows CI runner that legitimately takes longer than mocha's 2s default for hooks.
   beforeEach(async () => {
     dbFile = path.join(os.tmpdir(), 'tm-replay-' + process.pid + '-' + Date.now() + '.db');
     db = await openDatabase();
-  });
+  }).timeout(20000);
 
   afterEach(async () => {
     restoreTestDatabase();
@@ -78,7 +80,7 @@ describe('Replay journal restart persistence', () => {
         // ignore
       }
     }
-  });
+  }).timeout(20000);
 
   it('restores the journal after a simulated restart', async () => {
     const [game, player] = testGame(2, {undoStepOption: true});

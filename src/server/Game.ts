@@ -835,6 +835,12 @@ export class Game implements IGame, Logger {
   }
 
   public lastSoloGeneration(): number {
+    // Test builds only: lets a test run more generations than the game normally allows, so a
+    // single seat can take a 32-step action. Production never sets these flags.
+    const testOverride = Number(process.env.TM_TEST_LAST_SOLO_GENERATION);
+    if (process.env.TM_TEST_BUILD === '1' && Number.isInteger(testOverride) && testOverride > 0) {
+      return testOverride;
+    }
     let lastGeneration = 14;
     const options = this.gameOptions;
     if (options.preludeExtension) {

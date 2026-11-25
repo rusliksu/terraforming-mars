@@ -9,6 +9,7 @@ import {testGame} from '../TestGame';
 import {ActionInputEntry, ActionReplayState, promptFingerprintForPlayer} from '@/server/game/ActionReplay';
 import {persistActionReplaySnapshot, restoreActionReplayState} from '@/server/database/ReplayJournal';
 import {InputResponse} from '@/common/inputs/InputResponse';
+import {PlayerId} from '@/common/Types';
 import {setTestDatabase, restoreTestDatabase} from '../testing/setup';
 
 class TestSQLite extends SQLite {
@@ -18,17 +19,20 @@ class TestSQLite extends SQLite {
   public exec(sql: string) {
     this.db.prepare(sql).run();
   }
+  public close(): void {
+    this.db.close();
+  }
 }
 
 function entry(index: number, fingerprint: string): ActionInputEntry {
   return {
-    actorId: 'p1',
+    actorId: 'p1' as PlayerId,
     promptFingerprint: fingerprint,
     input: {type: 'option', index} as unknown as InputResponse,
   };
 }
 
-function withJournal(game: IGame, actorId: string, entryCount: number): void {
+function withJournal(game: IGame, actorId: PlayerId, entryCount: number): void {
   const fingerprint = promptFingerprintForPlayer(game, actorId);
   const state: ActionReplayState = {
     rootSnapshot: game.serialize(),
@@ -85,6 +89,7 @@ describe('Replay journal restart persistence', () => {
     expect(journal!.entries.length).to.equal(2);
 
     const loaded = Game.deserialize(await restarted.getGame(game.id));
+    expect(loaded.id).to.equal(game.id);
     // Serialization drops deferred actions, so the loaded prompt is not guaranteed to rebuild to the
     // same fingerprint; the live fingerprint recorded before the restart is the stable reference here.
     const fingerprint = promptFingerprintForPlayer(game, journal!.currentActorId);

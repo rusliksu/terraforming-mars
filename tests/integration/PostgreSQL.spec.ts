@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import type {ClientConfig} from 'pg';
 import {expect} from 'chai';
 import {describeDatabaseSuite} from '../database/databaseSuite';
 import {ITestDatabase, Status} from '../database/ITestDatabase';
@@ -32,14 +33,16 @@ class TestPostgreSQL extends PostgreSQL implements ITestDatabase {
   public readonly promises: Array<Promise<void>> = [];
 
   constructor() {
-    super({
+    const config: ClientConfig = {
       user: 'tfmtest',
       database: 'tfmtest',
       host: 'localhost',
       password: process.env.POSTGRES_INTEGRATION_TEST_PASSWORD,
-      // A server time zone unlike the test machine's, so the session tests catch time zone mixups.
-      options: '-c TimeZone=Pacific/Kiritimati',
-    });
+    };
+    // A server time zone unlike the test machine's, so the session tests catch time zone mixups.
+    // pg accepts the libpq `options` connection parameter even though its typings omit it.
+    (config as ClientConfig & {options: string}).options = '-c TimeZone=Pacific/Kiritimati';
+    super(config);
     // Overwrite compression.
     this.compressOnWrite = true;
   }

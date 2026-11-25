@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {PostgreSQL} from '@/server/database/PostgreSQL';
-import {Game} from '@/server/Game';
 import {IGame} from '@/server/IGame';
+import {GameId, PlayerId} from '@/common/Types';
 import {testGame} from '../TestGame';
 import {ActionReplayState, promptFingerprintForPlayer} from '@/server/game/ActionReplay';
 import {REPLAY_JOURNAL_ENTRY_LIMIT, persistActionReplaySnapshot, restoreActionReplayState} from '@/server/database/ReplayJournal';
@@ -25,7 +25,7 @@ class TestPostgreSQL extends PostgreSQL {
   }
 }
 
-function withJournal(game: IGame, actorId: string, entryCount: number): void {
+function withJournal(game: IGame, actorId: PlayerId, entryCount: number): void {
   const fingerprint = promptFingerprintForPlayer(game, actorId);
   const state: ActionReplayState = {
     rootSnapshot: game.serialize(),
@@ -44,7 +44,7 @@ function withJournal(game: IGame, actorId: string, entryCount: number): void {
 
 (password === undefined ? describe.skip : describe)('Replay journal on PostgreSQL', () => {
   let database: TestPostgreSQL;
-  const gameId = 'g-replay-journal-pg-' + process.pid;
+  const gameId = ('g-replay-journal-pg-' + process.pid) as GameId;
 
   async function openDatabase(): Promise<TestPostgreSQL> {
     const next = new TestPostgreSQL({user: 'tfmtest', database: 'tfmtest', host: 'localhost', password});

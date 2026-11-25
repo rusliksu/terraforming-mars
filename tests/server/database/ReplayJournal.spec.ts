@@ -12,6 +12,7 @@ import {
   toHeadRow,
 } from '@/server/database/ReplayJournal';
 import {InputResponse} from '@/common/inputs/InputResponse';
+import {PlayerId} from '@/common/Types';
 import type {ActionReplayState} from '@/server/game/ActionReplay';
 import {
   isReplayJournalEnabled,
@@ -24,7 +25,7 @@ import {
 
 function entry(index: number): ReplayJournalEntry {
   return {
-    actorId: 'p' + index,
+    actorId: ('p' + index) as PlayerId,
     promptFingerprint: 'fingerprint-' + index,
     input: {type: 'option', index} as unknown as InputResponse,
   };
